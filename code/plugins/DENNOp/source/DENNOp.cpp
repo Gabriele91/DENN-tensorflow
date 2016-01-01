@@ -23,6 +23,14 @@
 #include "tensorflow/core/framework/tensor_util.h"
 #include "tensorflow/core/framework/shape_inference.h"
 
+#ifdef DENN_USE_SOCKET_DEBUG
+    #include <socket_messages_server.h>
+    #define SOCKET_DEBUG(x) x
+#else
+    #define SOCKET_DEBUG(x)
+#endif
+
+
 using namespace tensorflow;
 
 REGISTER_OP("DENN")
@@ -187,6 +195,11 @@ class DENNOp : public OpKernel
     CRType           m_cr_type    { CR_BIN    };
     DifferenceVector m_diff_vector{ DIFF_ONE  };
     PerturbedVector  m_pert_vector{ PV_RANDOM };
+    //debug
+    SOCKET_DEBUG(
+     const int                     m_debug_port{ 6540         };
+     debug::socket_messages_server m_debug     { m_debug_port };
+    )
     
 public:
     
@@ -247,9 +260,8 @@ public:
          * REF
          * https://github.com/tensorflow/tensorflow/blob/c8a45a8e236776bed1d14fd71f3b6755bd63cc58/tensorflow/core/platform/env.cc#L316
          */
-        
         ::tensorflow::protobuf::TextFormat::ParseFromString(graph_proto_string, &graph_def);
-        
+        //create graph
         m_session->Create(graph_def);
     }
     
@@ -339,6 +351,9 @@ public:
                     ref_current_eval_result(index) = new_eval;
                 }
             }
+            SOCKET_DEBUG(
+                m_debug.write(std::to_string(i));
+            )
         }
         // Output populations
         for(int i=0; i != m_space_size; ++i)

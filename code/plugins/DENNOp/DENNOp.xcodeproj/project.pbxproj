@@ -66,10 +66,29 @@
 		E067D9741DE248410032CC68 /* letters_L2.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = letters_L2.json; sourceTree = "<group>"; };
 		E067D9751DE248410032CC68 /* mnist_L1.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = mnist_L1.json; sourceTree = "<group>"; };
 		E09B48CA1DB7639C00333E4F /* libDENNFakeDylib.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libDENNFakeDylib.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		E0A9F4EC1DE4515300807B05 /* socket_messages_server.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = socket_messages_server.h; sourceTree = "<group>"; };
+		E0A9F4F61DE4BB5500807B05 /* __init__.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = __init__.py; sourceTree = "<group>"; };
+		E0A9F4F81DE4BB5500807B05 /* __init__.cpython-35.pyc */ = {isa = PBXFileReference; lastKnownFileType = file; path = "__init__.cpython-35.pyc"; sourceTree = "<group>"; };
+		E0A9F4F91DE4BB5500807B05 /* op_mod.cpython-35.pyc */ = {isa = PBXFileReference; lastKnownFileType = file; path = "op_mod.cpython-35.pyc"; sourceTree = "<group>"; };
+		E0A9F4FA1DE4BB5500807B05 /* utils.cpython-35.pyc */ = {isa = PBXFileReference; lastKnownFileType = file; path = "utils.cpython-35.pyc"; sourceTree = "<group>"; };
+		E0A9F4FB1DE4BB5500807B05 /* DENNOp.so */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = DENNOp.so; sourceTree = "<group>"; };
+		E0A9F4FC1DE4BB5500807B05 /* DENNOp_traning.so */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = DENNOp_traning.so; sourceTree = "<group>"; };
+		E0A9F4FE1DE4BB5500807B05 /* DENNOp.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; path = DENNOp.o; sourceTree = "<group>"; };
+		E0A9F4FF1DE4BB5500807B05 /* op_mod.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = op_mod.py; sourceTree = "<group>"; };
+		E0A9F5011DE4BB5500807B05 /* __init__.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = __init__.py; sourceTree = "<group>"; };
+		E0A9F5031DE4BB5500807B05 /* __init__.cpython-35.pyc */ = {isa = PBXFileReference; lastKnownFileType = file; path = "__init__.cpython-35.pyc"; sourceTree = "<group>"; };
+		E0A9F5041DE4BB5500807B05 /* dataset_loaders.cpython-35.pyc */ = {isa = PBXFileReference; lastKnownFileType = file; path = "dataset_loaders.cpython-35.pyc"; sourceTree = "<group>"; };
+		E0A9F5051DE4BB5500807B05 /* plotter.cpython-35.pyc */ = {isa = PBXFileReference; lastKnownFileType = file; path = "plotter.cpython-35.pyc"; sourceTree = "<group>"; };
+		E0A9F5061DE4BB5500807B05 /* utils.cpython-35.pyc */ = {isa = PBXFileReference; lastKnownFileType = file; path = "utils.cpython-35.pyc"; sourceTree = "<group>"; };
+		E0A9F5071DE4BB5500807B05 /* write_results.cpython-35.pyc */ = {isa = PBXFileReference; lastKnownFileType = file; path = "write_results.cpython-35.pyc"; sourceTree = "<group>"; };
+		E0A9F5081DE4BB5500807B05 /* dataset_loaders.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = dataset_loaders.py; sourceTree = "<group>"; };
+		E0A9F5091DE4BB5500807B05 /* plotter.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = plotter.py; sourceTree = "<group>"; };
+		E0A9F50A1DE4BB5500807B05 /* utils.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = utils.py; sourceTree = "<group>"; };
+		E0A9F50B1DE4BB5500807B05 /* write_results.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = write_results.py; sourceTree = "<group>"; };
+		E0A9F50C1DE4BB5500807B05 /* utils.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = utils.py; sourceTree = "<group>"; };
 		E0C206961DCB2C3E0002A331 /* test_plugin_images.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = test_plugin_images.py; sourceTree = "<group>"; };
 		E0C206971DCB2C3E0002A331 /* test_plugin_letter.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = test_plugin_letter.py; sourceTree = "<group>"; };
 		E0C2069E1DCB309D0002A331 /* test_plugin_letter.out.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = test_plugin_letter.out.txt; sourceTree = "<group>"; };
-		E0C2069F1DCB31530002A331 /* DENNOp.so */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = DENNOp.so; sourceTree = "<group>"; };
 		E0C206A01DCB31860002A331 /* test_plugin_images.out.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = test_plugin_images.out.txt; sourceTree = "<group>"; };
 		E0C206A61DCB3CC50002A331 /* test_plugin_iris.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = test_plugin_iris.py; sourceTree = "<group>"; };
 		E0C206A71DCB3D470002A331 /* test_plugin_iris.out.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = test_plugin_iris.out.txt; sourceTree = "<group>"; };
@@ -109,7 +128,7 @@
 				E0E1CCB81DA68A3E009C4D35 /* makefile */,
 				E0C2069D1DCB309D0002A331 /* logs */,
 				E07026B21DA6836700D0D31B /* Products */,
-				E0C2069F1DCB31530002A331 /* DENNOp.so */,
+				E0A9F4F51DE4BB5500807B05 /* DENN */,
 			);
 			sourceTree = "<group>";
 		};
@@ -119,6 +138,64 @@
 				E09B48CA1DB7639C00333E4F /* libDENNFakeDylib.dylib */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		E0A9F4F51DE4BB5500807B05 /* DENN */ = {
+			isa = PBXGroup;
+			children = (
+				E0A9F4F61DE4BB5500807B05 /* __init__.py */,
+				E0A9F4F71DE4BB5500807B05 /* __pycache__ */,
+				E0A9F4FB1DE4BB5500807B05 /* DENNOp.so */,
+				E0A9F4FC1DE4BB5500807B05 /* DENNOp_traning.so */,
+				E0A9F4FD1DE4BB5500807B05 /* obj */,
+				E0A9F4FF1DE4BB5500807B05 /* op_mod.py */,
+				E0A9F5001DE4BB5500807B05 /* training */,
+				E0A9F50C1DE4BB5500807B05 /* utils.py */,
+			);
+			path = DENN;
+			sourceTree = "<group>";
+		};
+		E0A9F4F71DE4BB5500807B05 /* __pycache__ */ = {
+			isa = PBXGroup;
+			children = (
+				E0A9F4F81DE4BB5500807B05 /* __init__.cpython-35.pyc */,
+				E0A9F4F91DE4BB5500807B05 /* op_mod.cpython-35.pyc */,
+				E0A9F4FA1DE4BB5500807B05 /* utils.cpython-35.pyc */,
+			);
+			path = __pycache__;
+			sourceTree = "<group>";
+		};
+		E0A9F4FD1DE4BB5500807B05 /* obj */ = {
+			isa = PBXGroup;
+			children = (
+				E0A9F4FE1DE4BB5500807B05 /* DENNOp.o */,
+			);
+			path = obj;
+			sourceTree = "<group>";
+		};
+		E0A9F5001DE4BB5500807B05 /* training */ = {
+			isa = PBXGroup;
+			children = (
+				E0A9F5011DE4BB5500807B05 /* __init__.py */,
+				E0A9F5021DE4BB5500807B05 /* __pycache__ */,
+				E0A9F5081DE4BB5500807B05 /* dataset_loaders.py */,
+				E0A9F5091DE4BB5500807B05 /* plotter.py */,
+				E0A9F50A1DE4BB5500807B05 /* utils.py */,
+				E0A9F50B1DE4BB5500807B05 /* write_results.py */,
+			);
+			path = training;
+			sourceTree = "<group>";
+		};
+		E0A9F5021DE4BB5500807B05 /* __pycache__ */ = {
+			isa = PBXGroup;
+			children = (
+				E0A9F5031DE4BB5500807B05 /* __init__.cpython-35.pyc */,
+				E0A9F5041DE4BB5500807B05 /* dataset_loaders.cpython-35.pyc */,
+				E0A9F5051DE4BB5500807B05 /* plotter.cpython-35.pyc */,
+				E0A9F5061DE4BB5500807B05 /* utils.cpython-35.pyc */,
+				E0A9F5071DE4BB5500807B05 /* write_results.cpython-35.pyc */,
+			);
+			path = __pycache__;
 			sourceTree = "<group>";
 		};
 		E0C2069D1DCB309D0002A331 /* logs */ = {
@@ -143,6 +220,7 @@
 		E0E1CCD61DA6927F009C4D35 /* include */ = {
 			isa = PBXGroup;
 			children = (
+				E0A9F4EC1DE4515300807B05 /* socket_messages_server.h */,
 			);
 			path = include;
 			sourceTree = "<group>";
@@ -172,6 +250,20 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXLegacyTarget section */
+		E0A9F4F11DE4BA5700807B05 /* DENNOpTraning */ = {
+			isa = PBXLegacyTarget;
+			buildArgumentsString = "$(ACTION) PYTHON_PATH=$(HOME)/.virtualenvs/TensorFlow DENN_TRANING=true";
+			buildConfigurationList = E0A9F4F21DE4BA5700807B05 /* Build configuration list for PBXLegacyTarget "DENNOpTraning" */;
+			buildPhases = (
+			);
+			buildToolPath = /usr/bin/make;
+			buildWorkingDirectory = "$(SRCROOT)";
+			dependencies = (
+			);
+			name = DENNOpTraning;
+			passBuildSettingsInEnvironment = 0;
+			productName = master_degree_thesis_so;
+		};
 		E0E1CCCD1DA68F1E009C4D35 /* DENNOp */ = {
 			isa = PBXLegacyTarget;
 			buildArgumentsString = "$(ACTION) PYTHON_PATH=$(HOME)/.virtualenvs/TensorFlow";
@@ -245,6 +337,7 @@
 				E09B48C91DB7639C00333E4F /* DENNFakeDylib */,
 				E0C206A11DCB3C800002A331 /* DENNOpRunTestIris */,
 				CEF1F3161DDBB134005FE9C7 /* DENNBenchmark */,
+				E0A9F4F11DE4BA5700807B05 /* DENNOpTraning */,
 			);
 		};
 /* End PBXProject section */
@@ -488,6 +581,31 @@
 			};
 			name = Release;
 		};
+		E0A9F4F31DE4BA5700807B05 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEBUGGING_SYMBOLS = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TENSOR_FLOW_PYTHON_PATH = "$(HOME)/.virtualenvs/TensorFlow/lib/python3.5";
+			};
+			name = Debug;
+		};
+		E0A9F4F41DE4BA5700807B05 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TENSOR_FLOW_PYTHON_PATH = "$(HOME)/.virtualenvs/TensorFlow/lib/python3.5";
+			};
+			name = Release;
+		};
 		E0C2069B1DCB2C610002A331 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -580,6 +698,15 @@
 			buildConfigurations = (
 				E0A7C66F1DA6A4FB005D74D0 /* Debug */,
 				E0A7C6701DA6A4FB005D74D0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E0A9F4F21DE4BA5700807B05 /* Build configuration list for PBXLegacyTarget "DENNOpTraning" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E0A9F4F31DE4BA5700807B05 /* Debug */,
+				E0A9F4F41DE4BA5700807B05 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -5,9 +5,13 @@ MKDIR_P     ?= mkdir -p
 MODULE_FOLDER ?= DENN
 TOP         ?= $(shell pwd)
 PYTHON_PATH ?= $(HOME)/.virtualenvs/TensorFlow/
-USE_DEBUG   ?= false
+USE_DEBUG   ?= true
+DENN_TRANING?= false
 #include list
 TF_INCLUDE = $(PYTHON_PATH)/lib/python3.5/site-packages/tensorflow/include
+#Output name
+OUT_FILE_NAME = DENNOp
+OUT_FILE_NAME_INFO =
 #project dirs
 S_DIR  = $(TOP)/source
 S_INC  = $(TOP)/include
@@ -41,9 +45,15 @@ ifeq ($(shell uname -s),Darwin)
 	C_FLAGS += -undefined dynamic_lookup
 endif
 
-#cases
+#old abi
 ifeq ($(USE_OLD_ABI),true)
 	C_FLAGS += -D_GLIBCXX_USE_CXX11_ABI=0
+endif
+
+#denn traing
+ifeq ($(DENN_TRANING),true)
+	C_FLAGS += -DDENN_USE_SOCKET_DEBUG -DDENN_USE_TRANING
+	OUT_FILE_NAME_INFO = _traning
 endif
 
 #flags C++
@@ -63,7 +73,7 @@ all: make_denn_op
 
 #create plugin
 make_denn_op: directories $(SOURCE_OBJS)
-	$(CC) $(C_FLAGS) $(CPP_FLAGS) -shared -o $(TOP)/$(MODULE_FOLDER)/DENNOp.so $(SOURCE_OBJS) $(LIKNER_FLAGS) 
+	$(CC) $(C_FLAGS) $(CPP_FLAGS) -shared -o $(TOP)/$(MODULE_FOLDER)/$(OUT_FILE_NAME)$(OUT_FILE_NAME_INFO).so $(SOURCE_OBJS) $(LIKNER_FLAGS)
 
 #required directories
 directories: ${O_DIR}

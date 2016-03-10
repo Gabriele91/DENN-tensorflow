@@ -33,14 +33,14 @@ def update_best_of(de_type, test_results, new_accuracy, new_f, new_cr, new_indiv
                                         weights and biases
     """
     if test_results[de_type].best_of['accuracy'][-1] < new_accuracy:
-        test_results[de_type].best_of['accuracy'].append(new_accuracy)
         test_results[de_type].best_of['F'] = new_f
         test_results[de_type].best_of['CR'] = new_cr
+        test_results[de_type].best_of['accuracy'].append(new_accuracy)
         test_results[de_type].best_of['individual'] = new_individual
-        job.best['accuracy'] = new_accuracy
-        job.best['individual'] = new_individual
         job.best['F'] = new_f
         job.best['CR'] = new_cr
+        job.best['accuracy'] = new_accuracy
+        job.best['individual'] = new_individual
         return True
     else:
         last_accuracy = test_results[de_type].best_of['accuracy'][-1]
@@ -366,9 +366,11 @@ class Operation(object):
 
         return best_idx, cur_accuracy
 
-    def __reinsert_best(self, cur_pop, evaluations, test_results):
+    def __reinsert_best(self, cur_f, cur_cr, cur_pop, evaluations, test_results):
         """Reinserts the best evaluated individual in the population."""
         idx_worst = np.argmin(evaluations)
+        cur_f[idx_worst] = test_results[self.de_type].best_of['F']
+        cur_cr[idx_worst] = test_results[self.de_type].best_of['CR']
         for num in range(len(self.net.targets)):
             cur_pop[num][idx_worst] = test_results[
                 self.de_type].best_of['individual'][num]
@@ -572,7 +574,7 @@ class Operation(object):
                 test_results[self.de_type].population = cur_pop
 
                 if self.job.reinsert_best and not best_changed:
-                    self.__reinsert_best(cur_pop, evaluations, test_results)
+                    self.__reinsert_best(cur_f, cur_cr, cur_pop, evaluations, test_results)
 
                 # print(
                 #     "+ DENN[{}] up to {} gen on {} completed in {:.05} sec.".format(

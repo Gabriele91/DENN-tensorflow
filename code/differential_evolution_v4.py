@@ -99,8 +99,8 @@ with tf.Session() as sess:
         clean_next_gen
     ])
 
-    print("+ Population:\n{}".format(sess.run(cur_population)))
-    print("+ NextGen:\n{}".format(sess.run(next_gen)))
+    # print("+ Population:\n{}".format(sess.run(cur_population)))
+    # print("+ NextGen:\n{}".format(sess.run(next_gen)))
 
     for generation in range(100):
 

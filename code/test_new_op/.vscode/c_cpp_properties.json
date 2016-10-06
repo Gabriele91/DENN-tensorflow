@@ -2,7 +2,10 @@
     "configurations": [
         {
             "name": "Mac",
-            "includePath": ["/usr/include"],
+            "includePath": [
+                "/usr/include",
+                "/usr/local/lib/python3.5/site-packages/tensorflow/include"
+            ],
             "browse" : {
                 "limitSymbolsToIncludedHeaders" : true,
                 "databaseFilename" : ""

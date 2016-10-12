@@ -10,6 +10,7 @@ endif
 
 ifeq "$(shell uname -s)" "Darwin"
     CFLAGS += -undefined dynamic_lookup
+    TF_INC = $(shell python3 -c 'import tensorflow as tf; print(tf.sysconfig.get_include())')
 endif
 
 all: operation

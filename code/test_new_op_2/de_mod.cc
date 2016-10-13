@@ -32,14 +32,14 @@ public:
     const Tensor &CR_tensor = context->input(2);
 
     auto population = population_tensor.flat_inner_dims<double>();
-    const double W = W_tensor.flat<double>()(0);
+    const auto W = W_tensor.flat<double>();
     const double CR = CR_tensor.flat<double>()(0);
-    std::cout << W << " " << CR << '\n';
+    // std::cout << W(0) << " " << CR << '\n';
 
     const int size = population_tensor.shape().dims(); // to check dimensions
     const int NP = population_tensor.shape().dim_size(0);
     const int D = population_tensor.shape().dim_size(1);
-    std::cout << NP << " " << D << '\n';
+    // std::cout << NP << " " << D << '\n';
 
     // Output tensor
     // Create an output tensor
@@ -56,14 +56,14 @@ public:
 
     for (int index = 0; index < NP; ++index)
     {
-      std::cout << index << " " << '\n';
+      // std::cout << index << " " << '\n';
       threeRandIndicesDiffFrom(NP, index, i_a, i_b, i_c);
-      std::cout << index << " " << i_a << " " << i_b << " " << i_c << " " << '\n';
+      // std::cout << index << " " << i_a << " " << i_b << " " << i_c << " " << '\n';
       for (int elm = 0; elm < D; ++elm)
       {
         if (random() > CR)
         {
-          new_generation(index, elm) = (population(i_a, elm) - population(i_b, elm)) * W + population(i_c, elm);
+          new_generation(index, elm) = (population(i_a, elm) - population(i_b, elm)) * W(elm) + population(i_c, elm);
         }
         else
         {

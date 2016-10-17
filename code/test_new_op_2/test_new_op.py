@@ -9,6 +9,8 @@ CR = np.float64(0.5)
 
 DE = tf.load_op_library('./de_mod.so')
 
+WITH_NEW_ASSIGN = False
+
 ##
 # Variables
 cur_population = tf.Variable(
@@ -18,7 +20,7 @@ cur_population = tf.Variable(
 # Placeholder
 gen_placeholder = tf.placeholder(tf.float64, (NP, D), name="generation")
 target = tf.placeholder(tf.float64, (D,), name="target")
-target_index = tf.placeholder(tf.int32, 1, name="target_index")
+target_index = tf.placeholder(tf.int32, (), name="target_index")
 
 ##
 # f(x)
@@ -27,6 +29,7 @@ f_x = tf.reduce_sum(tf.map_fn(lambda elm: (elm - 1)**2, target))
 ##
 # Actions
 gen_trial_vectors = DE.trial_vectors(cur_population, W, CR)
+assign_individual = DE.assign_individual(cur_population, target, target_index)
 random_population = tf.random_uniform((NP, D), dtype=tf.float64)
 assign_new_population = cur_population.assign(gen_placeholder)
 
@@ -61,11 +64,20 @@ with tf.Session() as sess:
             f_x_old = sess.run(f_x, feed_dict={target: tmp_population[index]})
             f_x_new = sess.run(f_x, feed_dict={target: individual})
             if f_x_new < f_x_old:
-                tmp_population[index] = individual
+                if not WITH_NEW_ASSIGN:
+                    tmp_population[index] = individual
+                else:
+                    sess.run(assign_individual, feed_dict={
+                        target: individual,
+                        target_index: index
+                    })
 
-        tmp_population = sess.run(assign_new_population, feed_dict={
-            gen_placeholder: tmp_population
-        })
+        if not WITH_NEW_ASSIGN:
+            tmp_population = sess.run(assign_new_population, feed_dict={
+                gen_placeholder: tmp_population
+            })
+        else:
+            tmp_population = sess.run(cur_population)
 
         print("+ Calculated gen. {} in {}".format(
             generation, time() - start), end="\r")

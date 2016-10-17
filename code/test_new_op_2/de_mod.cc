@@ -129,3 +129,39 @@ private:
 };
 
 REGISTER_KERNEL_BUILDER(Name("TrialVectors").Device(DEVICE_CPU), TrialVectorsOp);
+
+REGISTER_OP("AssignIndividual")
+    .Input("population: double")
+    .Input("individual: double")
+    .Input("position: int32");
+
+class AssignIndividualOp : public OpKernel
+{
+public:
+  explicit AssignIndividualOp(OpKernelConstruction *context) : OpKernel(context) {}
+
+  void Compute(OpKernelContext *context) override
+  {
+    //
+    //std::cout << typeid(context->input(0)).name() << '\n';
+    //
+
+    // Grab the input tensors
+    const Tensor &population_tensor_const = context->input(0);
+    Tensor& population_tensor = const_cast<Tensor&>(population_tensor_const);
+    const Tensor &individual_tensor = context->input(1);
+    const Tensor &position_tensor = context->input(2);
+
+    auto population = population_tensor.flat_inner_dims<double>();
+    const auto individual = individual_tensor.flat<double>();
+    const double position = position_tensor.flat<int32>()(0);
+    const int D = population_tensor.shape().dim_size(1);
+
+    for (int elm = 0; elm < D; ++elm)
+    {
+      population(position, elm) = individual(elm);
+    }
+  }
+};
+
+REGISTER_KERNEL_BUILDER(Name("AssignIndividual").Device(DEVICE_CPU), AssignIndividualOp);

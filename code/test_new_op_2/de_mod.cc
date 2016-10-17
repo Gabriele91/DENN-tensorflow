@@ -1,11 +1,4 @@
 #include "tensorflow/core/framework/op.h"
-
-REGISTER_OP("TrialVectors")
-    .Input("population: double")
-    .Input("weight: double")
-    .Input("crossover: double")
-    .Output("new_generation: double");
-
 #include "tensorflow/core/framework/op_kernel.h"
 
 #include <iostream>
@@ -14,6 +7,12 @@ REGISTER_OP("TrialVectors")
 #include <typeinfo>
 
 using namespace tensorflow;
+
+REGISTER_OP("TrialVectors")
+    .Input("population: double")
+    .Input("weight: double")
+    .Input("crossover: double")
+    .Output("new_generation: double");
 
 class TrialVectorsOp : public OpKernel
 {
@@ -36,7 +35,7 @@ public:
     const double CR = CR_tensor.flat<double>()(0);
     // std::cout << W(0) << " " << CR << '\n';
 
-    const int size = population_tensor.shape().dims(); // to check dimensions
+    // const int size = population_tensor.shape().dims(); // to check dimensions
     const int NP = population_tensor.shape().dim_size(0);
     const int D = population_tensor.shape().dim_size(1);
     // std::cout << NP << " " << D << '\n';

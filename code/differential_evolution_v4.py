@@ -186,6 +186,6 @@ with tf.Session() as sess:
     for indiv in results:
         f_x_res.append(sum([abs(1.0 - elm) for elm in indiv]))
 
-    print("+ Results:\n{}".format(results))
-    print("+ Error: {}".format(f_x_res))
+    # print("+ Results:\n{}".format(results))
+    # print("+ Error: {}".format(f_x_res))
     print("+ Best vector: {}".format(results[f_x_res.index(min(f_x_res))]))

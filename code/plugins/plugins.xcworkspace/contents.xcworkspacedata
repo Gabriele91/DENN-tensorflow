@@ -2,6 +2,15 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "group:/Users/Gabriele/Documents/TensorFlow/master_degree_thesis/code/plugins/make_trial_vector/make_trial_vector.xcodeproj">
+      location = "group:DifferentialEvolution/DifferentialEvolution.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:ChoiceOp/ChoiceOp.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:AssignIndividualOp/AssignIndividualOp.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:TrialVectorsOp/TrialVectorsOp.xcodeproj">
    </FileRef>
 </Workspace>

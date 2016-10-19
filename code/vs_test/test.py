@@ -4,9 +4,9 @@ from time import time
 from evo import DifferentialEvolution
 
 NP = np.int32(100)
-D = np.int32(1)
-W = tf.fill((D, ), np.float64(0.1))
-CR = np.float64(0.2)
+D = np.int32(20)
+W = tf.fill((D, ), np.float64(0.2))
+CR = np.float64(0.1)
 NUM_GEN = 100
 
 ##

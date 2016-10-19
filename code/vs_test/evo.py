@@ -25,10 +25,12 @@ class DifferentialEvolution(object):
 
         ##
         # Actions
-        self.gen_trial_vectors = self.DE.trial_vectors(self.cur_population, W, CR)
+        self.gen_trial_vectors = self.DE.trial_vectors(
+            self.cur_population, W, CR)
         self.assign_individual = self.DE.assign_individual(
             self.cur_population, self.target, self.target_index)
-        self.assign_new_population = self.cur_population.assign(self.gen_placeholder)
+        self.assign_new_population = self.cur_population.assign(
+            self.gen_placeholder)
 
         self.init = tf.initialize_all_variables()
 
@@ -59,6 +61,7 @@ class DifferentialEvolution(object):
                         f_x, feed_dict={
                             self.external_target: individual
                         })
+                    # print(f_x_new, f_x_old)
                     if f_x_new < f_x_old:
                         if not new_assignment:
                             tmp_population[index] = individual
@@ -81,15 +84,22 @@ class DifferentialEvolution(object):
             print("+ Done in {}".format(time() - tot_time))
 
             results = sess.run(self.cur_population)
-            f_x_res = []
+            # print(results)
+            index_min = -1
+            cur_min = 10**10
 
-            for indiv in results:
-                f_x_res.append(sum([abs(1.0 - elm) for elm in indiv]))
+            for index, individual in enumerate(results):
+                f_x_res = sess.run(f_x, feed_dict={
+                    self.external_target: individual
+                })
+                if f_x_res < cur_min:
+                    cur_min = f_x_res
+                    index_min = index
 
-            best = results[f_x_res.index(min(f_x_res))]
+            best = results[index_min]
 
             # print("+ Results:\n{}".format(results))
             # print("+ Error: {}".format(f_x_res))
-            print("+ Best vector: {}".format(best))
+            print("+ Best vector: {} -> f(x) = {}".format(best, cur_min))
 
             return best

@@ -58,11 +58,12 @@ public:
       // std::cout << index << " " << '\n';
       threeRandIndicesDiffFrom(NP, index, i_a, i_b, i_c);
       // std::cout << index << " " << i_a << " " << i_b << " " << i_c << " " << '\n';
+      int random_index = irand(D);
       for (int elm = 0; elm < D; ++elm)
       {
-        if (random() > CR)
+        if (random() <= CR |  random_index == elm)
         {
-          new_generation(index, elm) = (population(i_a, elm) - population(i_b, elm)) * W(elm) + population(i_c, elm);
+          new_generation(index, elm) = ((population(i_a, elm) - population(i_b, elm)) * W(elm)) + population(i_c, elm);
         }
         else
         {

@@ -5,6 +5,9 @@
       location = "group:DifferentialEvolution/DifferentialEvolution.xcodeproj">
    </FileRef>
    <FileRef
+      location = "group:DifferentialEvolutionOp/DifferentialEvolutionOp.xcodeproj">
+   </FileRef>
+   <FileRef
       location = "group:ChoiceOp/ChoiceOp.xcodeproj">
    </FileRef>
    <FileRef

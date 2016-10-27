@@ -33,6 +33,7 @@ class DifferentialEvolution(object):
             self.gen_placeholder)
 
         self.init = tf.initialize_all_variables()
+        self.res_f_x = []
 
     def evolve(self, population, num_generations, f_x, new_assignment=True):
 
@@ -80,6 +81,19 @@ class DifferentialEvolution(object):
 
                 print("+ Calculated gen. {} in {}".format(
                     generation, time() - start), end="\r")
+                
+                results = sess.run(self.cur_population)
+                # print(results)
+                cur_min = 10**10
+
+                for index, individual in enumerate(results):
+                    f_x_res = sess.run(f_x, feed_dict={
+                        self.external_target: individual
+                    })
+                    if f_x_res < cur_min:
+                        cur_min = f_x_res
+                
+                self.res_f_x.append(cur_min)
 
             print("+ Done in {}".format(time() - tot_time))
 
@@ -102,4 +116,4 @@ class DifferentialEvolution(object):
             # print("+ Error: {}".format(f_x_res))
             print("+ Best vector: {} -> f(x) = {}".format(best, cur_min))
 
-            return best
+            return self.res_f_x

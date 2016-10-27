@@ -211,7 +211,7 @@ for figure in FIGURES:
         plt.xlabel(figure['plot']['x_label'])
         plt.ylabel(figure['plot']['y_label'])
         plt.grid(True)
-        # plt.savefig(figure['filename'], dpi=400)
+        plt.savefig(figure['filename'], dpi=400)
     elif figure['type'] == 'hist':
         print("- Generating \"{}\" [{}] -> {}".format(
             figure['title'],

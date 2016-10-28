@@ -10,7 +10,7 @@ NP = np.int32(100)
 D = np.int32(20)
 W = tf.fill((D, ), np.float64(0.8))
 CR = np.float64(0.5)
-NUM_GEN = 200
+NUM_GEN = 1000
 
 ##
 # Variables

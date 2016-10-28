@@ -63,7 +63,7 @@ public:
       //compute
       for (int elm = 0; elm < D; ++elm)
       {
-          if (random() < CR |  random_index == elm)
+          if (random() < CR ||  random_index == elm)
         {
           new_generation(index, elm) = (population(i_a, elm) - population(i_b, elm)) * W(elm) + population(i_c, elm);
         }

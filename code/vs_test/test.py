@@ -10,7 +10,7 @@ NP = np.int32(100)
 D = np.int32(20)
 W = tf.fill((D, ), np.float64(0.8))
 CR = np.float64(0.5)
-NUM_GEN = 1000
+NUM_GEN = 100
 
 ##
 # Variables
@@ -22,8 +22,18 @@ target = tf.placeholder(tf.float64, (D,), name="target")
 
 ##
 # f(x)
-# f_x = tf.reduce_sum(tf.map_fn(lambda elm: (elm - 1)**2, target))
-# loss = tf.reduce_sum(tf.map_fn(lambda elm: (elm - 1)**2, x))
+# f_x = tf.reduce_sum(tf.map_fn(lambda elm: (elm - 3)**2, target))
+# loss = tf.reduce_sum(tf.map_fn(lambda elm: (elm - 3)**2, x))
+
+##
+# De Jong's function
+# f(x) = sum(square(x(i)))
+# i=1:n; -5.12<=x(i)<=5.12
+# Modified to get x(i) = 3
+f_x = tf.reduce_sum(tf.square(tf.sub(target, 3)), name="evaluate")
+loss = tf.reduce_sum(tf.square(tf.sub(x, 3)), name="loss")
+MIN_VAL = -5.12
+MAX_VAL = 5.12
 
 ##
 # Easom's function
@@ -53,46 +63,50 @@ target = tf.placeholder(tf.float64, (D,), name="target")
 # f8(x)=sum(x(i)^2/4000)-prod(cos(x(i)/sqrt(i)))+1
 # i=1:n -600<=x(i)<= 600.
 # f(x)=0; x(i)=0, i=1:n.
-f_x = tf.add(
-    tf.sub(
-        tf.reduce_sum(
-            tf.div(
-                tf.square(target),
-                np.float64(4000)
-            )
-        ),
-        tf.reduce_prod(
-            tf.div(
-                tf.cos(target),
-                tf.sqrt(
-                    tf.to_double(
-                        tf.range(np.int32(1), np.int32(D + 1))
-                    )
-                )
-            )
-        )
-    ),
-    np.float64(1), name="evaluate")
-loss = tf.add(
-    tf.sub(
-        tf.reduce_sum(
-            tf.div(
-                tf.square(x),
-                np.float64(4000)
-            )
-        ),
-        tf.reduce_prod(
-            tf.div(
-                tf.cos(x),
-                tf.sqrt(
-                    tf.to_double(
-                        tf.range(np.int32(1), np.int32(D + 1))
-                    )
-                )
-            )
-        )
-    ),
-    np.float64(1), name="loss")
+# f_x = tf.add(
+#     tf.sub(
+#         tf.reduce_sum(
+#             tf.div(
+#                 tf.square(target),
+#                 np.float64(4000)
+#             )
+#         ),
+#         tf.reduce_prod(
+#             tf.cos(
+#                 tf.div(
+#                     target,
+#                     tf.sqrt(
+#                         tf.to_double(
+#                             tf.range(np.int32(1), np.int32(D + 1))
+#                         )
+#                     )
+#                 )
+#             )
+#         )
+#     ),
+#     np.float64(1), name="evaluate")
+# loss = tf.add(
+#     tf.sub(
+#         tf.reduce_sum(
+#             tf.div(
+#                 tf.square(x),
+#                 np.float64(4000)
+#             )
+#         ),
+#         tf.reduce_prod(
+#             tf.cos(
+#                 tf.div(
+#                     x,
+#                     tf.sqrt(
+#                         tf.to_double(
+#                             tf.range(np.int32(1), np.int32(D + 1))
+#                         )
+#                     )
+#                 )
+#             )
+#         )
+#     ),
+#     np.float64(1), name="loss")
 
 ##
 # Rastrigin’s Function
@@ -100,9 +114,8 @@ loss = tf.add(
 # i=1:n; -5.12<=x(i)<=5.12.
 # f_x = tf.add(tf.mul(np.float64(10), NP), tf.reduce_sum(tf.sub(tf.square(target), tf.mul(np.float64(10), tf.cos(tf.mul(tf.mul(np.float64(2), np.pi), target))))))
 # loss = -tf.add(tf.mul(np.float64(10), NP), tf.reduce_sum(tf.sub(tf.square(x),tf.mul(np.float64(10), tf.cos(tf.mul(tf.mul(np.float64(2), np.pi), x))))))
-
-MIN_VAL = -600
-MAX_VAL = 600
+# MIN_VAL = -600
+# MAX_VAL = 600
 
 ##
 # Actions
@@ -166,6 +179,8 @@ with tf.Session() as sess:
     print("+----- Gradient Descent -----")
     res_f_x_GD =gradient_descend(sess)
 
+exit(0)
+
 x_range = range(NUM_GEN)
 
 FIGURES = [
@@ -191,7 +206,7 @@ FIGURES = [
             'x_label': "iteration (gen)",
             'y_label': "f(x)",
         }
-    }
+    },
 ]
 
 for figure in FIGURES:

@@ -95,7 +95,7 @@ N_DATASET = len(images_data)
 #size data
 N_SIZE_DATA = len(images_data[0])
 
-GEN   = 2000
+GEN   = 20
 NP    = 200
 BATCH = N_DATASET
 W     = 0.35
@@ -144,7 +144,7 @@ with tf.Session() as sess:
     sess.run(init)
     ##inid DE
     de_op = LIB.denn(# input params
-                     1,
+                     GEN,
                      [deW_nnW, deW_nnB],
                      [create_random_population_W, create_random_population_B],
                      # attributes

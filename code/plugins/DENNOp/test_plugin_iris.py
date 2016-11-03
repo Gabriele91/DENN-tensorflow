@@ -119,16 +119,16 @@ N_DATASET = len(images_data)
 #size data
 N_SIZE_DATA = len(images_data[0])
 
-GEN   = 10
-NP    = 100
+GEN   = 400
+NP    = N_SIZE_DATA*10
 BATCH = N_DATASET
-W     = 0.45
-CR    = 0.6
+W     = 0.2
+CR    = 0.55
 SIZE_W = [N_SIZE_DATA, N_CLASS]
 SIZE_B = [N_CLASS]
 SIZE_X = [N_SIZE_DATA]
 
-print("|BATCH|: " + str(BATCH) + ", W: " + str(SIZE_W) + ", B" + str(SIZE_B) + ", X:" + str(SIZE_X))
+print("NP: "+ str(NP) +", |BATCH|: " + str(BATCH) + ", W: " + str(SIZE_W) + ", B" + str(SIZE_B) + ", X:" + str(SIZE_X))
 #dataset
 #dataset_batch = tf.Variable(tf.zeros([BATCH]+SIZE_X, dtype=np.float64))
 dataset_batch_data  = np.array(images_data, np.float64)

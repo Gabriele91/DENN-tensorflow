@@ -19,37 +19,41 @@ from operator import itemgetter
 #####################################################################
 
 def load_data(path):
-    ##
-    images_data = []
+
+    letter_data = []
     label_data = []
-    ##
     labels = []
-    ##
+    features_max = []
     print('+ Load data ...')
-    with open(path + '.data', 'r') as iris_file:
+    with open(path+'.data', 'r') as iris_file:
         for line in iris_file.readlines():
             cur_line = [elm.strip() for elm in line.split(',')]
-            
             if len(cur_line) == 17:
                 cur_label = cur_line[0]
                 if cur_label not in labels:
                     labels.append(cur_label)
-            
                 label_data.append(labels.index(cur_label))
-        
-            images_data.append([float(elm) for elm in cur_line[1:]])
+                features = [float(elm) for elm in cur_line[1:]]
+                if len(features_max) == 0:
+                    features_max = [elm for elm in features]
+                else:
+                    for idx, feature in enumerate(features):
+                        if features_max[idx] < feature:
+                            features_max[idx] = feature
+                letter_data.append(features)
+    ##           
+    features_max = np.array(features_max, np.float64)
+    letter_data = np.divide(np.array(letter_data, np.float64), features_max)
     ##
     # expand labels (one hot vector)
     tmp = np.zeros((len(label_data), len(labels)))
     tmp[np.arange(len(label_data)), label_data] = 1
     label_data = tmp
-    
-    # too slow
-    #print('+ images: \n', images_data)
+    #too slow
+    #print('+ letters: \n', letter_data)
     #print('+ labels: \n', label_data)
-    
     print('+ loading done!')
-    return images_data, label_data
+    return letter_data, label_data
 
 #####################################################################
 
@@ -108,11 +112,11 @@ N_DATASET = len(images_data)
 #size data
 N_SIZE_DATA = len(images_data[0])
 
-GEN   = 4000
-NP    = 46
+GEN   = 2000
+NP    = 200
 BATCH = N_DATASET
-W     = 0.5
-CR    = 0.6
+W     = 0.35
+CR    = 0.4
 SIZE_W = [N_SIZE_DATA, N_CLASS]
 SIZE_B = [N_CLASS]
 SIZE_X = [N_SIZE_DATA]

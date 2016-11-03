@@ -10,6 +10,7 @@ from time import time
 from time import sleep
 from os import path
 import struct
+from operator import itemgetter
 
 #sleep(6)
 
@@ -43,8 +44,9 @@ def load_data(path):
     tmp[np.arange(len(label_data)), label_data] = 1
     label_data = tmp
     
-    print('+ images: \n', images_data)
-    print('+ labels: \n', label_data)
+    # too slow
+    #print('+ images: \n', images_data)
+    #print('+ labels: \n', label_data)
     
     print('+ loading done!')
     return images_data, label_data
@@ -106,11 +108,11 @@ N_DATASET = len(images_data)
 #size data
 N_SIZE_DATA = len(images_data[0])
 
-GEN   = 2000
-NP    = 200
+GEN   = 4000
+NP    = 46
 BATCH = N_DATASET
-W     = 0.35
-CR    = 0.4
+W     = 0.5
+CR    = 0.6
 SIZE_W = [N_SIZE_DATA, N_CLASS]
 SIZE_B = [N_CLASS]
 SIZE_X = [N_SIZE_DATA]
@@ -166,20 +168,16 @@ with tf.Session() as sess:
                      fmax= 1.0
                     )
     results = sess.run(de_op)
-    w_res = results[0]
-    b_res = results[1]
+    #get output
+    w_res = results.final_populations[0]
+    b_res = results.final_populations[1]
+    c_res = results.final_eval
     #min
-    min_res_w = None
-    min_res_b = None
-    min_cross = 1e1000
-    #find min
-    for i in range(NP):
-        cross = sess.run(cross_entropy,feed_dict = { target_w : w_res[i], target_b :b_res[i] })
-        if cross < min_cross:
-            min_cross = cross
-            min_res_w = w_res[i]
-            min_res_b = b_res[i]
-
+    min_cross_id = min(enumerate(c_res), key=itemgetter(1))[0]
+    min_cross = c_res[min_cross_id]
+    min_res_w = w_res[min_cross_id]
+    min_res_b = b_res[min_cross_id]
+    
     print("w: ",min_res_w,"\nb: ",min_res_b,"\ncross_entropy:",min_cross)
     # Test trained model
     y_= dataset_batch_label

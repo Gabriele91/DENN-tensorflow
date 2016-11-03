@@ -11,6 +11,7 @@ from time import time
 from time import sleep
 from os import path
 import struct
+from operator import itemgetter
 
 #sleep(6)
 
@@ -154,19 +155,15 @@ with tf.Session() as sess:
                      fmax= 1.0
                     )
     results = sess.run(de_op)
-    w_res = results[0]
-    b_res = results[1]
+    #get output
+    w_res = results.final_populations[0]
+    b_res = results.final_populations[1]
+    c_res = results.final_eval
     #min
-    min_res_w = None
-    min_res_b = None
-    min_cross = 1e1000
-    #find min
-    for i in range(NP):
-        cross = sess.run(cross_entropy,feed_dict = { target_w : w_res[i], target_b :b_res[i] })
-        if cross < min_cross:
-            min_cross = cross
-            min_res_w = w_res[i]
-            min_res_b = b_res[i]
+    min_cross_id = min(enumerate(c_res), key=itemgetter(1))[0]
+    min_cross = c_res[min_cross_id]
+    min_res_w = w_res[min_cross_id]
+    min_res_b = b_res[min_cross_id]
 
     print("w: ",min_res_w,"\nb: ",min_res_b,"\ncross_entropy:",min_cross)
     # Test trained model

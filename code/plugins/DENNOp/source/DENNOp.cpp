@@ -34,7 +34,8 @@ REGISTER_OP("DENN")
 .Input("num_gen: int32")
 .Input("w_list: space * double")
 .Input("populations_list: space * double")
-.Output("final: space * double");
+.Output("final_populations: space * double")
+.Output("final_eval: double");
 
 /***
 *
@@ -187,7 +188,7 @@ public:
                 }
             }
         }
-        // Create an output list(tensor)
+        // Output populations
         for(int i=0; i != m_space_size; ++i)
         {
             Tensor* new_generation_tensor = nullptr;
@@ -195,8 +196,20 @@ public:
             OP_REQUIRES_OK(context, context->allocate_output(i, current_pop.shape(), &new_generation_tensor));
             (*new_generation_tensor) = current_pop;
         }
+        // Output the last eval
+        {
+            //ptr
+            Tensor* out_eval = nullptr;
+            TensorShape out_shape({(int)current_eval_result.size()});
+            //alloc
+            OP_REQUIRES_OK(context, context->allocate_output(m_space_size,out_shape, &out_eval));
+            //ref to data
+            StringPiece to_data = (*out_eval).tensor_data();
+            //copy
+            std::memcpy(const_cast<char*>(to_data.data()), current_eval_result.data(),  current_eval_result.size()*sizeof(double));
+        }
     }
-        
+    
 protected:
     
     

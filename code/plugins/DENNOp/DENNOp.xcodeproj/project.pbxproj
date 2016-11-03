@@ -29,6 +29,17 @@
 			name = DENNOpRunTestLetter;
 			productName = run;
 		};
+		E0C206A11DCB3C800002A331 /* DENNOpRunTestIris */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = E0C206A31DCB3C800002A331 /* Build configuration list for PBXAggregateTarget "DENNOpRunTestIris" */;
+			buildPhases = (
+				E0C206A21DCB3C800002A331 /* Run Script */,
+			);
+			dependencies = (
+			);
+			name = DENNOpRunTestIris;
+			productName = run;
+		};
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
@@ -42,6 +53,8 @@
 		E0C2069E1DCB309D0002A331 /* test_plugin_letter.out.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = test_plugin_letter.out.txt; sourceTree = "<group>"; };
 		E0C2069F1DCB31530002A331 /* DENNOp.so */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = DENNOp.so; sourceTree = "<group>"; };
 		E0C206A01DCB31860002A331 /* test_plugin_images.out.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = test_plugin_images.out.txt; sourceTree = "<group>"; };
+		E0C206A61DCB3CC50002A331 /* test_plugin_iris.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = test_plugin_iris.py; sourceTree = "<group>"; };
+		E0C206A71DCB3D470002A331 /* test_plugin_iris.out.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = test_plugin_iris.out.txt; sourceTree = "<group>"; };
 		E0E1CCB81DA68A3E009C4D35 /* makefile */ = {isa = PBXFileReference; explicitFileType = text.script.sh; fileEncoding = 4; path = makefile; sourceTree = "<group>"; };
 		E0E1CCD51DA6927F009C4D35 /* DENNOp.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = DENNOp.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -81,6 +94,7 @@
 		E0C2069D1DCB309D0002A331 /* logs */ = {
 			isa = PBXGroup;
 			children = (
+				E0C206A71DCB3D470002A331 /* test_plugin_iris.out.txt */,
 				E0C206A01DCB31860002A331 /* test_plugin_images.out.txt */,
 				E0C2069E1DCB309D0002A331 /* test_plugin_letter.out.txt */,
 			);
@@ -105,6 +119,7 @@
 		E0EFDF2F1DB664CD003DF8E0 /* test */ = {
 			isa = PBXGroup;
 			children = (
+				E0C206A61DCB3CC50002A331 /* test_plugin_iris.py */,
 				E0C206961DCB2C3E0002A331 /* test_plugin_images.py */,
 				E0C206971DCB2C3E0002A331 /* test_plugin_letter.py */,
 			);
@@ -195,6 +210,7 @@
 				E0A7C66D1DA6A4FB005D74D0 /* DENNOpRunTestImages */,
 				E0C206981DCB2C610002A331 /* DENNOpRunTestLetter */,
 				E09B48C91DB7639C00333E4F /* DENNFakeDylib */,
+				E0C206A11DCB3C800002A331 /* DENNOpRunTestIris */,
 			);
 		};
 /* End PBXProject section */
@@ -227,6 +243,20 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "export WORKON_HOME=$HOME/.virtualenvs\nexport PROJECT_HOME=$HOME/Devel\nsource /usr/local/bin/virtualenvwrapper.sh\nworkon TensorFlow\npython $SRCROOT/test_plugin_letter.py logs/test_plugin_letter.out.txt\n\n";
+		};
+		E0C206A21DCB3C800002A331 /* Run Script */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Run Script";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "export WORKON_HOME=$HOME/.virtualenvs\nexport PROJECT_HOME=$HOME/Devel\nsource /usr/local/bin/virtualenvwrapper.sh\nworkon TensorFlow\npython $SRCROOT/test_plugin_iris.py logs/test_plugin_iris.out.txt\n\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -409,6 +439,22 @@
 			};
 			name = Release;
 		};
+		E0C206A41DCB3C800002A331 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TENSOR_FLOW_PYTHON_PATH = "$(HOME)/.virtualenvs/TensorFlow/lib/python3.5";
+			};
+			name = Debug;
+		};
+		E0C206A51DCB3C800002A331 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TENSOR_FLOW_PYTHON_PATH = "$(HOME)/.virtualenvs/TensorFlow/lib/python3.5";
+			};
+			name = Release;
+		};
 		E0E1CCCF1DA68F1E009C4D35 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -469,6 +515,15 @@
 			buildConfigurations = (
 				E0C2069B1DCB2C610002A331 /* Debug */,
 				E0C2069C1DCB2C610002A331 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E0C206A31DCB3C800002A331 /* Build configuration list for PBXAggregateTarget "DENNOpRunTestIris" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E0C206A41DCB3C800002A331 /* Debug */,
+				E0C206A51DCB3C800002A331 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

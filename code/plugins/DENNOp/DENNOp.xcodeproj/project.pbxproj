@@ -7,15 +7,26 @@
 	objects = {
 
 /* Begin PBXAggregateTarget section */
-		E0A7C66D1DA6A4FB005D74D0 /* DENNOpRunTest */ = {
+		E0A7C66D1DA6A4FB005D74D0 /* DENNOpRunTestImages */ = {
 			isa = PBXAggregateTarget;
-			buildConfigurationList = E0A7C66E1DA6A4FB005D74D0 /* Build configuration list for PBXAggregateTarget "DENNOpRunTest" */;
+			buildConfigurationList = E0A7C66E1DA6A4FB005D74D0 /* Build configuration list for PBXAggregateTarget "DENNOpRunTestImages" */;
 			buildPhases = (
 				E0A7C6711DA6A505005D74D0 /* Run Script */,
 			);
 			dependencies = (
 			);
-			name = DENNOpRunTest;
+			name = DENNOpRunTestImages;
+			productName = run;
+		};
+		E0C206981DCB2C610002A331 /* DENNOpRunTestLetter */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = E0C2069A1DCB2C610002A331 /* Build configuration list for PBXAggregateTarget "DENNOpRunTestLetter" */;
+			buildPhases = (
+				E0C206991DCB2C610002A331 /* Run Script */,
+			);
+			dependencies = (
+			);
+			name = DENNOpRunTestLetter;
 			productName = run;
 		};
 /* End PBXAggregateTarget section */
@@ -26,9 +37,13 @@
 
 /* Begin PBXFileReference section */
 		E09B48CA1DB7639C00333E4F /* libDENNFakeDylib.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libDENNFakeDylib.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		E0C206961DCB2C3E0002A331 /* test_plugin_images.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = test_plugin_images.py; sourceTree = "<group>"; };
+		E0C206971DCB2C3E0002A331 /* test_plugin_letter.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = test_plugin_letter.py; sourceTree = "<group>"; };
+		E0C2069E1DCB309D0002A331 /* test_plugin_letter.out.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = test_plugin_letter.out.txt; sourceTree = "<group>"; };
+		E0C2069F1DCB31530002A331 /* DENNOp.so */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = DENNOp.so; sourceTree = "<group>"; };
+		E0C206A01DCB31860002A331 /* test_plugin_images.out.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = test_plugin_images.out.txt; sourceTree = "<group>"; };
 		E0E1CCB81DA68A3E009C4D35 /* makefile */ = {isa = PBXFileReference; explicitFileType = text.script.sh; fileEncoding = 4; path = makefile; sourceTree = "<group>"; };
 		E0E1CCD51DA6927F009C4D35 /* DENNOp.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = DENNOp.cpp; sourceTree = "<group>"; };
-		E0E1CCDB1DA69C96009C4D35 /* test_plugin.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = test_plugin.py; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -49,7 +64,9 @@
 				E0E1CCD41DA6927F009C4D35 /* source */,
 				E0E1CCD61DA6927F009C4D35 /* include */,
 				E0E1CCB81DA68A3E009C4D35 /* makefile */,
+				E0C2069D1DCB309D0002A331 /* logs */,
 				E07026B21DA6836700D0D31B /* Products */,
+				E0C2069F1DCB31530002A331 /* DENNOp.so */,
 			);
 			sourceTree = "<group>";
 		};
@@ -59,6 +76,15 @@
 				E09B48CA1DB7639C00333E4F /* libDENNFakeDylib.dylib */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		E0C2069D1DCB309D0002A331 /* logs */ = {
+			isa = PBXGroup;
+			children = (
+				E0C206A01DCB31860002A331 /* test_plugin_images.out.txt */,
+				E0C2069E1DCB309D0002A331 /* test_plugin_letter.out.txt */,
+			);
+			path = logs;
 			sourceTree = "<group>";
 		};
 		E0E1CCD41DA6927F009C4D35 /* source */ = {
@@ -79,7 +105,8 @@
 		E0EFDF2F1DB664CD003DF8E0 /* test */ = {
 			isa = PBXGroup;
 			children = (
-				E0E1CCDB1DA69C96009C4D35 /* test_plugin.py */,
+				E0C206961DCB2C3E0002A331 /* test_plugin_images.py */,
+				E0C206971DCB2C3E0002A331 /* test_plugin_letter.py */,
 			);
 			name = test;
 			sourceTree = "<group>";
@@ -165,7 +192,8 @@
 			projectRoot = "";
 			targets = (
 				E0E1CCCD1DA68F1E009C4D35 /* DENNOp */,
-				E0A7C66D1DA6A4FB005D74D0 /* DENNOpRunTest */,
+				E0A7C66D1DA6A4FB005D74D0 /* DENNOpRunTestImages */,
+				E0C206981DCB2C610002A331 /* DENNOpRunTestLetter */,
 				E09B48C91DB7639C00333E4F /* DENNFakeDylib */,
 			);
 		};
@@ -184,7 +212,21 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "export WORKON_HOME=$HOME/.virtualenvs\nexport PROJECT_HOME=$HOME/Devel\nsource /usr/local/bin/virtualenvwrapper.sh\nworkon TensorFlow\npython $SRCROOT/test_plugin.py\n\n";
+			shellScript = "export WORKON_HOME=$HOME/.virtualenvs\nexport PROJECT_HOME=$HOME/Devel\nsource /usr/local/bin/virtualenvwrapper.sh\nworkon TensorFlow\npython $SRCROOT/test_plugin_images.py logs/test_plugin_images.out.txt\n\n";
+		};
+		E0C206991DCB2C610002A331 /* Run Script */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Run Script";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "export WORKON_HOME=$HOME/.virtualenvs\nexport PROJECT_HOME=$HOME/Devel\nsource /usr/local/bin/virtualenvwrapper.sh\nworkon TensorFlow\npython $SRCROOT/test_plugin_letter.py logs/test_plugin_letter.out.txt\n\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -351,6 +393,22 @@
 			};
 			name = Release;
 		};
+		E0C2069B1DCB2C610002A331 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TENSOR_FLOW_PYTHON_PATH = "$(HOME)/.virtualenvs/TensorFlow/lib/python3.5";
+			};
+			name = Debug;
+		};
+		E0C2069C1DCB2C610002A331 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TENSOR_FLOW_PYTHON_PATH = "$(HOME)/.virtualenvs/TensorFlow/lib/python3.5";
+			};
+			name = Release;
+		};
 		E0E1CCCF1DA68F1E009C4D35 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -397,11 +455,20 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		E0A7C66E1DA6A4FB005D74D0 /* Build configuration list for PBXAggregateTarget "DENNOpRunTest" */ = {
+		E0A7C66E1DA6A4FB005D74D0 /* Build configuration list for PBXAggregateTarget "DENNOpRunTestImages" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				E0A7C66F1DA6A4FB005D74D0 /* Debug */,
 				E0A7C6701DA6A4FB005D74D0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E0C2069A1DCB2C610002A331 /* Build configuration list for PBXAggregateTarget "DENNOpRunTestLetter" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E0C2069B1DCB2C610002A331 /* Debug */,
+				E0C2069C1DCB2C610002A331 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

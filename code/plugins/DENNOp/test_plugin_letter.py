@@ -1,6 +1,7 @@
 import tensorflow as tf
 from tensorflow.python.framework import ops
-
+import sys
+import atexit
 import numpy as np
 from matplotlib import pyplot as plt
 from plotter import my_plot
@@ -12,32 +13,53 @@ import struct
 
 #sleep(6)
 
+
+
+#####################################################################
+
 def load_data(path):
+    ##
     images_data = []
     label_data = []
+    ##
+    labels = []
+    ##
     print('+ Load data ...')
-    with open(path+'.img', 'rb') as images:
-        num_imgs, x, y = struct.unpack('III', images.read(12))
-        print('+ {} images {}x{}'.format(num_imgs, x, y))
-        for img in range(num_imgs):
-            images_data.append(
-                [elm / 255. for elm in struct.unpack(
-                    'B' * (x * y), images.read(x * y))])
-
-    with open(path+'.lb', 'rb') as images:
-        num_lbl = struct.unpack('I', images.read(4))[0]
-        print('+ {} labels'.format(num_lbl))
-        for img in range(num_lbl):
-            cur_label = struct.unpack('B', images.read(1))[0]
-            label_data.append(
-                [0 if index != cur_label else 1 for index in range(2)])
-
+    with open(path + '.data', 'r') as iris_file:
+        for line in iris_file.readlines():
+            cur_line = [elm.strip() for elm in line.split(',')]
+            
+            if len(cur_line) == 17:
+                cur_label = cur_line[0]
+                if cur_label not in labels:
+                    labels.append(cur_label)
+            
+                label_data.append(labels.index(cur_label))
+        
+            images_data.append([float(elm) for elm in cur_line[1:]])
+    ##
+    # expand labels (one hot vector)
+    tmp = np.zeros((len(label_data), len(labels)))
+    tmp[np.arange(len(label_data)), label_data] = 1
+    label_data = tmp
+    
     print('+ images: \n', images_data)
     print('+ labels: \n', label_data)
-
+    
     print('+ loading done!')
     return images_data, label_data
 
+#####################################################################
+
+def redefine_stdout():
+    if len(sys.argv) > 1:
+        #overwrite stdout
+        sys.stdout = open(sys.argv[1],"a")
+        #close at exit
+        def close_stdout():
+            sys.stdout.close()
+        #reg function at exit
+        atexit.register(close_stdout)
 
 def batch(data, label, size):
     out_data = []
@@ -71,8 +93,11 @@ def get_graph_proto(graph_or_graph_def, as_text=True):
 
 
 
+#new stdout
+redefine_stdout()
+
 #data
-images_data, label_data = load_data("/Volumes/64_GB_SD/GitHub/master_degree_thesis/minimal_dataset/data/images")
+images_data, label_data = load_data("../../../minimal_dataset/data/letter-recognition")
 
 #num class
 N_CLASS = len(label_data[0])

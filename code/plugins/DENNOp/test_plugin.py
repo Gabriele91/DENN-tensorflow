@@ -81,8 +81,8 @@ N_DATASET = len(images_data)
 #size data
 N_SIZE_DATA = len(images_data[0])
 
-GEN   = 300
-NP    = 10
+GEN   = 1000
+NP    = 100
 BATCH = N_DATASET
 W     = 0.2
 CR    = 0.5
@@ -141,5 +141,24 @@ with tf.Session() as sess:
                      fmax= 1.0
                     )
     results = sess.run(de_op)
-             
-    print(results)
+    w_res = results[0]
+    b_res = results[1]
+    #min
+    min_res_w = None
+    min_res_b = None
+    min_cross = 1e1000
+    #find min
+    for i in range(NP):
+        cross = sess.run(cross_entropy,feed_dict = { target_w : w_res[i], target_b :b_res[i] })
+        if cross < min_cross:
+            min_cross = cross
+            min_res_w = w_res[i]
+            min_res_b = b_res[i]
+
+    print("w: ",min_res_w,"\nb: ",min_res_b,"\ncross_entropy:",min_cross)
+    # Test trained model
+    y_= dataset_batch_label
+    correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
+    accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+    print("+ Accuracy: ", sess.run(accuracy, feed_dict={ target_w: min_res_w, target_b: min_res_b }))
+

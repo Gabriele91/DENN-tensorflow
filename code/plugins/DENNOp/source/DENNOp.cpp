@@ -130,6 +130,13 @@ public:
         }
         //Size of population
         const size_t NP = current_populations_list[0].size();
+        //Alloc first eval
+        std::vector < double > current_eval_result(NP);
+        //First eval
+        for(int index = 0; index!=NP ;++index)
+        {
+            current_eval_result[index] = execute_evaluate(index,current_populations_list);
+        }
         //loop
         for(int i=0;i!=num_gen;++i)
         {
@@ -137,16 +144,16 @@ public:
             //change pop
             for(int index = 0; index!=NP ;++index)
             {
-                //choice
-                if(choiceOp(context,
-                            index,
-                            current_populations_list,
-                            new_populations_list))
+                //Evaluation
+                double new_eval = execute_evaluate(index,current_populations_list);
+                //Choice
+                if(new_eval < current_eval_result[index])
                 {
                     for(int p=0; p!=current_populations_list.size(); ++p)
                     {
                         current_populations_list[p][index] = new_populations_list[p][index];
                     }
+                    current_eval_result[index] = new_eval;
                 }
             }
         }
@@ -155,7 +162,7 @@ public:
         for(int i=0; i != m_space_size; ++i)
         {
             Tensor* new_generation_tensor = nullptr;
-            Tensor current_pop = tensorflow::tensor::Concat(current_populations_list[i]);
+            Tensor current_pop = concatDim0(current_populations_list[i]);
             OP_REQUIRES_OK(context, context->allocate_output(i, current_pop.shape(), &new_generation_tensor));
             (*new_generation_tensor) = current_pop;
         }
@@ -164,7 +171,7 @@ public:
 protected:
     
     
-    std::vector<Tensor> splitDim0(const Tensor& tensor)
+    static std::vector<Tensor> splitDim0(const Tensor& tensor)
     {
         //output
         std::vector<Tensor> result;
@@ -201,73 +208,79 @@ protected:
         //return
         return result;
     }
-    //choiceOp
-    bool
-    choiceOp(OpKernelContext *context,
-             const int NP_i,
-             const std::vector < std::vector<Tensor> >& cur_populations_list,
-             const std::vector < std::vector<Tensor> >& new_populations_list)
+    
+    static Tensor concatDim0(const std::vector< Tensor >& list_tensor)
     {
-        TensorList f_on_population;
-        TensorList f_on_individual;
-        //execute
+        //base tensor
+        const Tensor& tensor0 = list_tensor[0];
+        const TensorShape& tensor0_shape = tensor0.shape();
+        //new shape
+        TensorShape output_shape; output_shape.AddDim((int)list_tensor.size());
+        //add base dims
+        for(int i=0;i!=tensor0_shape.dims();++i)
+        { output_shape.AddDim(tensor0_shape.dim_size(i)); }
+        //Alloc output shape
+        Tensor out_tensor(tensor0.dtype(),output_shape);
+        //start offset
+        int64 offset = 0;
+        //ref to data
+        StringPiece to_data = out_tensor.tensor_data();
+        //copy
+        for(size_t i=0;i!=list_tensor.size();++i)
         {
-            //create input
-            TensorInputs input;
-            //append
-            for(size_t p=0;p!=cur_populations_list.size();++p)
-            {
-                input.push_back({
-                    std::string("target_")+std::to_string((long long)p),
-                    cur_populations_list[p][NP_i]
-                });
-            }
-            //execute
-            auto
-            status= m_session->Run(
-                                  //input
-                                  input,
-                                  //function
-                                  NameList{ "evaluate:0" } ,
-                                  //one
-                                  NameList{ },
-                                  //output
-                                  &f_on_population
-                                  );
-            
-            //output error
-            if(!status.ok()) std::cout << status.ToString() << std::endl;
+            //ref to data
+            StringPiece from_data = list_tensor[i].tensor_data();
+            //copy
+            std::memcpy(const_cast<char*>(to_data.data()) + offset, from_data.data(),  from_data.size());
+            //offset
+            offset += from_data.size();
+        }
+        
+        return out_tensor;
+    }
+    
+    //call
+    double execute_evaluate(const int NP_i,
+                            const std::vector < std::vector<Tensor> >& populations_list)
+    {
+        
+        TensorList f_on_values;
+        //create input
+        TensorInputs input;
+        //append
+        for(size_t p=0; p!=populations_list.size(); ++p)
+        {
+            input.push_back({
+                std::string("target_")+std::to_string((long long)p),
+                populations_list[p][NP_i]
+            });
         }
         //execute
-        {
-            //create input
-            TensorInputs input;
-            //append
-            for(size_t p=0;p!=new_populations_list.size();++p)
-            {
-                input.push_back({
-                    std::string("target_")+std::to_string((long long)p),
-                    new_populations_list[p][NP_i]
-                });
-            }
-            //execute
-            auto
-            status= m_session->Run(
-                                  //input
-                                  input,
-                                  //function
-                                  NameList{ "evaluate:0" },
-                                  //one
-                                  NameList{ },
-                                  //output
-                                  &f_on_individual
-                                  );
-            //output error
-            if(!status.ok()) std::cout << status.ToString() << std::endl;
-        }
+        auto
+        status= m_session->Run(
+                               //input
+                               input,
+                               //function
+                               NameList{ "evaluate:0" } ,
+                               //one
+                               NameList{ },
+                               //output
+                               &f_on_values
+                               );
+        
+        //output error
+        if(!status.ok()) std::cout << status.ToString() << std::endl;
         //results
-        double reduce_pop = f_on_population[0].flat<double>()(0);
-        double reduce_ind = f_on_individual[0].flat<double>()(0);
+        return f_on_values[0].flat<double>()(0);
+    }
+    //choiceOp
+    bool choiceOp(const int NP_i,
+                  const std::vector < std::vector<Tensor> >& cur_populations_list,
+                  const std::vector < std::vector<Tensor> >& new_populations_list)
+    {
+        //results
+        double reduce_pop = execute_evaluate(NP_i,cur_populations_list);
+        double reduce_ind = execute_evaluate(NP_i,new_populations_list);
         //alloc output
         //copy
         if(reduce_pop < reduce_ind) return false;

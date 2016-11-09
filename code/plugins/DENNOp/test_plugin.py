@@ -81,11 +81,11 @@ N_DATASET = len(images_data)
 #size data
 N_SIZE_DATA = len(images_data[0])
 
-GEN   = 1000
-NP    = 100
+GEN   = 2000
+NP    = 200
 BATCH = N_DATASET
-W     = 0.2
-CR    = 0.5
+W     = 0.35
+CR    = 0.4
 SIZE_W = [N_SIZE_DATA, N_CLASS]
 SIZE_B = [N_CLASS]
 SIZE_X = [N_SIZE_DATA]

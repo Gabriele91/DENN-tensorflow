@@ -1,6 +1,7 @@
 import tensorflow as tf
 from tensorflow.python.framework import ops
-
+import sys
+import atexit
 import numpy as np
 from matplotlib import pyplot as plt
 from plotter import my_plot
@@ -9,35 +10,69 @@ from time import time
 from time import sleep
 from os import path
 import struct
+from operator import itemgetter
 
 #sleep(6)
 
+
+
+#####################################################################
+
 def load_data(path):
-    images_data = []
+    flower_data = []
     label_data = []
+
+    labels = []
+    features_max = []
+
     print('+ Load data ...')
-    with open(path+'.img', 'rb') as images:
-        num_imgs, x, y = struct.unpack('III', images.read(12))
-        print('+ {} images {}x{}'.format(num_imgs, x, y))
-        for img in range(num_imgs):
-            images_data.append(
-                [elm / 255. for elm in struct.unpack(
-                    'B' * (x * y), images.read(x * y))])
+    with open(path+'.data', 'r') as iris_file:
+        for line in iris_file.readlines():
+            cur_line = [elm.strip() for elm in line.split(',')]
 
-    with open(path+'.lb', 'rb') as images:
-        num_lbl = struct.unpack('I', images.read(4))[0]
-        print('+ {} labels'.format(num_lbl))
-        for img in range(num_lbl):
-            cur_label = struct.unpack('B', images.read(1))[0]
-            label_data.append(
-                [0 if index != cur_label else 1 for index in range(2)])
+            if len(cur_line) == 5:
+                cur_label = cur_line[-1]
+                if cur_label not in labels:
+                    labels.append(cur_label)
 
-    print('+ images: \n', images_data)
+                label_data.append(labels.index(cur_label))
+
+                features = [float(elm) for elm in cur_line[:-1]]
+                if len(features_max) == 0:
+                    features_max = [elm for elm in features]
+                else:
+                    for idx, feature in enumerate(features):
+                        if features_max[idx] < feature:
+                            features_max[idx] = feature
+
+                flower_data.append(features)
+    
+    features_max = np.array(features_max, np.float64)
+
+    flower_data = np.divide(np.array(flower_data, np.float64), features_max)
+    ##
+    # expand labels (one hot vector)
+    tmp = np.zeros((len(label_data), len(labels)))
+    tmp[np.arange(len(label_data)), label_data] = 1
+    label_data = tmp
+
+    print('+ flowers: \n', flower_data)
     print('+ labels: \n', label_data)
 
     print('+ loading done!')
-    return images_data, label_data
+    return flower_data, label_data
 
+#####################################################################
+
+def redefine_stdout():
+    if len(sys.argv) > 1:
+        #overwrite stdout
+        sys.stdout = open(sys.argv[1],"a")
+        #close at exit
+        def close_stdout():
+            sys.stdout.close()
+        #reg function at exit
+        atexit.register(close_stdout)
 
 def batch(data, label, size):
     out_data = []
@@ -71,8 +106,11 @@ def get_graph_proto(graph_or_graph_def, as_text=True):
 
 
 
+#new stdout
+redefine_stdout()
+
 #data
-images_data, label_data = load_data("/Volumes/64_GB_SD/GitHub/master_degree_thesis/minimal_dataset/data/images")
+images_data, label_data = load_data("../../../minimal_dataset/data/bezdekIris")
 
 #num class
 N_CLASS = len(label_data[0])
@@ -81,11 +119,11 @@ N_DATASET = len(images_data)
 #size data
 N_SIZE_DATA = len(images_data[0])
 
-GEN   = 2000
-NP    = 200
+GEN   = 10
+NP    = 100
 BATCH = N_DATASET
-W     = 0.35
-CR    = 0.4
+W     = 0.45
+CR    = 0.6
 SIZE_W = [N_SIZE_DATA, N_CLASS]
 SIZE_B = [N_CLASS]
 SIZE_X = [N_SIZE_DATA]
@@ -130,7 +168,7 @@ with tf.Session() as sess:
     sess.run(init)
     ##inid DE
     de_op = LIB.denn(# input params
-                     1,
+                     GEN,
                      [deW_nnW, deW_nnB],
                      [create_random_population_W, create_random_population_B],
                      # attributes
@@ -141,20 +179,16 @@ with tf.Session() as sess:
                      fmax= 1.0
                     )
     results = sess.run(de_op)
-    w_res = results[0]
-    b_res = results[1]
+    #get output
+    w_res = results.final_populations[0]
+    b_res = results.final_populations[1]
+    c_res = results.final_eval
     #min
-    min_res_w = None
-    min_res_b = None
-    min_cross = 1e1000
-    #find min
-    for i in range(NP):
-        cross = sess.run(cross_entropy,feed_dict = { target_w : w_res[i], target_b :b_res[i] })
-        if cross < min_cross:
-            min_cross = cross
-            min_res_w = w_res[i]
-            min_res_b = b_res[i]
-
+    min_cross_id = min(enumerate(c_res), key=itemgetter(1))[0]
+    min_cross = c_res[min_cross_id]
+    min_res_w = w_res[min_cross_id]
+    min_res_b = b_res[min_cross_id]
+    
     print("w: ",min_res_w,"\nb: ",min_res_b,"\ncross_entropy:",min_cross)
     # Test trained model
     y_= dataset_batch_label

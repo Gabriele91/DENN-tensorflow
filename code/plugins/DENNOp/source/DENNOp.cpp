@@ -51,24 +51,95 @@ REGISTER_OP("DENN")
 *
 ***/
 
-bool operator ==(const tensorflow::Tensor& left,const tensorflow::Tensor& right)
+namespace tensorflow
 {
-    //type
-    if(left.dtype() != right.dtype()) return false;
-    //shape size
-    if(left.shape().dims()  != right.shape().dims()) return false;
-    //shape dims size
-    for(size_t i=0;i!=left.shape().dims();++i)
+    
+    bool operator ==(const tensorflow::Tensor& left,const tensorflow::Tensor& right)
     {
-        if(left.shape().dim_size(i)!=right.shape().dim_size(i)) return false;
+        //type
+        if(left.dtype() != right.dtype()) return false;
+        //shape size
+        if(left.shape().dims()  != right.shape().dims()) return false;
+        //shape dims size
+        for(size_t i=0;i!=left.shape().dims();++i)
+        {
+            if(left.shape().dim_size(i)!=right.shape().dim_size(i)) return false;
+        }
+        //get memory (N.B. string fail)
+        StringPiece left_data  = left.tensor_data();
+        StringPiece right_data = right.tensor_data();
+        //compare
+        return std::memcmp(left_data.data(), right_data.data(),  left_data.size()) == 0;
     }
-    //get memory (N.B. string fail)
-    StringPiece left_data  = left.tensor_data();
-    StringPiece right_data = right.tensor_data();
-    //compare
-    return std::memcmp(left_data.data(), right_data.data(),  left_data.size()) == 0;
+    
+    std::vector<Tensor> splitDim0(const Tensor& tensor)
+    {
+        //output
+        std::vector<Tensor> result;
+        //num of dimations
+        const int NUM_OF_D = tensor.shape().dims();
+        //ref from data
+        StringPiece from_data = tensor.tensor_data();
+        //test
+        if(NUM_OF_D)
+        {
+            //shape
+            TensorShape shape;
+            //type of shape
+            if(NUM_OF_D>1)
+                for(int i=1;i!=NUM_OF_D;++i) { shape.AddDim(tensor.dim_size(i)); }
+            else
+                shape.AddDim(1);
+            //start offset
+            int64 offset = 0;
+            //copy
+            for(int i=0;i!=tensor.dim_size(0); ++i)
+            {
+                //alloc
+                result.emplace_back(tensor.dtype(), shape);
+                Tensor* split = &result[result.size() - 1];
+                //ref to data
+                StringPiece to_data = split->tensor_data();
+                //copy
+                std::memcpy(const_cast<char*>(to_data.data()), from_data.data() + offset,  to_data.size());
+                //offset
+                offset += to_data.size();
+            }
+        }
+        //return
+        return result;
+    }
+    
+    Tensor concatDim0(const std::vector< Tensor >& list_tensor)
+    {
+        //base tensor
+        const Tensor& tensor0 = list_tensor[0];
+        const TensorShape& tensor0_shape = tensor0.shape();
+        //new shape
+        TensorShape output_shape; output_shape.AddDim((int)list_tensor.size());
+        //add base dims
+        for(int i=0;i!=tensor0_shape.dims();++i)
+        { output_shape.AddDim(tensor0_shape.dim_size(i)); }
+        //Alloc output shape
+        Tensor out_tensor(tensor0.dtype(),output_shape);
+        //start offset
+        int64 offset = 0;
+        //ref to data
+        StringPiece to_data = out_tensor.tensor_data();
+        //copy
+        for(size_t i=0;i!=list_tensor.size();++i)
+        {
+            //ref to data
+            StringPiece from_data = list_tensor[i].tensor_data();
+            //copy
+            std::memcpy(const_cast<char*>(to_data.data()) + offset, from_data.data(),  from_data.size());
+            //offset
+            offset += from_data.size();
+        }
+        
+        return out_tensor;
+    }
 }
-
 
 class DENNOp : public OpKernel
 {
@@ -176,7 +247,7 @@ public:
             for(int index = 0; index!=NP ;++index)
             {
                 //Evaluation
-                double new_eval = execute_evaluate(index,current_populations_list);
+                double new_eval = execute_evaluate(index,new_populations_list);
                 //Choice
                 if(new_eval < current_eval_result[index])
                 {
@@ -212,134 +283,62 @@ public:
     
 protected:
     
-    
-    static std::vector<Tensor> splitDim0(const Tensor& tensor)
-    {
-        //output
-        std::vector<Tensor> result;
-        //num of dimations
-        const int NUM_OF_D = tensor.shape().dims();
-        //ref from data
-        StringPiece from_data = tensor.tensor_data();
-        //test
-        if(NUM_OF_D)
-        {
-            //shape
-            TensorShape shape;
-            //type of shape
-            if(NUM_OF_D>1)
-                for(int i=1;i!=NUM_OF_D;++i) { shape.AddDim(tensor.dim_size(i)); }
-            else
-                shape.AddDim(1);
-            //start offset
-            int64 offset = 0;
-            //copy
-            for(int i=0;i!=tensor.dim_size(0); ++i)
-            {
-                //alloc
-                result.emplace_back(tensor.dtype(), shape);
-                Tensor* split = &result[result.size() - 1];
-                //ref to data
-                StringPiece to_data = split->tensor_data();
-                //copy
-                std::memcpy(const_cast<char*>(to_data.data()), from_data.data() + offset,  to_data.size());
-                //offset
-                offset += to_data.size();
-            }
-        }
-        //return
-        return result;
-    }
-    
-    static Tensor concatDim0(const std::vector< Tensor >& list_tensor)
-    {
-        //base tensor
-        const Tensor& tensor0 = list_tensor[0];
-        const TensorShape& tensor0_shape = tensor0.shape();
-        //new shape
-        TensorShape output_shape; output_shape.AddDim((int)list_tensor.size());
-        //add base dims
-        for(int i=0;i!=tensor0_shape.dims();++i)
-        { output_shape.AddDim(tensor0_shape.dim_size(i)); }
-        //Alloc output shape
-        Tensor out_tensor(tensor0.dtype(),output_shape);
-        //start offset
-        int64 offset = 0;
-        //ref to data
-        StringPiece to_data = out_tensor.tensor_data();
-        //copy
-        for(size_t i=0;i!=list_tensor.size();++i)
-        {
-            //ref to data
-            StringPiece from_data = list_tensor[i].tensor_data();
-            //copy
-            std::memcpy(const_cast<char*>(to_data.data()) + offset, from_data.data(),  from_data.size());
-            //offset
-            offset += from_data.size();
-        }
-        
-        return out_tensor;
-    }
-    
-    //call
-    double execute_evaluate(const int NP_i,
-                            const std::vector < std::vector<Tensor> >& populations_list)
-    {
-        
-        TensorList f_on_values;
-        //create input
-        TensorInputs input;
-        //append
-        for(size_t p=0; p!=populations_list.size(); ++p)
-        {
-            input.push_back({
-                std::string("target_")+std::to_string((long long)p),
-                populations_list[p][NP_i]
-            });
-        }
-        //execute
-        auto
-        status= m_session->Run(
-                               //input
-                               input,
-                               //function
-                               NameList{ "evaluate:0" } ,
-                               //one
-                               NameList{ },
-                               //output
-                               &f_on_values
-                               );
-        
-        //output error
-        if(!status.ok()) std::cout << status.ToString() << std::endl;
-        //results
-        return f_on_values[0].flat<double>()(0);
-    }
-    //choiceOp
-    bool choiceOp(const int NP_i,
-                  const std::vector < std::vector<Tensor> >& cur_populations_list,
-                  const std::vector < std::vector<Tensor> >& new_populations_list)
-    {
-        //results
-        double reduce_pop = execute_evaluate(NP_i,cur_populations_list);
-        double reduce_ind = execute_evaluate(NP_i,new_populations_list);
-        //alloc output
-        //copy
-        if(reduce_pop < reduce_ind) return false;
-        else                        return true;
-    }
-            
+    //clamp
     double f_clamp(const double t) const
     {
         return std::min(std::max(t, m_f_min), m_f_max);
     }
     
-    //trialVectorsOp
-    void
-    trialVectorsOp(OpKernelContext *context,
-                   const std::vector < Tensor >&              W_list,
-                   const std::vector < std::vector<Tensor> >& cur_populations_list,
-                         std::vector < std::vector<Tensor> >& new_populations_list)
+    //random integer in [0,size)
+    inline int irand(int size)
+    {
+        return rand() % size;
+    }
+
+    //first, second, third are integers in [0,size) different among them and with respect to diffFrom
+    void threeRandIndicesDiffFrom(int size, int diffFrom, int &first, int &second, int &third)
+    {
+        //3 calls to the rng
+        first = (diffFrom + 1 + irand(size - 1)) % size; //first in [0,size[ excluded diffFrom
+        int min, med, max;
+        if (first < diffFrom)
+        {
+            min = first;
+            max = diffFrom;
+        }
+        else
+        {
+            min = diffFrom;
+            max = first;
+        }
+        second = (min + 1 + irand(size - 2)) % size;
+        if (second >= max || second < min)
+        second = (second + 1) % size;
+        if (second < min)
+        {
+            med = min;
+            min = second;
+        }
+        else if (second > max)
+        {
+            med = max;
+            max = second;
+        }
+        else
+        med = second;
+        third = (min + 1 + irand(size - 3)) % size;
+        if (third < min || third >= max - 1)
+        third = (third + 2) % size;
+        else if (third >= med)
+        third++; //no modulo since I'm sure to not overflow size
+    }
+    
+    
+    //create new generation
+    void trialVectorsOp(OpKernelContext*                           context,
+                        const std::vector < Tensor >&              W_list,
+                        const std::vector < std::vector<Tensor> >& cur_populations_list,
+                        std::vector < std::vector<Tensor> >&       new_populations_list)
     {
         //for all populations
         for(size_t p=0; p!=cur_populations_list.size(); ++p)
@@ -393,47 +392,41 @@ protected:
             }
         }
     }
-    //random integer in [0,size)
-    inline int irand(int size)
+    
+    //execute evaluate function
+    double execute_evaluate(const int NP_i, const std::vector < std::vector<Tensor> >& populations_list)
     {
-        return rand() % size;
-    }
-    //first, second, third are integers in [0,size) different among them and with respect to diffFrom
-    void threeRandIndicesDiffFrom(int size, int diffFrom, int &first, int &second, int &third)
-    {
-        //3 calls to the rng
-        first = (diffFrom + 1 + irand(size - 1)) % size; //first in [0,size[ excluded diffFrom
-        int min, med, max;
-        if (first < diffFrom)
+        
+        TensorList f_on_values;
+        //create input
+        TensorInputs input;
+        //append
+        for(size_t p=0; p!=populations_list.size(); ++p)
         {
-            min = first;
-            max = diffFrom;
+            input.push_back({
+                std::string("target_")+std::to_string((long long)p),
+                populations_list[p][NP_i]
+            });
         }
-        else
+        //execute
+        auto
+        status= m_session->Run(//input
+                               input,
+                               //function
+                               NameList{ "evaluate:0" } ,
+                               //one
+                               NameList{ },
+                               //output
+                               &f_on_values
+                               );
+        
+        //output error
+        if(!status.ok())
         {
-            min = diffFrom;
-            max = first;
+            std::cout << status.ToString() << std::endl;
         }
-        second = (min + 1 + irand(size - 2)) % size;
-        if (second >= max || second < min)
-        second = (second + 1) % size;
-        if (second < min)
-        {
-            med = min;
-            min = second;
-        }
-        else if (second > max)
-        {
-            med = max;
-            max = second;
-        }
-        else
-        med = second;
-        third = (min + 1 + irand(size - 3)) % size;
-        if (third < min || third >= max - 1)
-        third = (third + 2) % size;
-        else if (third >= med)
-        third++; //no modulo since I'm sure to not overflow size
+        //results
+        return f_on_values[0].flat<double>()(0);
     }
         
 };

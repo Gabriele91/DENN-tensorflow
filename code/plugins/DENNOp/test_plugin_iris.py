@@ -119,11 +119,11 @@ N_DATASET = len(images_data)
 #size data
 N_SIZE_DATA = len(images_data[0])
 
-GEN   = 400
+GEN   = 1000
 NP    = N_SIZE_DATA*10
 BATCH = N_DATASET
-W     = 0.2
-CR    = 0.55
+W     = 0.3
+CR    = 0.552
 SIZE_W = [N_SIZE_DATA, N_CLASS]
 SIZE_B = [N_CLASS]
 SIZE_X = [N_SIZE_DATA]
@@ -138,8 +138,8 @@ dataset_batch_label = np.array(label_data, np.float64)
 deW_nnW = np.full(SIZE_W, W)
 deW_nnB = np.full(SIZE_B, W)
 #random init
-create_random_population_W  = tf.random_uniform([NP]+SIZE_W, dtype=tf.float64, name="create_random_population_W")
-create_random_population_B  = tf.random_uniform([NP]+SIZE_B, dtype=tf.float64, name="create_random_population_B")
+create_random_population_W  = tf.random_uniform([NP]+SIZE_W, dtype=tf.float64, seed=1, name="create_random_population_W")
+create_random_population_B  = tf.random_uniform([NP]+SIZE_B, dtype=tf.float64, seed=1, name="create_random_population_B")
 
 
 ##

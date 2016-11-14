@@ -151,6 +151,7 @@ with tf.Session() as sess:
                      # space = 2,
                      graph = get_graph_proto(sess.graph.as_graph_def()),
                      CR = CR,
+                     DE = "rand/1/bin",
                      fmin=-1.0,
                      fmax= 1.0
                     )

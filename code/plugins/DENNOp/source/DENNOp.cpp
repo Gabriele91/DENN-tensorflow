@@ -31,6 +31,7 @@ REGISTER_OP("DENN")
 .Attr("CR: float")
 .Attr("fmin: float")
 .Attr("fmax: float")
+.Attr("DE: {'rand/1/bin', 'rand/1/exp', 'rand/2/bin', 'rand/2/exp'} = 'rand/1/bin'")
 .Input("num_gen: int32")
 .Input("w_list: space * double")
 .Input("populations_list: space * double")
@@ -141,6 +142,26 @@ namespace tensorflow
     }
 }
 
+
+enum CRType
+{
+    CR_BIN,
+    CR_EXP
+};
+
+enum DifferenceVector
+{
+    DIFF_ONE,
+    DIFF_TWO
+};
+
+enum PerturbedVector
+{
+    PV_RANDOM,
+    PV_BEST,
+    PV_RAND_TO_BEST
+};
+
 class DENNOp : public OpKernel
 {
     using NameList      =  std::vector< std::string >;
@@ -158,6 +179,10 @@ class DENNOp : public OpKernel
     double                                m_CR   {  0.5 };
     // population variables
     int                                   m_space_size{ 1 };
+    //DE types
+    CRType           m_cr_type    { CR_BIN    };
+    DifferenceVector m_diff_vector{ DIFF_ONE  };
+    PerturbedVector  m_pert_vector{ PV_RANDOM };
     
 public:
     
@@ -180,6 +205,23 @@ public:
         OP_REQUIRES_OK(context, context->GetAttr("fmin", &f_f_min));
         // get f max
         OP_REQUIRES_OK(context, context->GetAttr("fmax", &f_f_max));
+        // get DE
+        std::string de_type;
+        OP_REQUIRES_OK(context, context->GetAttr("DE", &de_type));
+        //parsing
+        std::istringstream stream_de_type{de_type};
+        string type_elm;
+        //get values
+        while (getline(stream_de_type, type_elm, '/'))
+        {
+                 if (type_elm == "rand")           m_pert_vector = PV_RANDOM;
+            else if (type_elm == "best")           m_pert_vector = PV_BEST;
+            else if (type_elm == "rand-to-best")   m_pert_vector = PV_RAND_TO_BEST;
+            else if (type_elm == "1")              m_diff_vector = DIFF_ONE;
+            else if (type_elm == "2")              m_diff_vector = DIFF_TWO;
+            else if (type_elm == "bin")            m_cr_type = CR_BIN;
+            else if (type_elm == "exp")            m_cr_type = CR_EXP;
+        }
         // params float to double
         m_CR      = f_CR;
         m_f_min  = f_f_min;
@@ -294,44 +336,47 @@ protected:
     {
         return rand() % size;
     }
-
-    //first, second, third are integers in [0,size) different among them and with respect to diffFrom
-    void threeRandIndicesDiffFrom(int size, int diffFrom, int &first, int &second, int &third)
+    
+    //(start to start) in range of [0,size]
+    inline int randRangeCircleDiffFrom(int size, int diff)
     {
-        //3 calls to the rng
-        first = (diffFrom + 1 + irand(size - 1)) % size; //first in [0,size[ excluded diffFrom
-        int min, med, max;
-        if (first < diffFrom)
-        {
-            min = first;
-            max = diffFrom;
-        }
-        else
-        {
-            min = diffFrom;
-            max = first;
-        }
-        second = (min + 1 + irand(size - 2)) % size;
-        if (second >= max || second < min)
-        second = (second + 1) % size;
-        if (second < min)
-        {
-            med = min;
-            min = second;
-        }
-        else if (second > max)
-        {
-            med = max;
-            max = second;
-        }
-        else
-        med = second;
-        third = (min + 1 + irand(size - 3)) % size;
-        if (third < min || third >= max - 1)
-        third = (third + 2) % size;
-        else if (third >= med)
-        third++; //no modulo since I'm sure to not overflow size
+        int output = (diff+1+irand(size)) % size;
+        if(output == diff) return (output+1) % size;
+        return output;
     }
+    
+    void threeRandIndicesDiffFrom(int size, int diff, std::vector< int >& indexs)
+    {
+        //test
+        assert(size >= indexs.size());
+        //size of a batch
+        int batch_size = size / (int)indexs.size();
+        int batch_current = 0;
+        int batch_next    = 0;
+        //compute rands
+        for(size_t i=0; i!=indexs.size(); ++i)
+        {
+            batch_current = batch_size*i;
+            batch_next    = batch_size*(i+1);
+            
+            if(i==indexs.size()-1)
+            {
+                int reminder = size % indexs.size();
+                batch_next += reminder;
+                batch_size += reminder;
+            }
+            
+            if(batch_current <= diff && diff < batch_next)
+            {
+                indexs[i] = batch_current + randRangeCircleDiffFrom(batch_size, diff-batch_current);
+            }
+            else
+            {
+                indexs[i] = batch_current + irand(batch_next-batch_current);
+            }
+        }
+    }
+    
     
     
     //create new generation
@@ -340,6 +385,17 @@ protected:
                         const std::vector < std::vector<Tensor> >& cur_populations_list,
                         std::vector < std::vector<Tensor> >&       new_populations_list)
     {
+        
+        // Generate vector of random indexes
+        std::vector < int > randoms_i;
+        //Select type of method
+        switch (m_diff_vector)
+        {
+            default:
+            case DIFF_ONE: randoms_i.resize(3);  break;
+            case DIFF_TWO: randoms_i.resize(5);  break;
+        }
+        
         //for all populations
         for(size_t p=0; p!=cur_populations_list.size(); ++p)
         {
@@ -347,11 +403,6 @@ protected:
             const auto W = W_list[p].flat<double>();
             // size of a population
             const int NP = cur_populations_list[p].size();
-            // Generate new population
-            int
-            i_a = 0,
-            i_b = 0,
-            i_c = 0;
             //for all
             for (int index = 0; index < NP; ++index)
             {
@@ -371,22 +422,41 @@ protected:
                 //ref new gen
                 auto new_generation = new_populations_list[p][index].flat_inner_dims<double>();
                 //do rand indices
-                threeRandIndicesDiffFrom(NP, index, i_a, i_b, i_c);
+                threeRandIndicesDiffFrom(NP, index, randoms_i);
+                //do random
+                bool do_random = true;
                 //random index
                 int random_index = irand(D);
                 //compute
                 for (int elm = 0; elm < D; ++elm)
                 {
-                    if (random() < m_CR || random_index == elm)
+                    if (do_random && (random() < m_CR || random_index == elm))
                     {
-                        const double a = population[i_a].flat<double>()(elm);
-                        const double b = population[i_b].flat<double>()(elm);
-                        const double c = population[i_c].flat<double>()(elm);
-                        new_generation(elm) = f_clamp( (a-b) * W(elm) + c );
+                        switch (m_diff_vector)
+                        {
+                            default:
+                            case DIFF_ONE:
+                            {
+                                const double a = population[randoms_i[0]].flat<double>()(elm);
+                                const double b = population[randoms_i[1]].flat<double>()(elm);
+                                const double c = population[randoms_i[2]].flat<double>()(elm);
+                                new_generation(elm) = f_clamp( (a-b) * W(elm) + c );
+                            }
+                            break;
+                            case DIFF_TWO:
+                            {
+                                const double first_diff  = population[randoms_i[0]].flat<double>()(elm) - population[randoms_i[1]].flat<double>()(elm);
+                                const double second_diff = population[randoms_i[2]].flat<double>()(elm) - population[randoms_i[3]].flat<double>()(elm);
+                                new_generation(elm) = f_clamp( (first_diff + second_diff) * W(elm) + population[randoms_i[4]].flat<double>()(elm) );
+                            }
+                            break;
+                        }
                     }
                     else
                     {
                         new_generation(elm) = population[index].flat_inner_dims<double>()(elm);
+                        //in exp case stop to rand values
+                        if(!do_random && m_cr_type == CR_EXP) do_random = false;
                     }
                 }
             }

@@ -167,8 +167,9 @@ with tf.Session() as sess:
     ##inid DE
     de_op = LIB.denn(# input params
                      GEN,
-                     [deW_nnW, deW_nnB],
-                     [create_random_population_W, create_random_population_B],
+                     [],                                                        #FIRST EVAL
+                     [deW_nnW, deW_nnB],                                        #PASS WEIGHTS
+                     [create_random_population_W, create_random_population_B],  #POPULATIONS
                      # attributes
                      # space = 2,
                      graph = get_graph_proto(sess.graph.as_graph_def()),

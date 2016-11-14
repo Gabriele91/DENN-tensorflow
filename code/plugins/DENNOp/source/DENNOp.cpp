@@ -33,6 +33,7 @@ REGISTER_OP("DENN")
 .Attr("fmax: float")
 .Attr("DE: {'rand/1/bin', 'rand/1/exp', 'rand/2/bin', 'rand/2/exp'} = 'rand/1/bin'")
 .Input("num_gen: int32")
+.Input("population_first_eval: double")
 .Input("w_list: space * double")
 .Input("populations_list: space * double")
 .Output("final_populations: space * double")
@@ -248,8 +249,10 @@ public:
         const Tensor& t_metainfo_i = context->input(0);
         //info
         const int num_gen = t_metainfo_i.flat<int>()(0);
+        //get population first eval
+        const Tensor& population_first_eval = context->input(1);
         // start input
-        const size_t start_input = 1;
+        const size_t start_input = 2;
         // W
         std::vector < Tensor >  W_list;
         // pupulation inputs
@@ -274,13 +277,25 @@ public:
         }
         //Size of population
         const size_t NP = current_populations_list[0].size();
-        //Alloc first eval
-        std::vector < double > current_eval_result(NP);
-        //First eval
-        for(int index = 0; index!=NP ;++index)
+        //Tensor first
+        Tensor current_eval_result;
+        //Tensor olready eval?
+        if(population_first_eval.shape().dims() == 1 && population_first_eval.shape().dim_size(0) == NP)
         {
-            current_eval_result[index] = execute_evaluate(index,current_populations_list);
+            current_eval_result = population_first_eval;
         }
+        else
+        {
+            //Alloc
+            current_eval_result = Tensor(DataType::DT_DOUBLE, TensorShape({(int)NP}));
+            //First eval
+            for(int index = 0; index!=NP ;++index)
+            {
+                current_eval_result.flat<double>()(index) = execute_evaluate(index,current_populations_list);
+            }
+        }
+        //Pointer to memory
+        auto ref_current_eval_result = current_eval_result.flat<double>();
         //loop
         for(int i=0;i!=num_gen;++i)
         {
@@ -291,13 +306,13 @@ public:
                 //Evaluation
                 double new_eval = execute_evaluate(index,new_populations_list);
                 //Choice
-                if(new_eval < current_eval_result[index])
+                if(new_eval < ref_current_eval_result(index))
                 {
                     for(int p=0; p!=current_populations_list.size(); ++p)
                     {
                         current_populations_list[p][index] = new_populations_list[p][index];
                     }
-                    current_eval_result[index] = new_eval;
+                    ref_current_eval_result(index) = new_eval;
                 }
             }
         }
@@ -313,13 +328,10 @@ public:
         {
             //ptr
             Tensor* out_eval = nullptr;
-            TensorShape out_shape({(int)current_eval_result.size()});
             //alloc
-            OP_REQUIRES_OK(context, context->allocate_output(m_space_size,out_shape, &out_eval));
-            //ref to data
-            StringPiece to_data = (*out_eval).tensor_data();
+            OP_REQUIRES_OK(context, context->allocate_output(m_space_size,current_eval_result.shape(), &out_eval));
             //copy
-            std::memcpy(const_cast<char*>(to_data.data()), current_eval_result.data(),  current_eval_result.size()*sizeof(double));
+            (*out_eval) = current_eval_result;
         }
     }
     

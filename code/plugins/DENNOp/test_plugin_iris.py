@@ -122,6 +122,7 @@ NP    = N_SIZE_DATA*10
 BATCH = N_DATASET
 W     = 0.3
 CR    = 0.552
+DE    = "rand/2/bin"
 SIZE_W = [N_SIZE_DATA, N_CLASS]
 SIZE_B = [N_CLASS]
 SIZE_X = [N_SIZE_DATA]
@@ -174,7 +175,7 @@ with tf.Session() as sess:
                      # space = 2,
                      graph = get_graph_proto(sess.graph.as_graph_def()),
                      CR = CR,
-                     DE = "rand/1/bin",
+                     DE = DE,
                      fmin=-1.0,
                      fmax= 1.0
                     )
@@ -195,4 +196,10 @@ with tf.Session() as sess:
     correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
     print("+ Accuracy: ", sess.run(accuracy, feed_dict={ target_w: min_res_w, target_b: min_res_b }))
+    print("+ GEN: ", GEN)
+    print("+ W: ", W)
+    print("+ CR: ", CR)
+    print("+ NP: ", NP)
+    print("+ BATCH: ", BATCH)
+    print("+ DE: ", DE)
 

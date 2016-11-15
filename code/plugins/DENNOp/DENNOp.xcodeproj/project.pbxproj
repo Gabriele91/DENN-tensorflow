@@ -47,6 +47,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		E0344DDE1DDB2E30009F7A70 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		E09B48CA1DB7639C00333E4F /* libDENNFakeDylib.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libDENNFakeDylib.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0C206961DCB2C3E0002A331 /* test_plugin_images.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = test_plugin_images.py; sourceTree = "<group>"; };
 		E0C206971DCB2C3E0002A331 /* test_plugin_letter.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = test_plugin_letter.py; sourceTree = "<group>"; };
@@ -97,6 +98,7 @@
 				E0C206A71DCB3D470002A331 /* test_plugin_iris.out.txt */,
 				E0C206A01DCB31860002A331 /* test_plugin_images.out.txt */,
 				E0C2069E1DCB309D0002A331 /* test_plugin_letter.out.txt */,
+				E0344DDE1DDB2E30009F7A70 /* README.md */,
 			);
 			path = logs;
 			sourceTree = "<group>";

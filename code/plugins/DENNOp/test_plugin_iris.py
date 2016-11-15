@@ -133,7 +133,8 @@ print("NP: "+ str(NP) +", |BATCH|: " + str(BATCH) + ", W: " + str(SIZE_W) + ", B
 #dataset_batch = tf.Variable(tf.zeros([BATCH]+SIZE_X, dtype=np.float64))
 dataset_batch_data  = np.array(images_data, np.float64)
 dataset_batch_label = np.array(label_data, np.float64)
-
+print("x shape: ", dataset_batch_data.shape)
+print("y shape: ",dataset_batch_label.shape)
 #W of DE
 deW_nnW = np.full(SIZE_W, W)
 deW_nnB = np.full(SIZE_B, W)
@@ -159,7 +160,7 @@ with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
     ##inid DE
     de_op = DENN.create(# input params
-                     GEN,
+                     [GEN, True],
                      [],                                                        #FIRST EVAL
                      [deW_nnW, deW_nnB],                                        #PASS WEIGHTS
                      [create_random_population_W, create_random_population_B],  #POPULATIONS

@@ -297,7 +297,7 @@ public:
             //First eval
             for(int index = 0; index!=NP ;++index)
             {
-                current_eval_result.flat<double>()(index) = execute_evaluate(index,current_populations_list);
+                current_eval_result.flat<double>()(index) = execute_evaluate(context, index,current_populations_list);
             }
         }
         //Pointer to memory
@@ -310,7 +310,7 @@ public:
             for(int index = 0; index!=NP ;++index)
             {
                 //Evaluation
-                double new_eval = execute_evaluate(index,new_populations_list);
+                double new_eval = execute_evaluate(context, index, new_populations_list);
                 //Choice
                 if(new_eval < ref_current_eval_result(index))
                 {
@@ -482,7 +482,9 @@ protected:
     }
     
     //execute evaluate function
-    double execute_evaluate(const int NP_i, const std::vector < std::vector<Tensor> >& populations_list)
+    double execute_evaluate(OpKernelContext* context,
+                            const int NP_i,
+                            const std::vector < std::vector<Tensor> >& populations_list)
     {
         
         TensorList f_on_values;
@@ -511,7 +513,7 @@ protected:
         //output error
         if(!status.ok())
         {
-            std::cout << status.ToString() << std::endl;
+            context->CtxFailure({tensorflow::error::Code::ABORTED,"Run evaluate: "+status.ToString()});
         }
         //results
         return f_on_values[0].flat<double>()(0);

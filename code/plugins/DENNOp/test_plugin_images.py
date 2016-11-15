@@ -136,7 +136,7 @@ with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
     ##inid DE
     de_op = DENN.create(# input params
-                     GEN,
+                     [GEN, True],
                      [],                                                        #FIRST EVAL
                      [deW_nnW, deW_nnB],                                        #PASS WEIGHTS
                      [create_random_population_W, create_random_population_B],  #POPULATIONS

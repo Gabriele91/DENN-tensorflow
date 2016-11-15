@@ -28,9 +28,9 @@ using namespace tensorflow;
 REGISTER_OP("DENN")
 .Attr("space: int")
 .Attr("graph: string")
-.Attr("CR: float")
-.Attr("fmin: float")
-.Attr("fmax: float")
+.Attr("CR: float = 0.5")
+.Attr("fmin: float = -1.0")
+.Attr("fmax: float = +1.0")
 .Attr("DE: {'rand/1/bin', 'rand/1/exp', 'rand/2/bin', 'rand/2/exp'} = 'rand/1/bin'")
 .Input("num_gen: int32")
 .Input("population_first_eval: double")
@@ -201,14 +201,14 @@ public:
         f_f_min,
         f_f_max;
         // get CR
-        OP_REQUIRES_OK(context, context->GetAttr("CR", &f_CR));
+        context->GetAttr("CR", &f_CR);
         // get f min
-        OP_REQUIRES_OK(context, context->GetAttr("fmin", &f_f_min));
+        context->GetAttr("fmin", &f_f_min);
         // get f max
-        OP_REQUIRES_OK(context, context->GetAttr("fmax", &f_f_max));
+        context->GetAttr("fmax", &f_f_max);
         // get DE
         std::string de_type;
-        OP_REQUIRES_OK(context, context->GetAttr("DE", &de_type));
+        context->GetAttr("DE", &de_type);
         //parsing
         std::istringstream stream_de_type{de_type};
         string type_elm;

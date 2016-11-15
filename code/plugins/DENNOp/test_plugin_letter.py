@@ -112,16 +112,17 @@ N_DATASET = len(images_data)
 #size data
 N_SIZE_DATA = len(images_data[0])
 
-GEN   = 20
-NP    = 200
+GEN   = 50
+NP    = N_SIZE_DATA*10
 BATCH = N_DATASET
-W     = 0.35
-CR    = 0.5
+W     = 0.3
+CR    = 0.55
+DE    = "rand/1/bin"
 SIZE_W = [N_SIZE_DATA, N_CLASS]
 SIZE_B = [N_CLASS]
 SIZE_X = [N_SIZE_DATA]
 
-print("|BATCH|: " + str(BATCH) + ", W: " + str(SIZE_W) + ", B" + str(SIZE_B) + ", X:" + str(SIZE_X))
+print("NP: "+ str(NP) +", |BATCH|: " + str(BATCH) + ", W: " + str(SIZE_W) + ", B" + str(SIZE_B) + ", X:" + str(SIZE_X))
 #dataset
 #dataset_batch = tf.Variable(tf.zeros([BATCH]+SIZE_X, dtype=np.float64))
 dataset_batch_data  = np.array(images_data, np.float64)
@@ -131,8 +132,8 @@ dataset_batch_label = np.array(label_data, np.float64)
 deW_nnW = np.full(SIZE_W, W)
 deW_nnB = np.full(SIZE_B, W)
 #random init
-create_random_population_W  = tf.random_uniform([NP]+SIZE_W, dtype=tf.float64, name="create_random_population_W")
-create_random_population_B  = tf.random_uniform([NP]+SIZE_B, dtype=tf.float64, name="create_random_population_B")
+create_random_population_W  = tf.random_uniform([NP]+SIZE_W, dtype=tf.float64, seed=3, name="create_random_population_W")
+create_random_population_B  = tf.random_uniform([NP]+SIZE_B, dtype=tf.float64, seed=9, name="create_random_population_B")
 
 
 ##
@@ -162,12 +163,14 @@ with tf.Session() as sess:
     ##inid DE
     de_op = LIB.denn(# input params
                      GEN,
-                     [deW_nnW, deW_nnB],
-                     [create_random_population_W, create_random_population_B],
+                     [],                                                        #FIRST EVAL
+                     [deW_nnW, deW_nnB],                                        #PASS WEIGHTS
+                     [create_random_population_W, create_random_population_B],  #POPULATIONS
                      # attributes
                      # space = 2,
                      graph = get_graph_proto(sess.graph.as_graph_def()),
                      CR = CR,
+                     DE = DE,
                      fmin=-1.0,
                      fmax= 1.0
                     )
@@ -188,4 +191,10 @@ with tf.Session() as sess:
     correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
     print("+ Accuracy: ", sess.run(accuracy, feed_dict={ target_w: min_res_w, target_b: min_res_b }))
+    print("+ GEN: ", GEN)
+    print("+ W: ", W)
+    print("+ CR: ", CR)
+    print("+ NP: ", NP)
+    print("+ BATCH: ", BATCH)
+    print("+ DE: ", DE)
 

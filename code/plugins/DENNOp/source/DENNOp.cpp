@@ -32,7 +32,7 @@ REGISTER_OP("DENN")
 .Attr("fmin: float = -1.0")
 .Attr("fmax: float = +1.0")
 .Attr("DE: {'rand/1/bin', 'rand/1/exp', 'rand/2/bin', 'rand/2/exp'} = 'rand/1/bin'")
-.Input("num_gen: int32")
+.Input("info: int32") //[ NUM_GEN, CALC_FIRST_EVAL ]
 .Input("population_first_eval: double")
 .Input("w_list: space * double")
 .Input("populations_list: space * double")
@@ -247,8 +247,10 @@ public:
     {
         // get input
         const Tensor& t_metainfo_i = context->input(0);
-        //info
+        //info 1: (NUM GEN)
         const int num_gen = t_metainfo_i.flat<int>()(0);
+        //info 2; (COMPUTE FIRST VALUTATION OF POPULATION)
+        const int calc_first_eval = t_metainfo_i.flat<int>()(1);
         //get population first eval
         const Tensor& population_first_eval = context->input(1);
         // start input
@@ -279,11 +281,15 @@ public:
         const size_t NP = current_populations_list[0].size();
         //Tensor first
         Tensor current_eval_result;
-        //Tensor olready eval?
-        if(population_first_eval.shape().dims() == 1 && population_first_eval.shape().dim_size(0) == NP)
+        //Population already evaluated?
+        if(  !(calc_first_eval)
+           && population_first_eval.shape().dims() == 1
+           && population_first_eval.shape().dim_size(0) == NP)
         {
+            //copy eval
             current_eval_result = population_first_eval;
         }
+        //else execute evaluation
         else
         {
             //Alloc

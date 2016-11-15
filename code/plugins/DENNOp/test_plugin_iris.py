@@ -11,6 +11,7 @@ from time import sleep
 from os import path
 import struct
 from operator import itemgetter
+import DENN
 
 #sleep(6)
 
@@ -142,10 +143,6 @@ create_random_population_B  = tf.random_uniform([NP]+SIZE_B, dtype=tf.float64, s
 
 
 ##
-# lib
-LIB = tf.load_op_library('DENNOp.so')
-
-##
 # Placeholder
 target_w = tf.placeholder(tf.float64, SIZE_W, name="target_0") # w
 target_b = tf.placeholder(tf.float64, SIZE_B, name="target_1") # b
@@ -154,26 +151,21 @@ target_b = tf.placeholder(tf.float64, SIZE_B, name="target_1") # b
 # NN
 y  = tf.matmul(dataset_batch_data, target_w) + target_b
 cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(y, dataset_batch_label), name="evaluate")
-##
-# Random generation
-##
-# init
-init = tf.initialize_all_variables()
 
 tot_time = time()
 
 with tf.Session() as sess:
     # init vars
-    sess.run(init)
+    sess.run(tf.global_variables_initializer())
     ##inid DE
-    de_op = LIB.denn(# input params
+    de_op = DENN.create(# input params
                      GEN,
                      [],                                                        #FIRST EVAL
                      [deW_nnW, deW_nnB],                                        #PASS WEIGHTS
                      [create_random_population_W, create_random_population_B],  #POPULATIONS
                      # attributes
                      # space = 2,
-                     graph = get_graph_proto(sess.graph.as_graph_def()),
+                     graph = DENN.get_graph_proto(sess.graph.as_graph_def()),
                      CR = CR,
                      DE = DE,
                      fmin=-1.0,

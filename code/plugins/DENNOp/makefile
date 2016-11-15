@@ -2,6 +2,7 @@
 USE_OLD_ABI ?= true
 CC          ?= g++
 MKDIR_P     ?= mkdir -p
+MODULE_FOLDER ?= DENN
 TOP         ?= $(shell pwd)
 PYTHON_PATH ?= $(HOME)/.virtualenvs/TensorFlow_from_source/
 USE_DEBUG   ?= false
@@ -10,7 +11,7 @@ TF_INCLUDE = $(PYTHON_PATH)/lib/python3.5/site-packages/tensorflow/include
 #project dirs
 S_DIR  = $(TOP)/source
 S_INC  = $(TOP)/include
-O_DIR  = $(TOP)/obj
+O_DIR  = $(TOP)/$(MODULE_FOLDER)/obj
 #flags C
 C_FLAGS = -Wall -std=c++11 -I $(TF_INCLUDE) -I $(S_INC) -fPIC
 #flags protobuf
@@ -37,7 +38,7 @@ all: make_trial_vector
 
 #create plugin
 make_trial_vector: directories $(SOURCE_OBJS)
-	$(CC) $(C_FLAGS) $(CPP_FLAGS) -shared -o $(TOP)/DENNOp.so $(SOURCE_OBJS)
+	$(CC) $(C_FLAGS) $(CPP_FLAGS) -shared -o $(TOP)/$(MODULE_FOLDER)/DENNOp.so $(SOURCE_OBJS)
 
 #required directories
 directories: ${O_DIR}
@@ -52,6 +53,5 @@ $(O_DIR)/%.o: $(S_DIR)/%.cpp
 
 #clear dir
 clean:
-	rm -f -R $(O_DIR)*
-	rm -f *.so
-	rm -f -R build
+	rm -f -R $(TOP)/$(MODULE_FOLDER)/obj
+	rm -f -R $(TOP)/$(MODULE_FOLDER)/*.so

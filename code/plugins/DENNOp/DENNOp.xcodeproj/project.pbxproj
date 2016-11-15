@@ -7,6 +7,17 @@
 	objects = {
 
 /* Begin PBXAggregateTarget section */
+		CEF1F3161DDBB134005FE9C7 /* DENNBenchmark */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = CEF1F3181DDBB134005FE9C7 /* Build configuration list for PBXAggregateTarget "DENNBenchmark" */;
+			buildPhases = (
+				CEF1F3171DDBB134005FE9C7 /* Run Script */,
+			);
+			dependencies = (
+			);
+			name = DENNBenchmark;
+			productName = run;
+		};
 		E0A7C66D1DA6A4FB005D74D0 /* DENNOpRunTestImages */ = {
 			isa = PBXAggregateTarget;
 			buildConfigurationList = E0A7C66E1DA6A4FB005D74D0 /* Build configuration list for PBXAggregateTarget "DENNOpRunTestImages" */;
@@ -47,6 +58,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		CEF1F3151DDBB126005FE9C7 /* benchmark.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = benchmark.py; sourceTree = "<group>"; };
 		E0344DDE1DDB2E30009F7A70 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		E09B48CA1DB7639C00333E4F /* libDENNFakeDylib.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libDENNFakeDylib.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0C206961DCB2C3E0002A331 /* test_plugin_images.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = test_plugin_images.py; sourceTree = "<group>"; };
@@ -121,6 +133,7 @@
 		E0EFDF2F1DB664CD003DF8E0 /* test */ = {
 			isa = PBXGroup;
 			children = (
+				CEF1F3151DDBB126005FE9C7 /* benchmark.py */,
 				E0C206A61DCB3CC50002A331 /* test_plugin_iris.py */,
 				E0C206961DCB2C3E0002A331 /* test_plugin_images.py */,
 				E0C206971DCB2C3E0002A331 /* test_plugin_letter.py */,
@@ -213,11 +226,26 @@
 				E0C206981DCB2C610002A331 /* DENNOpRunTestLetter */,
 				E09B48C91DB7639C00333E4F /* DENNFakeDylib */,
 				E0C206A11DCB3C800002A331 /* DENNOpRunTestIris */,
+				CEF1F3161DDBB134005FE9C7 /* DENNBenchmark */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		CEF1F3171DDBB134005FE9C7 /* Run Script */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Run Script";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "export WORKON_HOME=$HOME/.virtualenvs\nexport PROJECT_HOME=$HOME/Devel\nsource /usr/local/bin/virtualenvwrapper.sh\nworkon TensorFlow\npython benchmark.py\n";
+		};
 		E0A7C6711DA6A505005D74D0 /* Run Script */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -274,6 +302,22 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
+		CEF1F3191DDBB134005FE9C7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TENSOR_FLOW_PYTHON_PATH = "$(HOME)/.virtualenvs/TensorFlow/lib/python3.5";
+			};
+			name = Debug;
+		};
+		CEF1F31A1DDBB134005FE9C7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TENSOR_FLOW_PYTHON_PATH = "$(HOME)/.virtualenvs/TensorFlow/lib/python3.5";
+			};
+			name = Release;
+		};
 		E07026B61DA6836700D0D31B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -485,6 +529,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		CEF1F3181DDBB134005FE9C7 /* Build configuration list for PBXAggregateTarget "DENNBenchmark" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CEF1F3191DDBB134005FE9C7 /* Debug */,
+				CEF1F31A1DDBB134005FE9C7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		E07026AC1DA6836700D0D31B /* Build configuration list for PBXProject "DENNOp" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

@@ -148,10 +148,15 @@ create_random_population_B  = tf.random_uniform([NP]+SIZE_B, dtype=tf.float64, s
 target_w = tf.placeholder(tf.float64, SIZE_W, name="target_0") # w
 target_b = tf.placeholder(tf.float64, SIZE_B, name="target_1") # b
 
+# input
+target_x_var = tf.Variable(dataset_batch_data, dtype=tf.float64)
+# correct labels
+target_y_label_var = tf.Variable(dataset_batch_label, dtype=tf.float64)
+
 ##
 # NN
-y  = tf.matmul(dataset_batch_data, target_w) + target_b
-cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(y, dataset_batch_label), name="evaluate")
+y  = tf.matmul(target_x_var, target_w) + target_b
+cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(y, target_y_label_var), name="evaluate")
 
 tot_time = time()
 

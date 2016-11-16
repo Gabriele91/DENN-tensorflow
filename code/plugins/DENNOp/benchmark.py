@@ -103,7 +103,8 @@ def write_results(name, results, description, showDelimiter=True):
             {
                 'values': [range(len(result)), result],
                 'color': colors[num],
-                'label': name
+                'label': name,
+                'alpha': 0.9
             }
             for num, (name, result) in enumerate(
                 sorted(results.items())

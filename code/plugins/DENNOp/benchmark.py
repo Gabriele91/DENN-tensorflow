@@ -152,6 +152,7 @@ def main():
     ##
     # Datasets
     datasets = []
+    BATCH_SIZE = 40
 
     datasets_data = [
         (
@@ -196,35 +197,47 @@ def main():
         deW_nnW = np.full(SIZE_W, options.W)
         deW_nnB = np.full(SIZE_B, options.W)
 
-        graph = tf.Graph()
-        with graph.as_default():
-            ##
-            # Random functions
-            create_random_population_W = tf.random_uniform(
-                [options.NP] + SIZE_W, dtype=tf.float64, seed=1,
-                name="create_random_population_W")
-            create_random_population_B = tf.random_uniform(
-                [options.NP] + SIZE_B, dtype=tf.float64, seed=1,
-                name="create_random_population_B")
+        ##
+        # test data collections
+        test_results = dict(
+            list(zip(de_types, [[] for _ in range(len(de_types))]))
+        )
 
-            ##
-            # Placeholder
-            target_w = tf.placeholder(tf.float64, SIZE_W, name="target_0")
-            target_b = tf.placeholder(tf.float64, SIZE_B, name="target_1")
+        prev_NN = dict(
+            list(zip(de_types, [None for _ in range(len(de_types))]))
+        )
 
-            cur_pop_W = tf.placeholder(tf.float64, [options.NP] + SIZE_W)
-            cur_pop_B = tf.placeholder(tf.float64, [options.NP] + SIZE_B)
-            cur_pop_VAL = tf.placeholder(tf.float64, [options.NP])
+        print("+ Batch for dataset: {}".format(options.name))
+        for batch_num, (cur_data, cur_label) in enumerate(dataset.batch(BATCH_SIZE)):
+            print("+ Batch[{}]".format(batch_num+1))
 
-            y_test = tf.matmul(dataset.test_data, target_w) + target_b
-            correct_prediction = tf.equal(
-                tf.argmax(y_test, 1),
-                tf.argmax(dataset.test_labels, 1)
-            )
-            accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+            graph = tf.Graph()
+            with graph.as_default():                
+                ##
+                # Random functions
+                create_random_population_W = tf.random_uniform(
+                    [options.NP] + SIZE_W, dtype=tf.float64, seed=1,
+                    name="create_random_population_W")
+                create_random_population_B = tf.random_uniform(
+                    [options.NP] + SIZE_B, dtype=tf.float64, seed=1,
+                    name="create_random_population_B")
 
-            print("+ Batch for dataset: {}".format(options.name))
-            for cur_data, cur_label in dataset.batch():
+                ##
+                # Placeholder
+                target_w = tf.placeholder(tf.float64, SIZE_W, name="target_0")
+                target_b = tf.placeholder(tf.float64, SIZE_B, name="target_1")
+
+                cur_pop_W = tf.placeholder(tf.float64, [options.NP] + SIZE_W)
+                cur_pop_B = tf.placeholder(tf.float64, [options.NP] + SIZE_B)
+                cur_pop_VAL = tf.placeholder(tf.float64, [options.NP])
+
+                y_test = tf.matmul(dataset.test_data, target_w) + target_b
+                correct_prediction = tf.equal(
+                    tf.argmax(y_test, 1),
+                    tf.argmax(dataset.test_labels, 1)
+                )
+                accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+
                 ##
                 # NN
                 y = tf.matmul(cur_data, target_w) + target_b
@@ -243,10 +256,6 @@ def main():
                         create_random_population_B
                     ])
 
-                    test_results = dict(
-                        list(zip(de_types, [[] for _ in range(len(de_types))]))
-                    )
-
                     for de_type in de_types:
                         ##
                         # DENN op
@@ -263,7 +272,11 @@ def main():
                             DE=de_type
                         )
 
+                        if prev_NN[de_type] is not None:
+                            w_res, b_res = prev_NN[de_type]
+
                         time_start = time()
+                        time_start_gen = time()
 
                         for gen in range(options.GEN):
                             if time() - time_start >= 1.:
@@ -289,16 +302,18 @@ def main():
                             test_results[de_type].append(cur_accuracy)
 
                         print(
-                            "+ DENN[{}] with {} gen on {} completed!".format(de_type, gen + 1, options.name))
+                            "+ DENN[{}] with {} gen on {} completed in {:.05} sec.!".format(de_type, gen + 1, options.name, time() - time_start_gen))
+                        
+                        prev_NN[de_type] = (w_res, b_res)
 
-                    print("+ Save results for {}".format(options.name))
+        print("+ Save results for {}".format(options.name))
 
-                    description = "NP: {}  W: {}  CR: {}".format(
-                        options.NP,
-                        options.W,
-                        options.CR
-                    )
-                    write_results(options.name, test_results, description)
+        description = "NP: {}  W: {}  CR: {}".format(
+            options.NP,
+            options.W,
+            options.CR
+        )
+        write_results(options.name, test_results, description)
 
 
 if __name__ == '__main__':

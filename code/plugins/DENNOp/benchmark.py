@@ -165,7 +165,7 @@ def main():
                     ('NP', 100),
                     ('BATCH', 10),
                     ('W', 0.3),
-                    ('CR', 0.5)
+                    ('CR', 0.552)
                 ]
             )
         )
@@ -187,7 +187,12 @@ def main():
         datasets.append((Dataset(data, labels), options))
 
     print("+ Start tests")
+    time_start_test = time()
+
     for dataset, options in datasets:
+        
+        time_start_dataset = time()
+        
         SIZE_W = [dataset.n_features, dataset.n_classes]
         SIZE_B = [dataset.n_classes]
         SIZE_X = [dataset.n_features]
@@ -305,7 +310,8 @@ def main():
                             "+ DENN[{}] with {} gen on {} completed in {:.05} sec.!".format(de_type, gen + 1, options.name, time() - time_start_gen))
                         
                         prev_NN[de_type] = (w_res, b_res)
-
+        
+        print("+ Completed all test on dataset {} in {} sec.".format(options.name, time() - time_start_dataset))
         print("+ Save results for {}".format(options.name))
 
         description = "NP: {}  W: {}  CR: {}".format(
@@ -314,6 +320,8 @@ def main():
             options.CR
         )
         write_results(options.name, test_results, description)
+    
+    print("+ Completed all test {} sec.".format(time() - time_start_test))
 
 
 if __name__ == '__main__':

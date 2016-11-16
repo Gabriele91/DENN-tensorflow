@@ -136,7 +136,7 @@ def write_results(name, results, description, showDelimiter=True):
         plt.xlabel(figure['plot']['x_label'])
         plt.ylabel(figure['plot']['y_label'])
         plt.grid(True)
-        plt.figtext(.33, -.02, description)
+        plt.figtext(.39, -.02, description)
 
         plt.legend(bbox_to_anchor=(1.32, 1.0))
 

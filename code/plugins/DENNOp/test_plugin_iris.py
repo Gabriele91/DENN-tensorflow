@@ -149,9 +149,9 @@ target_w = tf.placeholder(tf.float64, SIZE_W, name="target_0") # w
 target_b = tf.placeholder(tf.float64, SIZE_B, name="target_1") # b
 
 # input
-target_x_var = tf.Variable(dataset_batch_data, dtype=tf.float64)
+target_x_var = tf.constant(dataset_batch_data, dtype=tf.float64, name="var_X")
 # correct labels
-target_y_label_var = tf.Variable(dataset_batch_label, dtype=tf.float64)
+target_y_label_var = tf.constant(dataset_batch_label, dtype=tf.float64, name="var_Y")
 
 ##
 # NN

@@ -229,11 +229,6 @@ def main():
         SIZE_X = [dataset.n_features]
 
         ##
-        # DE W -> NN (W, B)
-        deW_nnW = np.full(SIZE_W, options.W)
-        deW_nnB = np.full(SIZE_B, options.W)
-
-        ##
         # test data collections
         test_results = dict(
             list(zip(de_types, [ENDict(
@@ -254,39 +249,93 @@ def main():
 
             graph = tf.Graph()
             with graph.as_default():
-                ##
-                # Random functions
-                create_random_population_W = tf.random_uniform(
-                    [options.NP] + SIZE_W, dtype=tf.float64, seed=1,
-                    name="create_random_population_W")
-                create_random_population_B = tf.random_uniform(
-                    [options.NP] + SIZE_B, dtype=tf.float64, seed=1,
-                    name="create_random_population_B")
 
-                # Placeholder
-                target_w = tf.placeholder(tf.float64, SIZE_W)
-                target_b = tf.placeholder(tf.float64, SIZE_B)
+                def gen_network(levels, options, cur_data, cur_label, test_data, test_labels):
+                    target_ref = []
+                    pop_ref = []
+                    rand_pop_ref = []
+                    cur_pop_VAL = tf.placeholder(tf.float64, [options.NP])
+                    weights = []
 
-                cur_pop_W = tf.placeholder(tf.float64, [options.NP] + SIZE_W)
-                cur_pop_B = tf.placeholder(tf.float64, [options.NP] + SIZE_B)
-                cur_pop_VAL = tf.placeholder(tf.float64, [options.NP])
+                    last_input = cur_data
 
-                ##
-                # NN TRAIN
-                y = tf.matmul(cur_data, target_w) + target_b
-                cross_entropy = tf.reduce_mean(
-                    tf.nn.softmax_cross_entropy_with_logits(
-                        y, cur_label), name="evaluate")
+                    for num, level in enumerate(levels, 1):
+                        SIZE_W, SIZE_B = level
 
-                ##
-                # NN TEST
-                y_test = tf.matmul(dataset.test_data, target_w) + target_b
-                correct_prediction = tf.equal(
-                    tf.argmax(y_test, 1),
-                    tf.argmax(dataset.test_labels, 1)
+                        ##
+                        # DE W -> NN (W, B)
+                        deW_nnW = np.full(SIZE_W, options.W)
+                        deW_nnB = np.full(SIZE_B, options.W)
+
+                        weights.append(deW_nnW)
+                        weights.append(deW_nnB)
+        
+                        ##
+                        # Random functions
+                        create_random_population_W = tf.random_uniform(
+                            [options.NP] + SIZE_W, dtype=tf.float64, seed=1)
+                        create_random_population_B = tf.random_uniform(
+                            [options.NP] + SIZE_B, dtype=tf.float64, seed=1)
+                        
+                        rand_pop_ref.append(create_random_population_W)
+                        rand_pop_ref.append(create_random_population_B)
+            
+                        ##
+                        # Placeholder
+                        target_w = tf.placeholder(tf.float64, SIZE_W)
+                        target_b = tf.placeholder(tf.float64, SIZE_B)
+
+                        target_ref.append(target_w)
+                        target_ref.append(target_b)
+
+                        cur_pop_W = tf.placeholder(tf.float64, [options.NP] + SIZE_W)
+                        cur_pop_B = tf.placeholder(tf.float64, [options.NP] + SIZE_B)
+                        
+                        pop_ref.append(cur_pop_W)
+                        pop_ref.append(cur_pop_B)
+
+                        if num == len(levels):
+                            ##
+                            # NN TRAIN
+                            y = tf.matmul(last_input, target_w) + target_b
+                            cross_entropy = tf.reduce_mean(
+                                tf.nn.softmax_cross_entropy_with_logits(
+                                    y, cur_label), name="evaluate")
+
+                            ##
+                            # NN TEST
+                            y_test = tf.matmul(test_data, target_w) + target_b
+                            correct_prediction = tf.equal(
+                                tf.argmax(y_test, 1),
+                                tf.argmax(test_labels, 1)
+                            )
+                            accuracy = tf.reduce_mean(
+                                tf.cast(correct_prediction, tf.float32))
+                        else:
+                            last_input = tf.nn.relu(tf.matmul(last_input, target_w) + target_b)
+                    
+                    return ENDict([
+                        ('targets', target_ref),
+                        ('populations', pop_ref),
+                        ('rand_pop', rand_pop_ref),
+                        ('weights', weights),
+                        ('evaluated', cur_pop_VAL),
+                        ('y', y),
+                        ('y_test', y_test),
+                        ('cross_entropy', cross_entropy),
+                        ('accuracy', accuracy)
+                    ])
+
+                res_nn = gen_network(
+                    [
+                        (SIZE_W, SIZE_B)
+                    ],
+                    options,
+                    cur_data,
+                    cur_label,
+                    dataset.test_data,
+                    dataset.test_labels
                 )
-                accuracy = tf.reduce_mean(
-                    tf.cast(correct_prediction, tf.float32))
 
                 with tf.Session() as sess:
                     # init vars
@@ -294,10 +343,7 @@ def main():
 
                     ##
                     # Random initialization of the NN
-                    w_res, b_res = sess.run([
-                        create_random_population_W,
-                        create_random_population_B
-                    ])
+                    cur_pop = sess.run(res_nn.rand_pop)
 
                     for de_type in de_types:
                         ##
@@ -305,33 +351,33 @@ def main():
                         denn_op_first = DENN.create(  # input params
                             [1, True],  # [num_gen, eval_individual]
                             [],  # FIRST EVAL
-                            [deW_nnW, deW_nnB],  # PASS WEIGHTS
-                            [cur_pop_W, cur_pop_B],  # POPULATIONS
+                            res_nn.weights,  # PASS WEIGHTS
+                            res_nn.populations,  # POPULATIONS
                             # attributes
                             # space = 2,
                             graph=DENN.get_graph_proto(
                                 sess.graph.as_graph_def()),
-                            names=[elm.name for elm in [target_w, target_b]],
+                            names=[elm.name for elm in res_nn.targets],
                             CR=options.CR,
                             DE=de_type
                         )
 
                         denn_op_after = DENN.create(  # input params
                             [1, False],  # [num_gen, eval_individual]
-                            [cur_pop_VAL],  # FIRST EVAL
-                            [deW_nnW, deW_nnB],  # PASS WEIGHTS
-                            [cur_pop_W, cur_pop_B],  # POPULATIONS
+                            res_nn.evaluated,  # FIRST EVAL
+                            res_nn.weights,  # PASS WEIGHTS
+                            res_nn.populations,  # POPULATIONS
                             # attributes
                             # space = 2,
                             graph=DENN.get_graph_proto(
                                 sess.graph.as_graph_def()),
-                            names=[elm.name for elm in [target_w, target_b]],
+                            names=[elm.name for elm in res_nn.targets],
                             CR=options.CR,
                             DE=de_type
                         )
 
                         if prev_NN[de_type] is not None:
-                            w_res, b_res = prev_NN[de_type]
+                            cur_pop = prev_NN[de_type]
 
                         time_start = time()
                         time_start_gen = time()
@@ -344,28 +390,37 @@ def main():
                                     "+ Run gen. [{}] with DE [{}] on {}".format(gen + 1, de_type, options.name), end="\r")
                             
                             if first_time:
-                                results = sess.run(denn_op_first, feed_dict={
-                                    cur_pop_W: w_res,
-                                    cur_pop_B: b_res
-                                })
+                                results = sess.run(denn_op_first, feed_dict=dict(
+                                    [
+                                        (pop_ref, cur_pop[num]) 
+                                        for num, pop_ref in enumerate(res_nn.populations)
+                                    ]
+                                ))
                                 first_time = False
                             else:
-                                results = sess.run(denn_op_after, feed_dict={
-                                    cur_pop_W: w_res,
-                                    cur_pop_B: b_res,
-                                    cur_pop_VAL: v_res
-                                })
+                                results = sess.run(denn_op_after, feed_dict=dict(
+                                    [
+                                        (pop_ref, cur_pop[num]) 
+                                        for num, pop_ref in enumerate(res_nn.populations)
+                                    ]
+                                    +
+                                    [ 
+                                        (res_nn.evaluated, v_res)
+                                    ]
+                                ))
 
                             # get output
-                            w_res, b_res = results.final_populations
+                            cur_pop = results.final_populations
                             v_res = results.final_eval
 
                             best_idx = np.argmin(v_res)
 
-                            cur_accuracy = sess.run(accuracy, feed_dict={
-                                target_w: w_res[best_idx],
-                                target_b: b_res[best_idx]
-                            })
+                            cur_accuracy = sess.run(res_nn.accuracy, feed_dict=dict(
+                                [
+                                    (target, cur_pop[num][best_idx]) 
+                                    for num, target in enumerate(res_nn.targets)
+                                ]
+                            ))
 
                             if gen in EVALUATE_STEPS:
                                 test_results[de_type].values.append(
@@ -380,7 +435,7 @@ def main():
                         print(
                             "+ DENN[{}] with {} gen on {} completed in {:.05} sec.!".format(de_type, gen + 1, options.name, time() - time_start_gen))
 
-                        prev_NN[de_type] = (w_res, b_res)
+                        prev_NN[de_type] = cur_pop
 
         print("+ Completed all test on dataset {} in {} sec.".format(options.name,
                                                                      time() - time_start_dataset))

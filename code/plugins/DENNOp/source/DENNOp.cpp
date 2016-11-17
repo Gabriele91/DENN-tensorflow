@@ -31,6 +31,7 @@ REGISTER_OP("DENN")
 .Attr("CR: float = 0.5")
 .Attr("fmin: float = -1.0")
 .Attr("fmax: float = +1.0")
+.Attr("names: list(string)")
 .Attr("DE: {'rand/1/bin', 'rand/1/exp', 'rand/2/bin', 'rand/2/exp'} = 'rand/1/bin'")
 .Input("info: int32") //[ NUM_GEN, CALC_FIRST_EVAL ]
 .Input("population_first_eval: double")
@@ -180,6 +181,8 @@ class DENNOp : public OpKernel
     double                                m_CR   {  0.5 };
     // population variables
     int                                   m_space_size{ 1 };
+    //input evaluate
+    NameList                              m_input_eval_names;
     //DE types
     CRType           m_cr_type    { CR_BIN    };
     DifferenceVector m_diff_vector{ DIFF_ONE  };
@@ -189,12 +192,19 @@ public:
     
     explicit DENNOp(OpKernelConstruction *context) : OpKernel(context)
     {
-        // space size
+        // Space size
         OP_REQUIRES_OK(context, context->GetAttr("space", &m_space_size));
-        //get graph path
+        // Get graph path
         std::string graph_proto_string;
         // Get the index of the value to preserve
         OP_REQUIRES_OK(context, context->GetAttr("graph", &graph_proto_string));
+        // Get names of eval inputs
+        OP_REQUIRES_OK(context, context->GetAttr("names", &m_input_eval_names));
+        // Test size == sizeof(names)
+        if( m_space_size != m_input_eval_names.size() )
+        {
+            context->CtxFailure({tensorflow::error::Code::ABORTED,"Attribute error: sizeof(names) != sizeof(populations) "});
+        }
         // float params temp
         float
         f_CR,
@@ -279,6 +289,14 @@ public:
         }
         //Size of population
         const size_t NP = current_populations_list[0].size();
+        //Test NP
+        for(size_t i = 1; i < current_populations_list.size(); ++i)
+        {
+            if( current_populations_list[i].size() != NP )
+            {
+                context->CtxFailure({tensorflow::error::Code::ABORTED,"Input error: sizeof(populations["+std::to_string(i)+"]) != NP "});
+            }
+        }
         //Tensor first
         Tensor current_eval_result;
         //Population already evaluated?
@@ -305,7 +323,7 @@ public:
         //loop
         for(int i=0;i!=num_gen;++i)
         {
-            trialVectorsOp(context,W_list,current_populations_list,new_populations_list);
+            trialVectorsOp(context, NP,W_list,current_populations_list,new_populations_list);
             //change pop
             for(int index = 0; index!=NP ;++index)
             {
@@ -399,6 +417,7 @@ protected:
     
     //create new generation
     void trialVectorsOp(OpKernelContext*                           context,
+                        const int                                  NP,
                         const std::vector < Tensor >&              W_list,
                         const std::vector < std::vector<Tensor> >& cur_populations_list,
                         std::vector < std::vector<Tensor> >&       new_populations_list)
@@ -419,8 +438,6 @@ protected:
         {
             //get values
             const auto W = W_list[p].flat<double>();
-            // size of a population
-            const int NP = cur_populations_list[p].size();
             //for all
             for (int index = 0; index < NP; ++index)
             {
@@ -494,7 +511,7 @@ protected:
         for(size_t p=0; p!=populations_list.size(); ++p)
         {
             input.push_back({
-                std::string("target_")+std::to_string((long long)p),
+                m_input_eval_names[p],
                 populations_list[p][NP_i]
             });
         }

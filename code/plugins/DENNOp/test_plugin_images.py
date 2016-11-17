@@ -142,6 +142,7 @@ with tf.Session() as sess:
                      [create_random_population_W, create_random_population_B],  #POPULATIONS
                      # attributes
                      # space = 2,
+                     names = ["target_0","target_1"],
                      graph = DENN.get_graph_proto(sess.graph.as_graph_def()),
                      CR = CR,
                      DE = DE,

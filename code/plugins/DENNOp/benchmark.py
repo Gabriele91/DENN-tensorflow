@@ -90,7 +90,7 @@ def load_data(datasets_data):
         yield (*getattr(dataset_loaders, loader)(path_), options)
 
 
-def write_results(name, results, description, showDelimiter=False):
+def write_results(name, results, description, separated=False, showDelimiter=False):
     colors = [
         "#dd0000",
         "#00dd00",
@@ -98,8 +98,10 @@ def write_results(name, results, description, showDelimiter=False):
         "#ffdd00"
     ]
 
-    figure = {
-        'data': [
+    figures = []
+
+    if not separated:
+        all_data = [
             {
                 'values': [range(len(result.values)), result.values],
                 'color': colors[num],
@@ -109,43 +111,69 @@ def write_results(name, results, description, showDelimiter=False):
             for num, (name, result) in enumerate(
                 sorted(results.items())
             )
-        ],
-        'title': name,
-        'type': "plot",
-        #'axis': (0, GEN, -1, 20),
-        'filename': path.join("benchmark_results", name),
-        'plot': {
-            'x_label': "generation",
-            'y_label': "accuracy",
-        }
-    }
+        ]
+        figures.append(
+            {
+                'data': all_data,
+                'title': name,
+                'type': "plot",
+                'axis': (0, len(all_data[0]['values'][0]), 0.0, 1.0),
+                'filename': path.join("benchmark_results", name),
+                'plot': {
+                    'x_label': "generation",
+                    'y_label': "accuracy",
+                }
+            }
+        )
+    else:
+        for num, (method_name, result) in enumerate(sorted(results.items())):
+            figures.append(
+                {
+                    'data': [
+                        {
+                            'values': [range(len(result.values)), result.values],
+                            'color': colors[0],
+                            'label': method_name,
+                            'alpha': 0.9
+                        }
+                    ],
+                    'title': method_name,
+                    'type': "plot",
+                    'axis': (0, len(result.values), 0.0, 1.0),
+                    'filename': path.join("benchmark_results", "{}_{}".format(name, method_name.replace("/", "_"))),
+                    'plot': {
+                        'x_label': "generation",
+                        'y_label': "accuracy",
+                    }
+                }
+            )
 
-    fig = plt.figure()
+    for figure in figures:
+        fig = plt.figure()
+        fig.suptitle(figure['title'], fontsize=14, fontweight='bold')
 
-    fig.suptitle(figure['title'], fontsize=14, fontweight='bold')
+        if figure['type'] == 'plot':
+            print("+ Generating {} [{}] -> {}".format(
+                figure['title'],
+                figure['type'],
+                figure['filename']
+            ))
+            my_plot(fig, figure['data'])
+            if 'axis' in figure:
+                plt.axis(figure['axis'])
+            plt.xlabel(figure['plot']['x_label'])
+            plt.ylabel(figure['plot']['y_label'])
+            plt.grid(True)
+            plt.figtext(.39, -.02, description)
 
-    if figure['type'] == 'plot':
-        print("+ Generating {} [{}] -> {}".format(
-            figure['title'],
-            figure['type'],
-            figure['filename']
-        ))
-        my_plot(fig, figure['data'])
-        if 'axis' in figure:
-            plt.axis(figure['axis'])
-        plt.xlabel(figure['plot']['x_label'])
-        plt.ylabel(figure['plot']['y_label'])
-        plt.grid(True)
-        plt.figtext(.39, -.02, description)
+            plt.legend(bbox_to_anchor=(1.32, 1.0))
 
-        plt.legend(bbox_to_anchor=(1.32, 1.0))
+            if showDelimiter:
+                delimiters = [50, 100, 200, 400]
+                for delimiter in delimiters:
+                    plt.axvline(delimiter, color='k')
 
-        if showDelimiter:
-            delimiters = [50, 100, 200, 400]
-            for delimiter in delimiters:
-                plt.axvline(delimiter, color='k')
-
-        plt.savefig(figure['filename'], dpi=400, bbox_inches='tight')
+            plt.savefig(figure['filename'], dpi=400, bbox_inches='tight')
 
 
 def main():
@@ -154,7 +182,7 @@ def main():
     datasets = []
     BATCH_SIZE = 40
     EVALUATE_STEPS = [
-        50, 100, 200, 400, 500
+        0, 50, 100#, 200, 400, 500
     ]
 
     datasets_data = [
@@ -164,7 +192,7 @@ def main():
             ENDict(
                 [
                     ('name', 'iris_dataset'),
-                    ('GEN', 500),
+                    ('GEN', 100),
                     ('NP', 100),
                     ('BATCH', 10),
                     ('W', 0.3),
@@ -237,8 +265,8 @@ def main():
 
                 ##
                 # Placeholder
-                target_w = tf.placeholder(tf.float64, SIZE_W, name="target_0")
-                target_b = tf.placeholder(tf.float64, SIZE_B, name="target_1")
+                target_w = tf.placeholder(tf.float64, SIZE_W)
+                target_b = tf.placeholder(tf.float64, SIZE_B)
 
                 cur_pop_W = tf.placeholder(tf.float64, [options.NP] + SIZE_W)
                 cur_pop_B = tf.placeholder(tf.float64, [options.NP] + SIZE_B)
@@ -281,6 +309,7 @@ def main():
                             # space = 2,
                             graph=DENN.get_graph_proto(
                                 sess.graph.as_graph_def()),
+                            names=[elm.name for elm in [target_w, target_b]],
                             CR=options.CR,
                             DE=de_type
                         )
@@ -334,6 +363,7 @@ def main():
             options.CR
         )
         write_results(options.name, test_results, description)
+        write_results(options.name, test_results, description, separated=True)
     
     print("+ Completed all test {} sec.".format(time() - time_start_test))
 

@@ -18,10 +18,10 @@ from time import time
 makedirs("./benchmark_results", exist_ok=True)
 
 
-class Options(dict):
+class ENDict(dict):
 
     def __init__(self, *args, **kwargs):
-        super(Options, self).__init__(*args, **kwargs)
+        super(ENDict, self).__init__(*args, **kwargs)
         self.__dict__ = self
 
 
@@ -90,7 +90,7 @@ def load_data(datasets_data):
         yield (*getattr(dataset_loaders, loader)(path_), options)
 
 
-def write_results(name, results, description, showDelimiter=True):
+def write_results(name, results, description, showDelimiter=False):
     colors = [
         "#dd0000",
         "#00dd00",
@@ -101,7 +101,7 @@ def write_results(name, results, description, showDelimiter=True):
     figure = {
         'data': [
             {
-                'values': [range(len(result)), result],
+                'values': [range(len(result.values)), result.values],
                 'color': colors[num],
                 'label': name,
                 'alpha': 0.9
@@ -153,12 +153,15 @@ def main():
     # Datasets
     datasets = []
     BATCH_SIZE = 40
+    EVALUATE_STEPS = [
+        50, 100, 200, 400, 500
+    ]
 
     datasets_data = [
         (
             "../../../minimal_dataset/data/bezdekIris",
             'load_iris_data',
-            Options(
+            ENDict(
                 [
                     ('name', 'iris_dataset'),
                     ('GEN', 500),
@@ -175,9 +178,9 @@ def main():
     # DE types
     de_types = [
         'rand/1/bin',
-        'rand/1/exp',
-        'rand/2/bin',
-        'rand/2/exp'
+        # 'rand/1/exp',
+        # 'rand/2/bin',
+        # 'rand/2/exp'
     ]
 
     ##
@@ -205,7 +208,12 @@ def main():
         ##
         # test data collections
         test_results = dict(
-            list(zip(de_types, [[] for _ in range(len(de_types))]))
+            list(zip(de_types, [ENDict(
+                [
+                    ('values', []),
+                    ('last_accuracy', 0.0)
+                ]
+            ) for _ in range(len(de_types))]))
         )
 
         prev_NN = dict(
@@ -304,7 +312,13 @@ def main():
                                 target_b: b_res[best_idx]
                             })
 
-                            test_results[de_type].append(cur_accuracy)
+                            if gen in EVALUATE_STEPS:
+                                test_results[de_type].values.append(cur_accuracy)
+                                test_results[de_type].last_accuracy = cur_accuracy
+                            else:
+                                test_results[de_type].values.append(
+                                    test_results[de_type].last_accuracy
+                                )
 
                         print(
                             "+ DENN[{}] with {} gen on {} completed in {:.05} sec.!".format(de_type, gen + 1, options.name, time() - time_start_gen))

@@ -261,7 +261,6 @@ def main():
     ##
     # Datasets
     datasets = []
-    BATCH_SIZE = 40
     EVALUATE_STEPS = [
         0, 50, 100  # , 200, 400, 500
     ]
@@ -275,7 +274,7 @@ def main():
                     ('name', 'iris_dataset'),
                     ('GEN', 400),
                     ('NP', 100),
-                    ('BATCH', 10),  # USE THIS!!!!!!!!! (TO DO)
+                    ('BATCH', 40),  # USE THIS!!!!!!!!! (TO DO)
                     ('W', 0.3),
                     ('CR', 0.552)
                 ]
@@ -325,7 +324,7 @@ def main():
         )
 
         print("+ Batch for dataset: {}".format(options.name))
-        for batch_num, (cur_data, cur_label) in enumerate(dataset.batch(BATCH_SIZE)):
+        for batch_num, (cur_data, cur_label) in enumerate(dataset.batch(options.BATCH)):
             print("+ Batch[{}]".format(batch_num + 1))
 
             graph = tf.Graph()
@@ -333,8 +332,23 @@ def main():
 
                 res_nn = gen_network(
                     [
-                        # (SIZE_W, SIZE_B)
+                        # 1 lvl
+                        #(SIZE_W, SIZE_B)
+
+                        # 2 lvl
+                        # ([4, 8], [8]),
+                        # ([8, 3], [3])
+
+                        # 3 lvl
+                        # ([4, 8], [8]),
+                        # ([8, 8], [8]),
+                        # ([8, 3], [3])
+
+                        # 5 lvl
                         ([4, 8], [8]),
+                        ([8, 8], [8]),
+                        ([8, 8], [8]),
+                        ([8, 8], [8]),
                         ([8, 3], [3])
                     ],
                     options,

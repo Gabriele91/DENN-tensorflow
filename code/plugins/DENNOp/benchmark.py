@@ -182,7 +182,7 @@ def main():
     datasets = []
     BATCH_SIZE = 40
     EVALUATE_STEPS = [
-        0, 50, 100#, 200, 400, 500
+        0, 50, 100  # , 200, 400, 500
     ]
 
     datasets_data = [
@@ -221,9 +221,9 @@ def main():
     time_start_test = time()
 
     for dataset, options in datasets:
-        
+
         time_start_dataset = time()
-        
+
         SIZE_W = [dataset.n_features, dataset.n_classes]
         SIZE_B = [dataset.n_classes]
         SIZE_X = [dataset.n_features]
@@ -250,10 +250,10 @@ def main():
 
         print("+ Batch for dataset: {}".format(options.name))
         for batch_num, (cur_data, cur_label) in enumerate(dataset.batch(BATCH_SIZE)):
-            print("+ Batch[{}]".format(batch_num+1))
+            print("+ Batch[{}]".format(batch_num + 1))
 
             graph = tf.Graph()
-            with graph.as_default():                
+            with graph.as_default():
                 ##
                 # Random functions
                 create_random_population_W = tf.random_uniform(
@@ -263,7 +263,6 @@ def main():
                     [options.NP] + SIZE_B, dtype=tf.float64, seed=1,
                     name="create_random_population_B")
 
-                ##
                 # Placeholder
                 target_w = tf.placeholder(tf.float64, SIZE_W)
                 target_b = tf.placeholder(tf.float64, SIZE_B)
@@ -272,19 +271,22 @@ def main():
                 cur_pop_B = tf.placeholder(tf.float64, [options.NP] + SIZE_B)
                 cur_pop_VAL = tf.placeholder(tf.float64, [options.NP])
 
+                ##
+                # NN TRAIN
+                y = tf.matmul(cur_data, target_w) + target_b
+                cross_entropy = tf.reduce_mean(
+                    tf.nn.softmax_cross_entropy_with_logits(
+                        y, cur_label), name="evaluate")
+
+                ##
+                # NN TEST
                 y_test = tf.matmul(dataset.test_data, target_w) + target_b
                 correct_prediction = tf.equal(
                     tf.argmax(y_test, 1),
                     tf.argmax(dataset.test_labels, 1)
                 )
-                accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-
-                ##
-                # NN
-                y = tf.matmul(cur_data, target_w) + target_b
-                cross_entropy = tf.reduce_mean(
-                    tf.nn.softmax_cross_entropy_with_logits(
-                        y, cur_label), name="evaluate")
+                accuracy = tf.reduce_mean(
+                    tf.cast(correct_prediction, tf.float32))
 
                 with tf.Session() as sess:
                     # init vars
@@ -300,9 +302,23 @@ def main():
                     for de_type in de_types:
                         ##
                         # DENN op
-                        denn_op = DENN.create(  # input params
+                        denn_op_first = DENN.create(  # input params
                             [1, True],  # [num_gen, eval_individual]
                             [],  # FIRST EVAL
+                            [deW_nnW, deW_nnB],  # PASS WEIGHTS
+                            [cur_pop_W, cur_pop_B],  # POPULATIONS
+                            # attributes
+                            # space = 2,
+                            graph=DENN.get_graph_proto(
+                                sess.graph.as_graph_def()),
+                            names=[elm.name for elm in [target_w, target_b]],
+                            CR=options.CR,
+                            DE=de_type
+                        )
+
+                        denn_op_after = DENN.create(  # input params
+                            [1, False],  # [num_gen, eval_individual]
+                            [cur_pop_VAL],  # FIRST EVAL
                             [deW_nnW, deW_nnB],  # PASS WEIGHTS
                             [cur_pop_W, cur_pop_B],  # POPULATIONS
                             # attributes
@@ -319,17 +335,27 @@ def main():
 
                         time_start = time()
                         time_start_gen = time()
+                        first_time = True
 
                         for gen in range(options.GEN):
                             if time() - time_start >= 1.:
                                 time_start = time()
                                 print(
                                     "+ Run gen. [{}] with DE [{}] on {}".format(gen + 1, de_type, options.name), end="\r")
+                            
+                            if first_time:
+                                results = sess.run(denn_op_first, feed_dict={
+                                    cur_pop_W: w_res,
+                                    cur_pop_B: b_res
+                                })
+                                first_time = False
+                            else:
+                                results = sess.run(denn_op_after, feed_dict={
+                                    cur_pop_W: w_res,
+                                    cur_pop_B: b_res,
+                                    cur_pop_VAL: v_res
+                                })
 
-                            results = sess.run(denn_op, feed_dict={
-                                cur_pop_W: w_res,
-                                cur_pop_B: b_res
-                            })
                             # get output
                             w_res, b_res = results.final_populations
                             v_res = results.final_eval
@@ -342,8 +368,10 @@ def main():
                             })
 
                             if gen in EVALUATE_STEPS:
-                                test_results[de_type].values.append(cur_accuracy)
-                                test_results[de_type].last_accuracy = cur_accuracy
+                                test_results[de_type].values.append(
+                                    cur_accuracy)
+                                test_results[
+                                    de_type].last_accuracy = cur_accuracy
                             else:
                                 test_results[de_type].values.append(
                                     test_results[de_type].last_accuracy
@@ -351,10 +379,11 @@ def main():
 
                         print(
                             "+ DENN[{}] with {} gen on {} completed in {:.05} sec.!".format(de_type, gen + 1, options.name, time() - time_start_gen))
-                        
+
                         prev_NN[de_type] = (w_res, b_res)
-        
-        print("+ Completed all test on dataset {} in {} sec.".format(options.name, time() - time_start_dataset))
+
+        print("+ Completed all test on dataset {} in {} sec.".format(options.name,
+                                                                     time() - time_start_dataset))
         print("+ Save results for {}".format(options.name))
 
         description = "NP: {}  W: {}  CR: {}".format(
@@ -364,7 +393,7 @@ def main():
         )
         write_results(options.name, test_results, description)
         write_results(options.name, test_results, description, separated=True)
-    
+
     print("+ Completed all test {} sec.".format(time() - time_start_test))
 
 

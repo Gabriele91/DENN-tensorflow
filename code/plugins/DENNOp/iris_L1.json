@@ -1,0 +1,24 @@
+[
+    [
+        "../../../minimal_dataset/data/bezdekIris",
+        "load_iris_data",
+        {
+            "name": "iris_dataset",
+            "N_GEN": 8,
+            "GEN_STEP": 50,
+            "W": 0.3,
+            "NP": 100,
+            "BATCH": 40,
+            "de_types": [
+                "rand/1/bin",
+                "rand/1/exp",
+                "rand/2/bin",
+                "rand/2/exp"
+            ],
+            "CR": 0.552,
+            "levels": [
+                [[4,3], [3]]
+            ]
+        }
+    ]
+]

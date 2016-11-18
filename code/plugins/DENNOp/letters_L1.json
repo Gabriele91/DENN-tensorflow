@@ -1,0 +1,21 @@
+[
+    [
+        "../../../minimal_dataset/data/letter-recognition",
+        "load_letter_data",
+        {
+            "name": "letter_dataset",
+            "N_GEN": 2,
+            "GEN_STEP": 50,
+            "W": 0.3,
+            "NP": 100,
+            "BATCH": 1000,
+            "de_types": [
+                "rand/1/bin"
+            ],
+            "CR": 0.5,
+            "levels": [
+                [[16, 26], [26]]
+            ]
+        }
+    ]
+]

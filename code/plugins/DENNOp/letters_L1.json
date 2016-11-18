@@ -4,7 +4,7 @@
         "load_letter_data",
         {
             "name": "letter_dataset",
-            "N_GEN": 2,
+            "TOT_GEN": 500,
             "GEN_STEP": 50,
             "W": 0.3,
             "NP": 100,

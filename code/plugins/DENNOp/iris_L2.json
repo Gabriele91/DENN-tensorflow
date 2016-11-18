@@ -6,18 +6,17 @@
             "name": "iris_dataset",
             "TOT_GEN": 1000,
             "GEN_STEP": 200,
-            "W": 0.3,
+            "W": 0.8,
             "NP": 100,
             "BATCH": 60,
             "de_types": [
                 "rand/1/bin",
-                "rand/1/exp",
-                "rand/2/bin",
-                "rand/2/exp"
+                "rand/2/bin"
             ],
-            "CR": 0.552,
+            "CR": 0.5,
             "levels": [
-                [[4,3], [3]]
+                [[4,8], [8]],
+                [[8,3], [3]]
             ]
         }
     ]

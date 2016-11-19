@@ -24,7 +24,7 @@ class NDict(dict):
 
 def load_data(datasets_data, debug=False):
     for path_, loader, options in datasets_data:
-        yield (*getattr(dataset_loaders, loader)(path_, False), options)
+        yield (*getattr(dataset_loaders, loader)(path_, debug), options)
 
 
 def main():

@@ -1,14 +1,14 @@
 [
     [
-        "../../../minimal_dataset/data/bezdekIris",
-        "load_iris_data",
+        "../../../minimal_dataset/data/MNIST",
+        "load_mnist_data",
         {
-            "name": "iris_dataset",
+            "name": "mnist_dataset",
             "TOT_GEN": 1000,
-            "GEN_STEP": 100,
+            "GEN_STEP": 50,
             "W": 0.8,
-            "NP": 100,
-            "BATCH": 30,
+            "NP": 20,
+            "BATCH": 10000,
             "de_types": [
                 "rand/1/bin",
                 "rand/1/exp",
@@ -17,8 +17,7 @@
             ],
             "CR": 0.5,
             "levels": [
-                [[4,8], [8]],
-                [[8,3], [3]]
+                [[784,10], [10]]
             ]
         }
     ]

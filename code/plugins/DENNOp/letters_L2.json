@@ -4,13 +4,13 @@
         "load_letter_data",
         {
             "name": "letter_dataset",
-            "TOT_GEN": 500,
-            "GEN_STEP": 50,
-            "W": 0.3,
+            "TOT_GEN": 3000,
+            "GEN_STEP": 100,
+            "W": 0.8,
             "NP": 100,
-            "BATCH": 1000,
+            "BATCH": 3000,
             "de_types": [
-                "rand/1/bin"
+                "rand/2/bin"
             ],
             "CR": 0.5,
             "levels": [

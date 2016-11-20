@@ -60,6 +60,11 @@
 /* Begin PBXFileReference section */
 		CEF1F3151DDBB126005FE9C7 /* benchmark.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = benchmark.py; sourceTree = "<group>"; };
 		E0344DDE1DDB2E30009F7A70 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		E067D9711DE248410032CC68 /* iris_L1.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = iris_L1.json; sourceTree = "<group>"; };
+		E067D9721DE248410032CC68 /* iris_L2.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = iris_L2.json; sourceTree = "<group>"; };
+		E067D9731DE248410032CC68 /* letters_L1.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = letters_L1.json; sourceTree = "<group>"; };
+		E067D9741DE248410032CC68 /* letters_L2.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = letters_L2.json; sourceTree = "<group>"; };
+		E067D9751DE248410032CC68 /* mnist_L1.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = mnist_L1.json; sourceTree = "<group>"; };
 		E09B48CA1DB7639C00333E4F /* libDENNFakeDylib.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libDENNFakeDylib.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0C206961DCB2C3E0002A331 /* test_plugin_images.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = test_plugin_images.py; sourceTree = "<group>"; };
 		E0C206971DCB2C3E0002A331 /* test_plugin_letter.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = test_plugin_letter.py; sourceTree = "<group>"; };
@@ -83,6 +88,18 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		E067D9701DE2481F0032CC68 /* json_test */ = {
+			isa = PBXGroup;
+			children = (
+				E067D9711DE248410032CC68 /* iris_L1.json */,
+				E067D9721DE248410032CC68 /* iris_L2.json */,
+				E067D9731DE248410032CC68 /* letters_L1.json */,
+				E067D9741DE248410032CC68 /* letters_L2.json */,
+				E067D9751DE248410032CC68 /* mnist_L1.json */,
+			);
+			name = json_test;
+			sourceTree = "<group>";
+		};
 		E07026A81DA6836700D0D31B = {
 			isa = PBXGroup;
 			children = (
@@ -133,6 +150,7 @@
 		E0EFDF2F1DB664CD003DF8E0 /* test */ = {
 			isa = PBXGroup;
 			children = (
+				E067D9701DE2481F0032CC68 /* json_test */,
 				CEF1F3151DDBB126005FE9C7 /* benchmark.py */,
 				E0C206A61DCB3CC50002A331 /* test_plugin_iris.py */,
 				E0C206961DCB2C3E0002A331 /* test_plugin_images.py */,
@@ -238,13 +256,14 @@
 			files = (
 			);
 			inputPaths = (
+				"$(SRCROOT)/mnist_L1.json",
 			);
 			name = "Run Script";
 			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "export WORKON_HOME=$HOME/.virtualenvs\nexport PROJECT_HOME=$HOME/Devel\nsource /usr/local/bin/virtualenvwrapper.sh\nworkon TensorFlow\npython benchmark.py\n";
+			shellScript = "export WORKON_HOME=$HOME/.virtualenvs\nexport PROJECT_HOME=$HOME/Devel\nsource /usr/local/bin/virtualenvwrapper.sh\nworkon TensorFlow\npython benchmark.py ${SCRIPT_INPUT_FILE_0}";
 		};
 		E0A7C6711DA6A505005D74D0 /* Run Script */ = {
 			isa = PBXShellScriptBuildPhase;

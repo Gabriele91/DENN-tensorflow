@@ -5,7 +5,7 @@ MKDIR_P     ?= mkdir -p
 MODULE_FOLDER ?= DENN
 TOP         ?= $(shell pwd)
 PYTHON_PATH ?= $(HOME)/.virtualenvs/TensorFlow/
-USE_DEBUG   ?= true
+USE_DEBUG   ?= false
 #include list
 TF_INCLUDE = $(PYTHON_PATH)/lib/python3.5/site-packages/tensorflow/include
 #project dirs

@@ -1,4 +1,4 @@
 // Place your settings in this file to overwrite default and user settings.
 {
-    "python.pythonPath": "/home/ocrim/.virtualenvs/TensorFlow/bin/python",
+    "python.pythonPath": "/home/ocrim/.virtualenvs/TensorFlow/bin/python"
 }

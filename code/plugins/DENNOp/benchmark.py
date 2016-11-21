@@ -179,7 +179,7 @@ def main():
 
                         prev_NN[de_type] = cur_pop
 
-            #tf.reset_default_graph()
+            tf.reset_default_graph()
 
         print("+ Completed all test on dataset {} in {} sec.".format(options.name,
                                                                      time() - time_start_dataset))

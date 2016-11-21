@@ -5,8 +5,6 @@ import sys
 import atexit
 import numpy as np
 from matplotlib import pyplot as plt
-from plotter import my_plot
-from plotter import my_hist
 from time import time
 from time import sleep
 from os import path

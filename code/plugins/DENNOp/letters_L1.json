@@ -5,10 +5,10 @@
         {
             "name": "letter_dataset",
             "TOT_GEN": 5000,
-            "GEN_STEP": 200,
+            "GEN_STEP": 100,
             "W": 0.8,
             "NP": 100,
-            "BATCH": 1000,
+            "BATCH": 2000,
             "de_types": [
                 "rand/1/bin"
             ],

@@ -49,7 +49,7 @@ class Dataset(object):
         self.train_labels = np.array(train_labels, np.float64)
         self.test_data = np.array(test_data, np.float64)
         self.test_labels = np.array(test_labels, np.float64)
-        
+
         self.n_classes = len(train_labels[0])
         self.n_features = len(train_data[0])
         self.n_train_elms = len(train_data)

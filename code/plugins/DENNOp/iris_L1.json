@@ -5,7 +5,7 @@
         {
             "name": "iris_dataset",
             "TOT_GEN": 1000,
-            "GEN_STEP": 200,
+            "GEN_STEP": 50,
             "W": 0.3,
             "NP": 100,
             "BATCH": 40,

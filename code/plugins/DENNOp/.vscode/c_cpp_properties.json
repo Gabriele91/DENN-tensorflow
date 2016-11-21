@@ -15,7 +15,7 @@
             "name": "Linux",
             "includePath": [
                 "/usr/include",
-                "/home/gabriele/.virtualenvs/TensorFlow/lib/python3.5/site-packages/tensorflow/include"
+                "${HOME}/.virtualenvs/TensorFlow/lib/python3.5/site-packages/tensorflow/include"
                 ],
             "browse" : {
                 "limitSymbolsToIncludedHeaders" : true,

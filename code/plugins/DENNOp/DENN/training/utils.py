@@ -3,9 +3,15 @@ import numpy as np
 from random import shuffle
 from random import seed as set_rnd_seed
 from copy import copy
+import json
+import zipfile
+from os import path
+from os import makedirs
+import time
 
+__all__ = ['gen_network', 'Dataset', 'create_dataset']
 
-__all__ = ['gen_network', 'Dataset']
+BASEDATASETPATH = './datasets'
 
 
 class ENDict(dict):
@@ -13,6 +19,81 @@ class ENDict(dict):
     def __init__(self, *args, **kwargs):
         super(ENDict, self).__init__(*args, **kwargs)
         self.__dict__ = self
+
+
+def create_dataset(name, data, label, seed=None, train_percentage=0.8):
+    makedirs(BASEDATASETPATH, exist_ok=True)
+
+    train_data = []
+    train_labels = []
+    test_data = []
+    test_labels = []
+
+    set_rnd_seed(seed)
+
+    train_data = []
+    train_labels = []
+
+    test_data = []
+    test_labels = []
+
+    train_size = int(len(data) * train_percentage)
+
+    indexes = [_ for _ in range(len(data))]
+
+    shuffle(indexes)
+
+    for index in indexes:
+        if len(train_data) < train_size:
+            train_data.append(copy(data[index]))
+            train_labels.append(copy(label[index]))
+        else:
+            test_data.append(copy(data[index]))
+            test_labels.append(copy(label[index]))
+
+    train_data = np.array(train_data, np.float64)
+    train_labels = np.array(train_labels, np.float64)
+    test_data = np.array(test_data, np.float64)
+    test_labels = np.array(test_labels, np.float64)
+
+    stats = {
+        'n_classes': len(train_labels[0]),
+        'n_features': len(train_data[0]),
+        'n_train_elms': len(train_data),
+        'n_test_elms': len(test_data),
+        'train_data_shape': train_data.shape,
+        'train_labels_shape': train_labels.shape,
+        'test_data_shape': test_data.shape,
+        'test_labels_shape': test_labels.shape,
+        'seed': seed,
+        'train_percentage': train_percentage
+    }
+
+    with zipfile.ZipFile(
+        path.join(
+            BASEDATASETPATH, "{}.zip".format(name)), mode='w',
+            compression=zipfile.ZIP_DEFLATED) as zip_file:
+
+        zip_file.writestr(
+            'stats.json',
+            json.dumps(stats, indent=4)
+        )
+        zip_file.writestr(
+            'train.data',
+            train_data.tobytes()
+        )
+        zip_file.writestr(
+            'train.labels',
+            train_labels.tobytes()
+        )
+        zip_file.writestr(
+            'test.data',
+            test_data.tobytes()
+        )
+        zip_file.writestr(
+            'test.labels',
+            test_labels.tobytes()
+        )
 
 
 class Dataset(object):

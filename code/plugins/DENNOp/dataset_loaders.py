@@ -11,18 +11,22 @@ def load_mnist_image(file_name):
     with gzip.open(file_name, 'rb') as mnist_file:
         magic_num, num_images, rows, cols = struct.unpack(
             ">IIII", mnist_file.read(16))
-        for _ in range(num_images):
-            yield [elm / 255. for elm in struct.unpack(
-                "B" * rows * cols, mnist_file.read(rows * cols))]
+        buf = mnist_file.read(rows * cols * num_images)
+        data = np.frombuffer(buf, dtype=np.uint8)
+        data = np.divide(data, 255.)
+        data = data.reshape(num_images, rows, cols, 1)
+        return data
 
 
-def load_mnist_label(file_name):
+def load_mnist_label(file_name, num_classes=10):
     with gzip.open(file_name, 'rb') as mnist_file:
         magic_num, num_labels = struct.unpack(
             ">II", mnist_file.read(8))
-        for _ in range(num_labels):
-            label = struct.unpack('B', mnist_file.read(1))[0]
-            yield [0 if idx != label else 1 for idx in range(10)]
+        buf = mnist_file.read(num_labels)
+        labels = np.frombuffer(buf, dtype=np.uint8)
+        data = np.zeros((num_labels, num_classes))
+        data[np.arange(labels.size), labels] = 1
+        return data
 
 
 def load_mnist_data(base_path, output=False):
@@ -30,30 +34,33 @@ def load_mnist_data(base_path, output=False):
         old_descriptor = sys.stdout
         sys.stdout = open(os.devnull, 'w')
 
-    mnist_data = []
-    label_data = []
-
     print('+ Load data ...')
-    for image in load_mnist_image(os.path.join(base_path, 'train-images-idx3-ubyte.gz')):
-        mnist_data.append(image)
-    for image in load_mnist_image(os.path.join(base_path, 't10k-images-idx3-ubyte.gz')):
-        mnist_data.append(image)
-    for label in load_mnist_label(os.path.join(base_path, 'train-labels-idx1-ubyte.gz')):
-        label_data.append(label)
-    for label in load_mnist_label(os.path.join(base_path, 't10k-labels-idx1-ubyte.gz')):
-        label_data.append(label)
-    
-    mnist_data = np.array(mnist_data, np.float64)
-    label_data = np.array(label_data, np.float64)
+    mnist_data = np.append(
+        load_mnist_image(os.path.join(
+            base_path, 'train-images-idx3-ubyte.gz')),
+        load_mnist_image(os.path.join(
+            base_path, 't10k-images-idx3-ubyte.gz')),
+        axis=0
+    )
+    label_data = np.append(
+        load_mnist_label(os.path.join(
+            base_path, 'train-labels-idx1-ubyte.gz')),
+        load_mnist_label(os.path.join(
+            base_path, 't10k-labels-idx1-ubyte.gz')),
+        axis=0
+    )
 
-    print('+ images: \n',mnist_data)
-    print('+ labels: \n',label_data)
+    print('+ images: \n', mnist_data)
+    print('+ labels: \n', label_data)
+
+    print(mnist_data.shape)
+    print(label_data.shape)
 
     print('+ loading done!')
 
     if not output:
         sys.stdout = old_descriptor
-    
+
     return mnist_data, label_data
 
 

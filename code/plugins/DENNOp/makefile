@@ -38,7 +38,7 @@ all: make_trial_vector
 
 #create plugin
 make_trial_vector: directories $(SOURCE_OBJS)
-	$(CC) $(C_FLAGS) $(CPP_FLAGS) -shared -o $(TOP)/$(MODULE_FOLDER)/DENNOp.so $(SOURCE_OBJS)
+	$(CC) $(C_FLAGS) $(CPP_FLAGS) -shared -o $(TOP)/$(MODULE_FOLDER)/DENNOp.so $(SOURCE_OBJS) node_def_util.pic.o
 
 #required directories
 directories: ${O_DIR}

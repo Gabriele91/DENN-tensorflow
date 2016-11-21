@@ -2,7 +2,10 @@
     "configurations": [
         {
             "name": "Mac",
-            "includePath": ["$(python -c \"import tensorflow as tf; tf.sysconfig.get_include();\")"],
+            "includePath": [
+                "/usr/include",
+                "$(python -c \"import tensorflow as tf; tf.sysconfig.get_include();\")"
+            ],
             "browse" : {
                 "limitSymbolsToIncludedHeaders" : true,
                 "databaseFilename" : ""
@@ -10,7 +13,10 @@
         },
         {
             "name": "Linux",
-            "includePath": ["$(python -c \"import tensorflow as tf; tf.sysconfig.get_include();\")"],
+            "includePath": [
+                "/usr/include",
+                "$(python -c \"import tensorflow as tf; tf.sysconfig.get_include();\")"
+            ],
             "browse" : {
                 "limitSymbolsToIncludedHeaders" : true,
                 "databaseFilename" : ""

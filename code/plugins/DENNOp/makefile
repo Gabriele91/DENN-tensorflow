@@ -23,11 +23,11 @@ ifeq ($(shell uname -s),Linux)
 	C_FLAGS      += -pthread -D_FORCE_INLINES  
 	LIKNER_FLAGS += -lpthread -lm -lutil -ldl
 	LIKNER_FLAGS += -Wl,--whole-archive 
-	LIKNER_FLAGS += -L$(TOP)/tw_static/ -lprotobuf_custom
-	LIKNER_FLAGS += -L$(TOP)/tw_static/ -lprotobuf_lite_custom
-	LIKNER_FLAGS += -L$(TOP)/tw_static/ -lpng_custom
-	LIKNER_FLAGS += -L$(TOP)/tw_static/ -lc_api
-	LIKNER_FLAGS += -L$(TOP)/tw_static/ -lscope
+	LIKNER_FLAGS += -L$(TOP)/tf_static/ -lprotobuf_custom
+	LIKNER_FLAGS += -L$(TOP)/tf_static/ -lprotobuf_lite_custom
+	LIKNER_FLAGS += -L$(TOP)/tf_static/ -lpng_custom
+	LIKNER_FLAGS += -L$(TOP)/tf_static/ -lc_api
+	LIKNER_FLAGS += -L$(TOP)/tf_static/ -lscope
 	LIKNER_FLAGS += -Wl,--no-whole-archive 
 	#must to be false
 	USE_OLD_ABI=false
@@ -59,10 +59,10 @@ SOURCE_OBJS = $(addprefix $(O_DIR)/,$(notdir $(SOURCE_FILES:.cpp=.o)))
 
 #########################################################################
 
-all: make_trial_vector
+all: make_denn_op
 
 #create plugin
-make_trial_vector: directories $(SOURCE_OBJS)
+make_denn_op: directories $(SOURCE_OBJS)
 	$(CC) $(C_FLAGS) $(CPP_FLAGS) -shared -o $(TOP)/$(MODULE_FOLDER)/DENNOp.so $(SOURCE_OBJS) $(LIKNER_FLAGS) 
 
 #required directories

@@ -103,8 +103,10 @@ def main():
                 )
 
                 with tf.Session() as sess:
+                    ##
                     # init vars
-                    sess.run(tf.global_variables_initializer())
+                    # We don't need this, we don't have variables at the moment
+                    # sess.run(tf.global_variables_initializer())
 
                     for de_type in options.de_types:
 

@@ -1,22 +1,18 @@
-[
-    [
-        "../../../minimal_dataset/data/letter-recognition",
-        "load_letter_data",
-        {
-            "name": "letter_dataset",
-            "TOT_GEN": 3000,
-            "GEN_STEP": 100,
-            "W": 0.8,
-            "NP": 100,
-            "BATCH": 3000,
-            "de_types": [
-                "rand/2/bin"
-            ],
-            "CR": 0.5,
-            "levels": [
-                [[16, 32], [32]],
-                [[32, 26], [26]]
-            ]
-        }
-    ]
+{
+    {
+        "name": "letter_dataset",
+        "dataset_file": "./datasets/letter_20_batches.zip",
+        "TOT_GEN": 5000,
+        "GEN_STEP": 100,
+        "W": 0.8,
+        "NP": 100,
+        "de_types": [
+            "rand/1/bin"
+        ],
+        "CR": 0.5,
+        "levels": [
+            [[16, 32], [32]],
+            [[32, 26], [26]]
+        ]
+    }
 ]

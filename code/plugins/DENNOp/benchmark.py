@@ -77,6 +77,7 @@ def main():
             list(zip(options.de_types, [
                  None for _ in range(len(options.de_types))]))
         )
+        v_res = None
 
         batch_counter = 0
 
@@ -97,18 +98,22 @@ def main():
                     cur_batch.data,
                     cur_batch.labels,
                     dataset.test_data,
-                    dataset.test_labels
+                    dataset.test_labels,
+                    gen == 0  # rand population only if gen is the first one
                 )
 
                 with tf.Session() as sess:
                     # init vars
                     sess.run(tf.global_variables_initializer())
 
-                    ##
-                    # Random initialization of the NN
-                    cur_pop = sess.run(cur_nn.rand_pop)
-
                     for de_type in options.de_types:
+
+                        ##
+                        # Random initialization of the NN
+                        if gen == 0:
+                            cur_pop = sess.run(cur_nn.rand_pop)
+                            prev_NN[de_type] = cur_pop
+
                         ##
                         # DENN op
                         denn_op = DENN.create(  # input params
@@ -126,22 +131,19 @@ def main():
                             DE=de_type
                         )
 
-                        if prev_NN[de_type] is not None:
-                            cur_pop = prev_NN[de_type]
-
                         time_start_gen = time()
 
                         if gen == 0:
                             results = sess.run(denn_op, feed_dict=dict(
                                 [
-                                    (pop_ref, cur_pop[num])
+                                    (pop_ref, prev_NN[de_type][num])
                                     for num, pop_ref in enumerate(cur_nn.populations)
                                 ]
                             ))
                         else:
                             results = sess.run(denn_op, feed_dict=dict(
                                 [
-                                    (pop_ref, cur_pop[num])
+                                    (pop_ref, prev_NN[de_type][num])
                                     for num, pop_ref in enumerate(cur_nn.populations)
                                 ]
                                 +
@@ -174,6 +176,7 @@ def main():
                         )
 
                         prev_NN[de_type] = cur_pop
+                        del cur_pop
 
             tf.reset_default_graph()
 

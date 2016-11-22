@@ -160,7 +160,7 @@ class Dataset(object):
         self.__zip_file.close()
 
 
-def gen_network(levels, options, cur_data, cur_label, test_data, test_labels):
+def gen_network(levels, options, cur_data, cur_label, test_data, test_labels, rand_pop):
     target_ref = []
     pop_ref = []
     rand_pop_ref = []
@@ -183,13 +183,14 @@ def gen_network(levels, options, cur_data, cur_label, test_data, test_labels):
 
         ##
         # Random functions
-        create_random_population_W = tf.random_uniform(
-            [options.NP] + SIZE_W, dtype=tf.float64, seed=1)
-        create_random_population_B = tf.random_uniform(
-            [options.NP] + SIZE_B, dtype=tf.float64, seed=1)
+        if rand_pop:
+            create_random_population_W = tf.random_uniform(
+                [options.NP] + SIZE_W, dtype=tf.float64, seed=1)
+            create_random_population_B = tf.random_uniform(
+                [options.NP] + SIZE_B, dtype=tf.float64, seed=1)
 
-        rand_pop_ref.append(create_random_population_W)
-        rand_pop_ref.append(create_random_population_B)
+            rand_pop_ref.append(create_random_population_W)
+            rand_pop_ref.append(create_random_population_B)
 
         ##
         # Placeholder

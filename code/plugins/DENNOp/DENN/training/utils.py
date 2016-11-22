@@ -9,6 +9,7 @@ from os import path
 from os import makedirs
 import time
 from collections import namedtuple
+from . dataset_loaders import *
 
 __all__ = ['gen_network', 'Dataset', 'create_dataset']
 
@@ -23,8 +24,10 @@ class ENDict(dict):
         self.__dict__ = self
 
 
-def create_dataset(name, data, label, batch_size, seed=None, train_percentage=0.8):
+def create_dataset(dataset, loader, batch_size, name, seed=None, train_percentage=0.8, debug=False):
     makedirs(BASEDATASETPATH, exist_ok=True)
+
+    data, labels = globals().get(loader)(dataset, debug)
 
     train_data = []
     train_labels = []
@@ -48,10 +51,10 @@ def create_dataset(name, data, label, batch_size, seed=None, train_percentage=0.
     for index in indexes:
         if len(train_data) < train_size:
             train_data.append(copy(data[index]))
-            train_labels.append(copy(label[index]))
+            train_labels.append(copy(labels[index]))
         else:
             test_data.append(copy(data[index]))
-            test_labels.append(copy(label[index]))
+            test_labels.append(copy(labels[index]))
 
     train_data = np.array(train_data, np.float64)
     train_data = np.array_split(train_data, batch_size)

@@ -1,7 +1,6 @@
 import DENN
 import tensorflow as tf
 import numpy as np
-import dataset_loaders
 import json
 
 from sys import argv

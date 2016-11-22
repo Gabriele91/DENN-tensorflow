@@ -1,5 +1,4 @@
 import DENN
-import dataset_loaders
 
 
 def main():
@@ -12,8 +11,7 @@ def main():
     ]
 
     for dataset, loader, batch_size, out_name in datasets:
-        data, labels = getattr(dataset_loaders, loader)(dataset, DEBUG)
-        DENN.training.create_dataset(out_name, data, labels, batch_size)
+        DENN.training.create_dataset(dataset, loader, batch_size, out_name)
 
 if __name__ == '__main__':
     main()

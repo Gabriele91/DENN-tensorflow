@@ -1,0 +1,18 @@
+[
+    {
+        "name": "mnist_dataset",
+        "dataset_file": "./datasets/mnist_12_batches.zip",
+        "TOT_GEN": 20000,
+        "GEN_STEP": 200,
+        "W": 0.8,
+        "NP": 20,
+        "de_types": [
+            "rand/1/bin"
+        ],
+        "CR": 0.5,
+        "levels": [
+            [[784,20], [20]],
+            [[20,10], [10]]
+        ]
+    }
+]

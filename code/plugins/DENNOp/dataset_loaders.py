@@ -14,7 +14,7 @@ def load_mnist_image(file_name):
         buf = mnist_file.read(rows * cols * num_images)
         data = np.frombuffer(buf, dtype=np.uint8)
         data = np.divide(data, 255.)
-        data = data.reshape(num_images, rows, cols, 1)
+        data = data.reshape(num_images, rows*cols)
         return data
 
 

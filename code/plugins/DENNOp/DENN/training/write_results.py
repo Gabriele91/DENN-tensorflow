@@ -6,7 +6,16 @@ from math import pi as PI
 import colorsys
 
 
-__all__ = ['write_all_results']
+__all__ = ['write_all_results', 'expand_results']
+
+
+def expand_results(results, gen_step, de_types):
+    for de_type in de_types:
+        tmp = []
+        for res in results[de_type].values:
+            tmp.extend([res for _ in range(gen_step)])
+
+        results[de_type].values = tmp
 
 
 def norm_rgb_2_hex(colors):

@@ -22,27 +22,26 @@ class NDict(dict):
     pass
 
 
-def load_data(datasets_data, debug=False):
-    for path_, loader, options in datasets_data:
-        yield (*getattr(dataset_loaders, loader)(path_, debug), options)
-
-
 def main():
     ##
-    # Datasets
+    # jobs
+    jobs = []
+
+    ##
+    # datasets
     datasets = []
 
-    with open(argv[1], 'r') as dataset_pf:
-        datasets_data = json.load(dataset_pf)
+    with open(argv[1], 'r') as job_f:
+        jobs = json.load(job_f)
 
-    for config in datasets_data:
-        config[2] = ENDict(config[2].items())
+    for idx in range(len(jobs)):
+        jobs[idx] = ENDict(jobs[idx].items())
 
     ##
     # Load data
     print("+ Load datasets")
-    for data, labels, options in load_data(datasets_data):
-        datasets.append((DENN.training.Dataset(data, labels), options))
+    for job in jobs:
+        datasets.append((DENN.training.Dataset(job.dataset_file), job))
 
     print("+ Start tests")
     time_start_test = time()
@@ -79,12 +78,6 @@ def main():
                  None for _ in range(len(options.de_types))]))
         )
 
-        tot_batchs = list(
-            (cur_data, cur_label)
-            for cur_data, cur_label in
-            dataset.batch(options.BATCH)
-        )
-
         batch_counter = 0
 
         for gen in range(int(options.TOT_GEN / options.GEN_STEP)):
@@ -95,16 +88,17 @@ def main():
             graph = tf.Graph()
             with graph.as_default():
 
+                cur_batch = dataset[batch_counter]
+                batch_counter = (batch_counter + 1) % dataset.num_batches
+
                 cur_nn = DENN.training.gen_network(
                     NN_LEVELS,
                     options,
-                    tot_batchs[batch_counter][0],
-                    tot_batchs[batch_counter][1],
+                    cur_batch.data,
+                    cur_batch.labels,
                     dataset.test_data,
                     dataset.test_labels
                 )
-
-                batch_counter = (batch_counter + 1) % len(tot_batchs)
 
                 with tf.Session() as sess:
                     # init vars
@@ -169,13 +163,15 @@ def main():
                             ]
                         ))
 
-                        for gen_done in range(options.GEN_STEP):
-                            test_results[de_type].values.append(
-                                cur_accuracy)
+                        test_results[de_type].values.append(cur_accuracy)
 
                         print(
                             "+ DENN[{}] up to {} gen on {} completed in {:.05} sec.".format(
-                                de_type, (gen + 1) * options.GEN_STEP, options.name, time() - time_start_gen))
+                                de_type, (gen + 1) * options.GEN_STEP,
+                                options.name,
+                                time() - time_start_gen
+                            )
+                        )
 
                         prev_NN[de_type] = cur_pop
 
@@ -190,6 +186,10 @@ def main():
             options.W,
             options.CR
         )
+
+        DENN.training.expand_results(
+            test_results, options.GEN_STEP, options.de_types)
+
         DENN.training.write_all_results(
             options.name, test_results, description, out_options)
 

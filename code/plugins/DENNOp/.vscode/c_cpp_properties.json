@@ -4,7 +4,7 @@
             "name": "Mac",
             "includePath": [
                 "/usr/include",
-                "/usr/local/lib/python3.5/site-packages/tensorflow/include"
+                "$(python -c \"import tensorflow as tf; tf.sysconfig.get_include();\")"
             ],
             "browse" : {
                 "limitSymbolsToIncludedHeaders" : true,
@@ -15,8 +15,8 @@
             "name": "Linux",
             "includePath": [
                 "/usr/include",
-                "${HOME}/.virtualenvs/TensorFlow/lib/python3.5/site-packages/tensorflow/include"
-                ],
+                "$(python -c \"import tensorflow as tf; tf.sysconfig.get_include();\")"
+            ],
             "browse" : {
                 "limitSymbolsToIncludedHeaders" : true,
                 "databaseFilename" : ""

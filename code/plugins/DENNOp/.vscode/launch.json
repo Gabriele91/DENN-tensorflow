@@ -23,6 +23,23 @@
             "windows": {
                 "MIMode": "gdb"
             }
+        },
+        {
+            "name": "Python",
+            "type": "python",
+            "request": "launch",
+            "stopOnEntry": true,
+            "pythonPath": "${config.python.pythonPath}",
+            "cwd": "${workspaceRoot}",
+            "program": "${workspaceRoot}/benchmark.py",
+            "args": [
+                "iris_L1.json"
+            ],
+            "debugOptions": [
+                "WaitOnAbnormalExit",
+                "WaitOnNormalExit",
+                "RedirectOutput"
+            ]
         }
     ]
 }

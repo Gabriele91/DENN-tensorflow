@@ -173,7 +173,9 @@ def gen_network(levels, options, cur_data, cur_label, test_data, test_labels, ra
     last_input_train = cur_data
     last_input_test = test_data
 
-    for num, level in enumerate(levels, 1):
+    for num, cur_level in enumerate(levels, 1):
+        level, type_ = cur_level
+        
         SIZE_W, SIZE_B = level
 
         ##
@@ -214,7 +216,7 @@ def gen_network(levels, options, cur_data, cur_label, test_data, test_labels, ra
             # NN TRAIN
             y = tf.matmul(last_input_train, target_w) + target_b
             cross_entropy = tf.reduce_mean(
-                tf.nn.softmax_cross_entropy_with_logits(
+                getattr(tf.nn, type_)(
                     y, cur_label), name="evaluate")
 
             ##
@@ -227,9 +229,9 @@ def gen_network(levels, options, cur_data, cur_label, test_data, test_labels, ra
             accuracy = tf.reduce_mean(
                 tf.cast(correct_prediction, tf.float32))
         else:
-            last_input_train = tf.nn.relu(
+            last_input_train = getattr(tf.nn, type_)(
                 tf.matmul(last_input_train, target_w) + target_b)
-            last_input_test = tf.nn.relu(
+            last_input_test = getattr(tf.nn, type_)(
                 tf.matmul(last_input_test, target_w) + target_b)
 
     return ENDict([

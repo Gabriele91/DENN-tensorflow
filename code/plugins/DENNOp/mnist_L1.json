@@ -11,7 +11,7 @@
         ],
         "CR": 0.5,
         "levels": [
-            [[784,10], [10]]
+            [[[784,10], [10]], "softmax_cross_entropy_with_logits"]
         ]
     }
 ]

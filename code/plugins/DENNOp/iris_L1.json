@@ -5,7 +5,7 @@
         "TOT_GEN": 1000,
         "GEN_STEP": 100,
         "W": 0.8,
-        "NP": 100,
+        "NP": 20,
         "de_types": [
             "rand/1/bin",
             "rand/1/exp",
@@ -14,7 +14,7 @@
         ],
         "CR": 0.5,
         "levels": [
-            [[4,3], [3]]
+            [[[4,3], [3]], "softmax_cross_entropy_with_logits"]
         ]
     }
 ]

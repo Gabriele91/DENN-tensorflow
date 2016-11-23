@@ -68,7 +68,8 @@ def main():
         out_options = ENDict(
             [
                 ('num_gen', options.TOT_GEN),
-                ('levels', NN_LEVELS)
+                ('levels', NN_LEVELS),
+                ('num_batches', dataset.num_batches)
             ]
         )
 

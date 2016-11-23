@@ -27,9 +27,9 @@ def norm_rgb_2_hex(colors):
     )
 
 
-def gen_folder_name(name, num_gen, levels):
-    return "{}_0_{}{}".format(
-        name, num_gen,
+def gen_folder_name(name, num_gen, num_batches, levels):
+    return "{}_gen[{}]_batch[{}]{}".format(
+        name, num_gen, num_batches,
         "".join(
             [
                 "_L{}x{}+{}".format(w_x, w_y, b[0])
@@ -47,7 +47,7 @@ def write_all_results(name, results, description, out_options, showDelimiter=Fal
     ]
 
     BASE_FOLDER = gen_folder_name(
-        name, out_options.num_gen, out_options.levels)
+        name, out_options.num_gen, out_options.num_batches, out_options.levels)
 
     makedirs("./benchmark_results", exist_ok=True)
     makedirs(path.join("benchmark_results", BASE_FOLDER), exist_ok=True)

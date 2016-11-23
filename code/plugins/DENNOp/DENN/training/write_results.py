@@ -4,7 +4,7 @@ from os import makedirs
 from os import path
 from math import pi as PI
 import colorsys
-
+import json
 
 __all__ = ['write_all_results', 'expand_results']
 
@@ -28,12 +28,12 @@ def norm_rgb_2_hex(colors):
 
 
 def gen_folder_name(name, num_gen, num_batches, levels):
-    return "{}_gen[{}]_batch[{}]{}".format(
+    return "{}_gen[{}]_batches[{}]{}".format(
         name, num_gen, num_batches,
         "".join(
             [
                 "_L{}x{}+{}".format(w_x, w_y, b[0])
-                for (w_x, w_y), b in levels
+                for ((w_x, w_y), b), type_ in levels
             ]
         )
     )
@@ -47,10 +47,13 @@ def write_all_results(name, results, description, out_options, showDelimiter=Fal
     ]
 
     BASE_FOLDER = gen_folder_name(
-        name, out_options.num_gen, out_options.num_batches, out_options.levels)
+        name, out_options.job.TOT_GEN, out_options.num_batches, out_options.job.levels)
 
     makedirs("./benchmark_results", exist_ok=True)
     makedirs(path.join("benchmark_results", BASE_FOLDER), exist_ok=True)
+
+    with open(path.join("benchmark_results", BASE_FOLDER, "job.json"), "w") as job_file:
+        json.dump(out_options.job, job_file, indent=2)
 
     figures = []
 

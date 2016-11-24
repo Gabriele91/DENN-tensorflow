@@ -29,6 +29,8 @@ def create_dataset(dataset, loader, batch_size, name,
 
     data, labels = globals().get(loader)(dataset, debug)
 
+    # print(len(data), len(labels))
+
     np.random.seed(seed)
 
     if len(data) == 2 and len(labels) == 2:
@@ -44,6 +46,7 @@ def create_dataset(dataset, loader, batch_size, name,
 
         indexes = np.random.permutation(len(partial_data))
         partial_data = partial_data[indexes]
+        partial_labels = partial_labels[indexes]
 
         train_data, validation_data = np.array_split(
             partial_data, [train_size])
@@ -59,6 +62,7 @@ def create_dataset(dataset, loader, batch_size, name,
 
         indexes = np.random.permutation(len(data))
         data = data[indexes]
+        labels = labels[indexes]
 
         train_data, validation_data, test_data = np.split(data, [
             train_size,
@@ -138,7 +142,7 @@ class Dataset(object):
     def __init__(self, file_name):
         self.__zip_file = zipfile.ZipFile(
             file_name, mode='r',
-            compression=zipfile.ZIP_DEFLATED)
+            compression=zipfile.ZIP_BZIP2)
 
         self.stats = json.loads(self.__zip_file.read(
             "stats.json").decode("utf-8"))
@@ -155,6 +159,20 @@ class Dataset(object):
         data = np.frombuffer(self.__zip_file.read(
             'test.labels'), dtype=np.float64)
         data = data.reshape(*self.stats['test_labels_shape'])
+        return data
+
+    @property
+    def validation_data(self):
+        data = np.frombuffer(self.__zip_file.read(
+            'validation.data'), dtype=np.float64)
+        data = data.reshape(*self.stats['validation_data_shape'])
+        return data
+
+    @property
+    def validation_labels(self):
+        data = np.frombuffer(self.__zip_file.read(
+            'validation.labels'), dtype=np.float64)
+        data = data.reshape(*self.stats['validation_labels_shape'])
         return data
 
     @property
@@ -190,7 +208,11 @@ class Dataset(object):
         self.__zip_file.close()
 
 
-def gen_network(levels, options, cur_data, cur_label, test_data, test_labels, rand_pop):
+def gen_network(levels, options,
+                cur_data, cur_label,
+                validation_data, validation_labels,
+                test_data, test_labels,
+                rand_pop):
     target_ref = []
     pop_ref = []
     rand_pop_ref = []
@@ -198,7 +220,15 @@ def gen_network(levels, options, cur_data, cur_label, test_data, test_labels, ra
     weights = []
 
     last_input_train = cur_data
+    last_input_validation = validation_data
     last_input_test = test_data
+
+    # print(cur_data)
+    # print(cur_label)
+    # print(validation_data)
+    # print(validation_labels)
+    # print(test_data)
+    # print(test_labels)
 
     for num, cur_level in enumerate(levels, 1):
         level, type_ = cur_level
@@ -247,6 +277,17 @@ def gen_network(levels, options, cur_data, cur_label, test_data, test_labels, ra
                     y, cur_label), name="evaluate")
 
             ##
+            # NN VALIDATION
+            y_validation = tf.matmul(
+                last_input_validation, target_w) + target_b
+            correct_prediction_validation = tf.equal(
+                tf.argmax(y_validation, 1),
+                tf.argmax(validation_labels, 1)
+            )
+            accuracy_validation = tf.reduce_mean(
+                tf.cast(correct_prediction_validation, tf.float32))
+
+            ##
             # NN TEST
             y_test = tf.matmul(last_input_test, target_w) + target_b
             correct_prediction = tf.equal(
@@ -258,6 +299,8 @@ def gen_network(levels, options, cur_data, cur_label, test_data, test_labels, ra
         else:
             last_input_train = getattr(tf.nn, type_)(
                 tf.matmul(last_input_train, target_w) + target_b)
+            last_input_validation = getattr(tf.nn, type_)(
+                tf.matmul(last_input_validation, target_w) + target_b)
             last_input_test = getattr(tf.nn, type_)(
                 tf.matmul(last_input_test, target_w) + target_b)
 
@@ -270,5 +313,6 @@ def gen_network(levels, options, cur_data, cur_label, test_data, test_labels, ra
         ('y', y),
         ('y_test', y_test),
         ('cross_entropy', cross_entropy),
-        ('accuracy', accuracy)
+        ('accuracy', accuracy),
+        ('accuracy_validation', accuracy_validation)
     ])

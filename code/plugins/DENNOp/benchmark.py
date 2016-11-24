@@ -104,6 +104,8 @@ def main():
                 graph = tf.Graph()
                 with graph.as_default():
 
+                    # print(batch_counter)
+
                     cur_batch = dataset[batch_counter]
                     batch_counter = (batch_counter + 1) % dataset.num_batches
 
@@ -112,6 +114,8 @@ def main():
                         options,
                         cur_batch.data,
                         cur_batch.labels,
+                        dataset.validation_data,
+                        dataset.validation_labels,
                         dataset.test_data,
                         dataset.test_labels,
                         gen == 0  # rand population only if gen is the first one
@@ -173,7 +177,24 @@ def main():
                             cur_pop = results.final_populations
                             v_res = results.final_eval
 
-                            best_idx = np.argmin(v_res)
+                            # print(len(cur_pop))
+                            # print(cur_pop[0].shape)
+                            # print(cur_pop[1].shape)
+
+                            evaluations = []
+
+                            for idx in range(options.NP):
+                                cur_evaluation = sess.run(cur_nn.accuracy_validation, feed_dict=dict(
+                                    [
+                                        (target, cur_pop[num][idx])
+                                        for num, target in enumerate(cur_nn.targets)
+                                    ]
+                                ))
+                                evaluations.append(cur_evaluation)
+                            
+                            # print(evaluations)
+
+                            best_idx = np.argmin(evaluations)
 
                             cur_accuracy = sess.run(cur_nn.accuracy, feed_dict=dict(
                                 [

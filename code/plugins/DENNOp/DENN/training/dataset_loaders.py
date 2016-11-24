@@ -14,7 +14,7 @@ def load_mnist_image(file_name):
         buf = mnist_file.read(rows * cols * num_images)
         data = np.frombuffer(buf, dtype=np.uint8)
         data = np.divide(data, 255.)
-        data = data.reshape(num_images, rows*cols)
+        data = data.reshape(num_images, rows * cols)
         return data
 
 
@@ -35,19 +35,21 @@ def load_mnist_data(base_path, output=False):
         sys.stdout = open(os.devnull, 'w')
 
     print('+ Load data ...')
-    mnist_data = np.append(
-        load_mnist_image(os.path.join(
-            base_path, 'train-images-idx3-ubyte.gz')),
-        load_mnist_image(os.path.join(
-            base_path, 't10k-images-idx3-ubyte.gz')),
-        axis=0
+    mnist_data = np.array(
+        [
+            load_mnist_image(os.path.join(
+                base_path, 'train-images-idx3-ubyte.gz')),
+            load_mnist_image(os.path.join(
+                base_path, 't10k-images-idx3-ubyte.gz'))
+        ]
     )
-    label_data = np.append(
-        load_mnist_label(os.path.join(
-            base_path, 'train-labels-idx1-ubyte.gz')),
-        load_mnist_label(os.path.join(
-            base_path, 't10k-labels-idx1-ubyte.gz')),
-        axis=0
+    label_data = np.array(
+        [
+            load_mnist_label(os.path.join(
+                base_path, 'train-labels-idx1-ubyte.gz')),
+            load_mnist_label(os.path.join(
+                base_path, 't10k-labels-idx1-ubyte.gz'))
+        ]
     )
 
     print('+ images: \n', mnist_data)

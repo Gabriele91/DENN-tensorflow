@@ -1,7 +1,5 @@
 import tensorflow as tf
 import numpy as np
-from random import shuffle
-from random import seed as set_rnd_seed
 from copy import copy
 import json
 import zipfile
@@ -24,64 +22,85 @@ class ENDict(dict):
         self.__dict__ = self
 
 
-def create_dataset(dataset, loader, batch_size, name, seed=None, train_percentage=0.8, debug=False):
+def create_dataset(dataset, loader, batch_size, name,
+                   seed=None, train_percentage=0.8, validation_percentage=0.1,
+                   debug=False):
     makedirs(BASEDATASETPATH, exist_ok=True)
 
     data, labels = globals().get(loader)(dataset, debug)
 
-    train_data = []
-    train_labels = []
-    test_data = []
-    test_labels = []
+    np.random.seed(seed)
 
-    set_rnd_seed(seed)
+    if len(data) == 2 and len(labels) == 2:
+        ##
+        # Test set is already splitted
+        # Train set will split by train_percentage
+        partial_data, test_data = data
+        partial_labels, test_labels = labels
 
-    train_data = []
-    train_labels = []
+        train_size = int(len(partial_data) * train_percentage)
+        validation_size = len(partial_data) - train_size
+        test_size = len(test_data)
 
-    test_data = []
-    test_labels = []
+        indexes = np.random.permutation(len(partial_data))
+        partial_data = partial_data[indexes]
 
-    train_size = int(len(data) * train_percentage)
+        train_data, validation_data = np.array_split(
+            partial_data, [train_size])
+        train_labels, validation_labels = np.array_split(
+            partial_labels, [train_size])
 
-    indexes = [_ for _ in range(len(data))]
+    else:
+        ##
+        # Will create all the sets
+        train_size = int(len(data) * train_percentage)
+        validation_size = int(len(data) * validation_percentage)
+        test_size = len(data) - train_size - validation_size
 
-    shuffle(indexes)
+        indexes = np.random.permutation(len(data))
+        data = data[indexes]
 
-    for index in indexes:
-        if len(train_data) < train_size:
-            train_data.append(copy(data[index]))
-            train_labels.append(copy(labels[index]))
-        else:
-            test_data.append(copy(data[index]))
-            test_labels.append(copy(labels[index]))
+        train_data, validation_data, test_data = np.split(data, [
+            train_size,
+            train_size + validation_size
+        ])
 
-    train_data = np.array(train_data, np.float64)
-    train_data = np.array_split(train_data, batch_size)
-    train_labels = np.array(train_labels, np.float64)
-    train_labels = np.array_split(train_labels, batch_size)
+        train_labels, validation_labels, test_labels = np.split(labels, [
+            train_size,
+            train_size + validation_size
+        ])
 
-    test_data = np.array(test_data, np.float64)
-    test_labels = np.array(test_labels, np.float64)
+    # print(train_size, validation_size, test_size)
+    # print(train_data.shape, train_labels.shape)
+    # print(validation_data.shape, validation_labels.shape)
+    # print(test_data.shape, test_labels.shape)
+
+    train_data = np.split(train_data, batch_size)
+    train_labels = np.split(train_labels, batch_size)
 
     stats = {
         'n_classes': len(train_labels[0]),
         'n_features': len(train_data[0]),
+        # Elems
         'n_train_elms': len(train_data),
+        'n_validation_elms': len(validation_data),
         'n_test_elms': len(test_data),
+        # Shapes
         'train_data_shape': [elm.shape for elm in train_data],
         'train_labels_shape': [elm.shape for elm in train_labels],
+        'validation_data_shape': validation_data.shape,
+        'validation_labels_shape': validation_labels.shape,
         'test_data_shape': test_data.shape,
         'test_labels_shape': test_labels.shape,
+        # Stats
         'seed': seed,
         'train_percentage': train_percentage
     }
 
-    with zipfile.ZipFile(path.join(BASEDATASETPATH, "{}_{}_batches.zip".format(
+    with zipfile.ZipFile(path.join(BASEDATASETPATH, "{}_{}_batches.bzip".format(
         name, batch_size)
     ),
-        mode='w',
-            compression=zipfile.ZIP_DEFLATED) as zip_file:
+            mode='w', compression=zipfile.ZIP_BZIP2) as zip_file:
 
         zip_file.writestr(
             'stats.json',
@@ -96,6 +115,14 @@ def create_dataset(dataset, loader, batch_size, name, seed=None, train_percentag
                 'train_{}.labels'.format(index),
                 train_labels[index].tobytes()
             )
+        zip_file.writestr(
+            'validation.data',
+            validation_data.tobytes()
+        )
+        zip_file.writestr(
+            'validation.labels',
+            validation_labels.tobytes()
+        )
         zip_file.writestr(
             'test.data',
             test_data.tobytes()
@@ -175,7 +202,7 @@ def gen_network(levels, options, cur_data, cur_label, test_data, test_labels, ra
 
     for num, cur_level in enumerate(levels, 1):
         level, type_ = cur_level
-        
+
         SIZE_W, SIZE_B = level
 
         ##

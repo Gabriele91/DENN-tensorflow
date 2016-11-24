@@ -1,7 +1,7 @@
 [
     {
         "name": "letter_dataset",
-        "dataset_file": "./datasets/letter_20_batches.zip",
+        "dataset_file": "./datasets/letter_20_batches.bzip",
         "TOT_GEN": 5000,
         "GEN_STEP": 100,
         "W": 0.8,

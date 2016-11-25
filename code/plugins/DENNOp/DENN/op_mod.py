@@ -3,11 +3,22 @@ from os import path
 
 __all__ = ['create']
 
-MODULE = tf.load_op_library(path.join(
-    path.dirname(__file__), 'DENNOp.so')
-)
-
 
 def create(*args, **kwargs):
     """Create a DENN object"""
-    return MODULE.denn(*args, **kwargs)
+    training = kwargs.get("training", False)
+
+    module = None
+
+    if not training:
+        module = tf.load_op_library(path.join(
+            path.dirname(__file__), 'DENNOp.so')
+        )
+    else:
+        module = tf.load_op_library(path.join(
+            path.dirname(__file__), 'DENNOp_training.so')
+        )
+
+    del kwargs['training']
+
+    return module.denn(*args, **kwargs)

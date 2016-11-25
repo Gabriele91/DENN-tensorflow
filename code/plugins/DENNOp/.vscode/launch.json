@@ -8,7 +8,7 @@
             "program": "${config.python.pythonPath}",
             "args": [
                 "benchmark.py",
-                "iris_L1.json"
+                "${file}"
             ],
             "stopAtEntry": false,
             "cwd": "${workspaceRoot}",
@@ -33,7 +33,7 @@
             "cwd": "${workspaceRoot}",
             "program": "${workspaceRoot}/benchmark.py",
             "args": [
-                "iris_L1.json"
+                "${file}"
             ],
             "debugOptions": [
                 "WaitOnAbnormalExit",

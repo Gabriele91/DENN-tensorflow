@@ -352,7 +352,7 @@ public:
                 }
             }
             SOCKET_DEBUG(
-                m_debug.write(std::to_string(i));
+                m_debug.write(i);
             )
         }
         // Output populations

@@ -26,6 +26,13 @@ namespace debug
     {
     public:
         
+        
+        struct socket_info
+        {
+            int m_socket;
+            struct sockaddr_in m_socket_addr;
+        };
+
         template < class T >
         class atomic_vector
         {
@@ -78,12 +85,16 @@ namespace debug
             std::vector< T > m_vector;
         };
         
-        struct socket_info
+        enum message_type 
         {
-            int m_socket;
-            struct sockaddr_in m_socket_addr;
+            MSG_INT,
+            MSG_FLOAT,
+            MSG_DOUBLE,
+            MSG_STRING
         };
-        
+
+        using message_raw = std::vector< unsigned char >;
+
         enum result
         {
             RESULT_OK,
@@ -152,13 +163,73 @@ namespace debug
         
         void write(const std::string& str)
         {
-            m_messages.push(str);
+            //alloc
+            message_raw msg(
+                sizeof(unsigned int) // type
+              + sizeof(unsigned int) // len
+              + str.size() 
+            );
+            //values 
+            unsigned int type = MSG_STRING;
+            unsigned int len  = (unsigned int)str.length();
+            //write
+            std::memcpy(&msg[0                     ],&type,       sizeof(unsigned int));
+            std::memcpy(&msg[sizeof(unsigned int)  ],&len,        sizeof(unsigned int));
+            std::memcpy(&msg[sizeof(unsigned int)*2],str.c_str(), str.length());
+            //add into queue
+            m_messages.push(msg);
         }
         
+        void write(int i)
+        {
+            //alloc
+            message_raw msg(
+                sizeof(unsigned int) // type
+              + sizeof(int)          // integer
+            );
+            //values 
+            unsigned int type = MSG_INT;
+            //write
+            std::memcpy(&msg[0                   ],&type,sizeof(unsigned int));
+            std::memcpy(&msg[sizeof(unsigned int)],&i,   sizeof(int));
+            //add into queue
+            m_messages.push(msg);
+        }
         
-        
+        void write(float f)
+        {
+            //alloc
+            message_raw msg(
+                sizeof(unsigned int) // type
+              + sizeof(float)        // float
+            );
+            //values 
+            unsigned int type = MSG_FLOAT;
+            //write
+            std::memcpy(&msg[0                   ],&type,sizeof(unsigned int));
+            std::memcpy(&msg[sizeof(unsigned int)],&f,   sizeof(float));
+            //add into queue
+            m_messages.push(msg);
+        }
+
+        void write(double d)
+        {
+            //alloc
+            message_raw msg(
+                sizeof(unsigned int) // type
+              + sizeof(double)       // double
+            );
+            //values 
+            unsigned int type = MSG_DOUBLE;
+            //write
+            std::memcpy(&msg[0                   ],&type,sizeof(unsigned int));
+            std::memcpy(&msg[sizeof(unsigned int)],&d,   sizeof(double));
+            //add into queue
+            m_messages.push(msg);
+        }
+
     protected:
-        
+
         //close connection and stop thread
         void close()
         {
@@ -208,11 +279,11 @@ namespace debug
             while(m_messages.size())
             {
                 //message
-                const std::string& first = m_messages[0];
+                const message_raw& first = m_messages[0];
                 //to all clients
                 for(auto& s_info : m_client_list)
                 {
-                    ::write(s_info.m_socket, (void*)first.c_str(), first.size());
+                    ::write(s_info.m_socket, (void*)first.data(), first.size());
                 }
                 m_messages.remove_first();
             }
@@ -235,7 +306,7 @@ namespace debug
         //soket info
         atomic_vector < socket_info > m_client_list;
         socket_info                   m_server;
-        atomic_vector < std::string > m_messages;
+        atomic_vector < message_raw > m_messages;
         //thread info
         std::thread              m_thread;
         std::atomic< bool >      m_run  { 0 };

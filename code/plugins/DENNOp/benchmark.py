@@ -149,7 +149,8 @@ def main():
                                     sess.graph.as_graph_def()),
                                 names=[elm.name for elm in cur_nn.targets],
                                 CR=options.CR,
-                                DE=de_type
+                                DE=de_type,
+                                training=True
                             )
 
                             time_start_gen = time()

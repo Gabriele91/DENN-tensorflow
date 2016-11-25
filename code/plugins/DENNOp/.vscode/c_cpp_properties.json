@@ -4,6 +4,7 @@
             "name": "Mac",
             "includePath": [
                 "/usr/include",
+                "${workspaceRoot}/include",
                 "$(python -c \"import tensorflow as tf; tf.sysconfig.get_include();\")"
             ],
             "browse" : {
@@ -15,6 +16,7 @@
             "name": "Linux",
             "includePath": [
                 "/usr/include",
+                "${workspaceRoot}/include",
                 "$(python -c \"import tensorflow as tf; tf.sysconfig.get_include();\")"
             ],
             "browse" : {

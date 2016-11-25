@@ -11,7 +11,12 @@
         { 
             "taskName": "build",
             "isBuildCommand": true,
-            "args": []
+            "args": ["clean", "make_denn_op"]
+        },
+        { 
+            "taskName": "build-traning",
+            "isBuildCommand": true,
+            "args": ["clean", "make_denn_op", "DENN_TRANING=true"]
         },
         { 
             "taskName": "clean",

@@ -1,7 +1,92 @@
 from tensorflow.python.framework import ops
 from tensorflow import Session
+from multiprocessing import Process
+import socket
+import struct
+from select import select
 
-__all__ = ['get_graph_proto', 'get_best_vector']
+__all__ = ['get_graph_proto', 'get_best_vector', 'OpListener']
+
+
+class OpListener(object):
+
+    def __init__(self, host='', port=6540):
+        self.db_listner = DebugListner(host, port)
+
+    def __enter__(self):
+        self.db_listner.start()
+        return self.db_listner
+
+    def __exit__(self, ex_type, ex_value, traceback):
+        self.db_listner.stop_run()
+        self.db_listner.join()
+
+
+class DebugListner(Process):
+
+    def __init__(self, host, port):
+
+        super(DebugListner, self).__init__()
+
+        print(
+            "+ Connect to Op: host->[{}] port->[{}]".format(host, port))
+        self._sock = socket.socket(
+            socket.AF_INET, socket.SOCK_STREAM | socket.SOCK_NONBLOCK)
+        self._sock.setblocking(True)
+
+        self._run = True
+
+        self.host = host
+        self.port = port
+
+        # struct type correspondance
+        self.__msg_types = {
+            0: 'i',
+            1: 'f',
+            2: 'd',
+            3: 'c',
+        }
+
+    def stop_run(self):
+        self._run = False
+        return self._run
+
+    def run(self):
+
+        print("+ start main loop")
+
+        self._sock.connect((self.host, self.port))
+        
+        while self._run:
+
+            readables, writables, _ = select([self._sock], [self._sock], [self._sock])
+
+            # print("Available:", readables, writables)
+
+            for readable in readables:
+                data = readable.recv(4)
+                if data:
+                    type_ = struct.unpack("<i", data)[0]
+                    # print("+ data -> {} -> {}".format(data, type_))
+                    if type_ in self.__msg_types:
+                        msg = self.read_msg(
+                            readable, self.__msg_types[type_])
+                        # print("+ [msg]-> {}".format(msg))
+
+    def __del__(self):
+        #self._sock.shutdown(socket.SHUT_RDWR)
+        self._sock.close()
+
+    @staticmethod
+    def read_msg(conn, type_):
+        print(type_)
+        if type_ != 'c':
+            data = conn.recv(struct.calcsize(type_))
+            return struct.unpack("<{}".format(type_), data)[0]
+        else:
+            size = struct.unpack("<i", conn.recv(4))[0]
+            data = conn.recv(struct.calcsize(type_) * size)
+            return struct.unpack("<{}".format(type_ * size), data)[0]
 
 
 def get_graph_proto(graph_or_graph_def, as_text=True):
@@ -22,9 +107,10 @@ def get_graph_proto(graph_or_graph_def, as_text=True):
     else:
         return graph_def.SerializeToString()
 
+
 def get_best_vector(results, f_x, target):
     """Return best vector due f_x.
-    
+
     Params:
         results (numpy array, tf result)
         f_x (function written in tf)

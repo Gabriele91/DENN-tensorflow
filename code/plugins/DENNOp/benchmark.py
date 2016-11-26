@@ -153,26 +153,28 @@ def main():
                                 training=True
                             )
 
-                            time_start_gen = time()
+                            with DENN.OpListener() as listener:
 
-                            if gen == 0:
-                                results = sess.run(denn_op, feed_dict=dict(
-                                    [
-                                        (pop_ref, prev_NN[de_type][num])
-                                        for num, pop_ref in enumerate(cur_nn.populations)
-                                    ]
-                                ))
-                            else:
-                                results = sess.run(denn_op, feed_dict=dict(
-                                    [
-                                        (pop_ref, prev_NN[de_type][num])
-                                        for num, pop_ref in enumerate(cur_nn.populations)
-                                    ]
-                                    +
-                                    [
-                                        (cur_nn.evaluated, v_res)
-                                    ]
-                                ))
+                                time_start_gen = time()
+
+                                if gen == 0:
+                                    results = sess.run(denn_op, feed_dict=dict(
+                                        [
+                                            (pop_ref, prev_NN[de_type][num])
+                                            for num, pop_ref in enumerate(cur_nn.populations)
+                                        ]
+                                    ))
+                                else:
+                                    results = sess.run(denn_op, feed_dict=dict(
+                                        [
+                                            (pop_ref, prev_NN[de_type][num])
+                                            for num, pop_ref in enumerate(cur_nn.populations)
+                                        ]
+                                        +
+                                        [
+                                            (cur_nn.evaluated, v_res)
+                                        ]
+                                    ))
 
                             # get output
                             cur_pop = results.final_populations

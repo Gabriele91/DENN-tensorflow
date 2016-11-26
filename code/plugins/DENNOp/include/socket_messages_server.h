@@ -131,11 +131,11 @@ namespace debug
                     return;
                 }
                 //set nonblocking and async
-                result nb_async_ret = set_nonblocking_async(m_server.m_socket);
+                result nb_ret = set_nonblocking(m_server.m_socket);
                 //test
-                if( nb_async_ret != RESULT_OK )
+                if( nb_ret != RESULT_OK )
                 {
-                    m_error = nb_async_ret;
+                    m_error = nb_ret;
                     return;
                 }
                 //try to connect
@@ -243,13 +243,19 @@ namespace debug
         
         
         //set nonbloking
-        static result set_nonblocking_async(int socket)
+        static result set_nonblocking(int socket)
         {
             if( fcntl(socket, F_SETFL, fcntl(socket, F_GETFL, 0) | O_NONBLOCK) == -1 )
             {
                 return RESULT_FAIL_SET_NONBLOCK;
             }
             
+            return RESULT_OK;
+        }
+
+        //set async
+        static result set_async(int socket)
+        {
             if( fcntl(socket, F_SETFL, fcntl(socket, F_GETFL, 0) | O_ASYNC) == -1 )
             {
                 return RESULT_FAIL_SET_ASYNC;
@@ -257,6 +263,7 @@ namespace debug
             
             return RESULT_OK;
         }
+
         //accept now sockets
         void accept_client()
         {

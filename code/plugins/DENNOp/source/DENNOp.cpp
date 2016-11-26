@@ -197,7 +197,7 @@ class DENNOp : public OpKernel
     PerturbedVector  m_pert_vector{ PV_RANDOM };
     //debug
     SOCKET_DEBUG(
-     const int                     m_debug_port{ 6540         };
+     const int                     m_debug_port{ 6545         };
      debug::socket_messages_server m_debug     { m_debug_port };
     )
     

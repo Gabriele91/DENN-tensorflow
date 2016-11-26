@@ -28,6 +28,20 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
+               BlueprintIdentifier = "E0A9F4F11DE4BA5700807B05"
+               BuildableName = "DENNOpTraning"
+               BlueprintName = "DENNOpTraning"
+               ReferencedContainer = "container:DENNOp.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
                BlueprintIdentifier = "CEF1F3161DDBB134005FE9C7"
                BuildableName = "DENNBenchmark"
                BlueprintName = "DENNBenchmark"

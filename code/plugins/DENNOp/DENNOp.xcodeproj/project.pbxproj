@@ -71,9 +71,6 @@
 		E0A9F4F81DE4BB5500807B05 /* __init__.cpython-35.pyc */ = {isa = PBXFileReference; lastKnownFileType = file; path = "__init__.cpython-35.pyc"; sourceTree = "<group>"; };
 		E0A9F4F91DE4BB5500807B05 /* op_mod.cpython-35.pyc */ = {isa = PBXFileReference; lastKnownFileType = file; path = "op_mod.cpython-35.pyc"; sourceTree = "<group>"; };
 		E0A9F4FA1DE4BB5500807B05 /* utils.cpython-35.pyc */ = {isa = PBXFileReference; lastKnownFileType = file; path = "utils.cpython-35.pyc"; sourceTree = "<group>"; };
-		E0A9F4FB1DE4BB5500807B05 /* DENNOp.so */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = DENNOp.so; sourceTree = "<group>"; };
-		E0A9F4FC1DE4BB5500807B05 /* DENNOp_traning.so */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = DENNOp_traning.so; sourceTree = "<group>"; };
-		E0A9F4FE1DE4BB5500807B05 /* DENNOp.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; path = DENNOp.o; sourceTree = "<group>"; };
 		E0A9F4FF1DE4BB5500807B05 /* op_mod.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = op_mod.py; sourceTree = "<group>"; };
 		E0A9F5011DE4BB5500807B05 /* __init__.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = __init__.py; sourceTree = "<group>"; };
 		E0A9F5031DE4BB5500807B05 /* __init__.cpython-35.pyc */ = {isa = PBXFileReference; lastKnownFileType = file; path = "__init__.cpython-35.pyc"; sourceTree = "<group>"; };
@@ -86,6 +83,8 @@
 		E0A9F50A1DE4BB5500807B05 /* utils.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = utils.py; sourceTree = "<group>"; };
 		E0A9F50B1DE4BB5500807B05 /* write_results.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = write_results.py; sourceTree = "<group>"; };
 		E0A9F50C1DE4BB5500807B05 /* utils.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = utils.py; sourceTree = "<group>"; };
+		E0AA40511DE9F1AB00243C1D /* DENNOp.o */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.objfile"; path = DENNOp.o; sourceTree = "<group>"; };
+		E0AA40521DE9F70700243C1D /* DENNOp_training.so */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = DENNOp_training.so; sourceTree = "<group>"; };
 		E0C206961DCB2C3E0002A331 /* test_plugin_images.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = test_plugin_images.py; sourceTree = "<group>"; };
 		E0C206971DCB2C3E0002A331 /* test_plugin_letter.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = test_plugin_letter.py; sourceTree = "<group>"; };
 		E0C2069E1DCB309D0002A331 /* test_plugin_letter.out.txt */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = test_plugin_letter.out.txt; sourceTree = "<group>"; };
@@ -143,10 +142,9 @@
 		E0A9F4F51DE4BB5500807B05 /* DENN */ = {
 			isa = PBXGroup;
 			children = (
+				E0AA40521DE9F70700243C1D /* DENNOp_training.so */,
 				E0A9F4F61DE4BB5500807B05 /* __init__.py */,
 				E0A9F4F71DE4BB5500807B05 /* __pycache__ */,
-				E0A9F4FB1DE4BB5500807B05 /* DENNOp.so */,
-				E0A9F4FC1DE4BB5500807B05 /* DENNOp_traning.so */,
 				E0A9F4FD1DE4BB5500807B05 /* obj */,
 				E0A9F4FF1DE4BB5500807B05 /* op_mod.py */,
 				E0A9F5001DE4BB5500807B05 /* training */,
@@ -168,7 +166,7 @@
 		E0A9F4FD1DE4BB5500807B05 /* obj */ = {
 			isa = PBXGroup;
 			children = (
-				E0A9F4FE1DE4BB5500807B05 /* DENNOp.o */,
+				E0AA40511DE9F1AB00243C1D /* DENNOp.o */,
 			);
 			path = obj;
 			sourceTree = "<group>";
@@ -332,12 +330,12 @@
 			projectRoot = "";
 			targets = (
 				E0E1CCCD1DA68F1E009C4D35 /* DENNOp */,
+				E0A9F4F11DE4BA5700807B05 /* DENNOpTraning */,
 				E0A7C66D1DA6A4FB005D74D0 /* DENNOpRunTestImages */,
 				E0C206981DCB2C610002A331 /* DENNOpRunTestLetter */,
 				E09B48C91DB7639C00333E4F /* DENNFakeDylib */,
 				E0C206A11DCB3C800002A331 /* DENNOpRunTestIris */,
 				CEF1F3161DDBB134005FE9C7 /* DENNBenchmark */,
-				E0A9F4F11DE4BA5700807B05 /* DENNOpTraning */,
 			);
 		};
 /* End PBXProject section */
@@ -349,7 +347,7 @@
 			files = (
 			);
 			inputPaths = (
-				"$(SRCROOT)/mnist_L1.json",
+				"$(SRCROOT)/iris_L1.json",
 			);
 			name = "Run Script";
 			outputPaths = (

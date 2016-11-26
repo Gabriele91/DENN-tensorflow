@@ -5,7 +5,7 @@ MKDIR_P     ?= mkdir -p
 MODULE_FOLDER ?= DENN
 TOP         ?= $(shell pwd)
 PYTHON_PATH ?= $(HOME)/.virtualenvs/TensorFlow/
-USE_DEBUG   ?= false
+USE_DEBUG   ?= true
 DENN_TRANING?= false
 #include list
 TF_INCLUDE = $(PYTHON_PATH)/lib/python3.5/site-packages/tensorflow/include
@@ -53,7 +53,7 @@ endif
 #denn traing
 ifeq ($(DENN_TRANING),true)
 	C_FLAGS += -DDENN_USE_SOCKET_DEBUG -DDENN_USE_TRANING
-	OUT_FILE_NAME_INFO = _traning
+	OUT_FILE_NAME_INFO = _training
 endif
 
 #flags C++

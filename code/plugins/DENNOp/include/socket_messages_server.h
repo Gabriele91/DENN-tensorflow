@@ -29,8 +29,20 @@ namespace debug
         
         struct socket_info
         {
-            int m_socket;
+            //fields
+            int m_socket{ -1 };
             struct sockaddr_in m_socket_addr;
+            
+            //standard init
+            socket_info(){}
+            
+            //init info
+            socket_info(int in_socket,const struct sockaddr_in& in_socket_addr)
+            :m_socket(in_socket)
+            ,m_socket_addr(in_socket_addr)
+            {
+            }
+            
         };
 
         template < class T >
@@ -102,6 +114,7 @@ namespace debug
             RESULT_FAIL_SET_NONBLOCK,
             RESULT_FAIL_SET_ASYNC,
             RESULT_FAIL_TO_CONNECTION,
+            RESULT_FAIL_TO_LISTEN
         };
         
         socket_messages_server(int port)
@@ -111,8 +124,8 @@ namespace debug
             //info
             m_port = port;
             m_run  = true;
-            //clean list
-            m_client_list.clear();
+            //clean
+            m_client = socket_info();
             //start
             m_thread = std::thread(
             [this]()
@@ -142,9 +155,17 @@ namespace debug
                 if (bind(m_server.m_socket, (struct sockaddr *) &m_server.m_socket_addr, sizeof(m_server.m_socket_addr)) < 0)
                 {
                     m_error = RESULT_FAIL_TO_CONNECTION;
-                    m_run=false;
+                    m_run = false;
                     return;
                 }
+                //enale listen
+                if(::listen(m_server.m_socket,1) < 0)
+                {
+                    m_error = RESULT_FAIL_TO_LISTEN;
+                    m_run = false;
+                    return;
+                }
+                
                 //run
                 while(m_run)
                 {
@@ -235,12 +256,27 @@ namespace debug
         {
             if(m_run)
             {
-                m_run = false;
-                m_thread.join();
+                //stop thrad
+                join();
+                //close socket
                 close_server_socket();
             }
+            //stop thread anyway
+            else join();
         }
         
+        //join thread
+        void join()
+        {
+            //disable loop
+            m_run = false;
+            //stop thread
+            if(m_thread.joinable())
+            {
+                //join
+                m_thread.join();
+            }
+        }
         
         //set nonbloking
         static result set_nonblocking(int socket)
@@ -264,55 +300,75 @@ namespace debug
             return RESULT_OK;
         }
 
+        //test if a tcp socket is live
+        static bool keepalive(int socket)
+        {
+            //value
+            int is_live = false;
+            //size of value
+            socklen_t sizeo_of_is_live = sizeof(is_live);
+            //get result
+            if(getsockopt(socket, SOL_SOCKET, SO_KEEPALIVE, &is_live, &sizeo_of_is_live) < 0)
+            {
+                return false;
+            }
+            //return
+            return sizeo_of_is_live != 0;
+        }
+        
         //accept now sockets
         void accept_client()
         {
-            //data of new socket
-            socket_info new_socket;
-            //ref
-            struct sockaddr* ref_socket_addr = (struct sockaddr*)&new_socket.m_socket_addr;
-            socklen_t size_addr              = sizeof(struct sockaddr_in);
-            //accept
-            new_socket.m_socket = accept(m_server.m_socket, ref_socket_addr, &size_addr);
-            //test
-            if( new_socket.m_socket >= 0 )
+            if(m_client.m_socket < 0) //|| !keepalive(m_client.m_socket))
             {
-                m_client_list.push(new_socket);
+                //close stream
+                if(m_client.m_socket >= 0) ::close(m_client.m_socket);
+                //init
+                m_client = socket_info();
+                //ref
+                struct sockaddr* ref_socket_addr = (struct sockaddr*)&m_client.m_socket_addr;
+                socklen_t size_addr              = sizeof(struct sockaddr_in);
+                //accept
+                m_client.m_socket = accept(m_server.m_socket, ref_socket_addr, &size_addr);
             }
         }
+        
         //send message
         void send_messages()
         {
-            while(m_messages.size())
+            if(m_client.m_socket >= 0)
             {
-                //message
-                const message_raw& first = m_messages[0];
-                //to all clients
-                for(auto& s_info : m_client_list)
+                for(size_t i=0; i!=m_messages.size(); ++i)
                 {
-                    ::write(s_info.m_socket, (void*)first.data(), first.size());
+                    //message
+                    const message_raw& data = m_messages[i];
+                    //to client
+                    ::write(m_client.m_socket, (void*)data.data(), data.size());
                 }
-                m_messages.remove_first();
             }
+            m_messages.clear();
         }
+        
         //close all connection
         void close_server_socket()
         {
-            if(m_server.m_socket!=-1)
+            if(m_client.m_socket >= 0)
             {
-                for(auto& s_info : m_client_list)
-                {
-                    ::shutdown(s_info.m_socket, SHUT_RDWR);
-                    ::close(s_info.m_socket);
-                }
+                ::shutdown(m_client.m_socket, SHUT_RDWR);
+                ::close(m_client.m_socket);
+            }
+            if(m_server.m_socket >= 0)
+            {
                 ::close(m_server.m_socket);
             }
-            m_client_list.clear();
-            m_server.m_socket = -1;
+            //clean
+            m_server = socket_info();
+            m_client = socket_info();
         }
         //soket info
-        atomic_vector < socket_info > m_client_list;
-        socket_info                   m_server;
+        socket_info m_client;
+        socket_info m_server;
+        //pessage list
         atomic_vector < message_raw > m_messages;
         //thread info
         std::thread              m_thread;

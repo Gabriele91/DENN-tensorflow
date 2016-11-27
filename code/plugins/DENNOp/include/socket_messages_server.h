@@ -79,6 +79,13 @@ namespace debug
             
             void clear()
             {
+                m_mutex.lock();
+                m_vector.clear();
+                m_mutex.unlock();
+            }
+
+            void unsafe_clear()
+            {
                 m_vector.clear();
             }
             
@@ -90,6 +97,11 @@ namespace debug
             iterator end() const
             {
                 return m_vector.end();
+            }
+
+            std::mutex& get_mutex()
+            {
+                return m_mutex;
             }
             
         protected:
@@ -336,17 +348,19 @@ namespace debug
         //send message
         void send_messages()
         {
-            if(m_client.m_socket >= 0)
+            //send
+            if((m_client.m_socket >= 0) && (m_messages.size()!= 0))
             {
-                for(size_t i=0; i!=m_messages.size(); ++i)
+                while(m_messages.size())
                 {
                     //message
-                    const message_raw& data = m_messages[i];
+                    message_raw data = m_messages[0];
                     //to client
-                    ::write(m_client.m_socket, (void*)data.data(), data.size());
+                    ::send(m_client.m_socket, (void*)data.data(), data.size(), 0);
+                    //remove
+                    m_messages.remove_first();
                 }
             }
-            m_messages.clear();
         }
         
         //close all connection

@@ -57,7 +57,7 @@ class DebugListner(Process):
 
         res = None
 
-        while res != 0:
+        while res != 0 and self._run:
             res = self._sock.connect_ex((self.host, self.port))
 
         print("+ DebugListner: connected")
@@ -73,8 +73,9 @@ class DebugListner(Process):
                 data = readable.recv(4)
                 if data:
                     type_ = struct.unpack("<i", data)[0]
-                    print("+ data -> {} -> {}".format(data, type_))
+                    #print("+ data -> {} -> {}".format(data, type_))
                     if type_ in self.__msg_types:
+                        #print(type_)
                         msg = self.read_msg(
                             readable, self.__msg_types[type_])
                         print("+ [msg]-> {}".format(msg))
@@ -85,7 +86,6 @@ class DebugListner(Process):
 
     @staticmethod
     def read_msg(conn, type_):
-        print(type_)
         if type_ != 'c':
             data = conn.recv(struct.calcsize(type_))
             return struct.unpack("<{}".format(type_), data)[0]

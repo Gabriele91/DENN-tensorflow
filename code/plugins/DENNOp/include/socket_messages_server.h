@@ -67,10 +67,19 @@ namespace debug
                 m_mutex.unlock();
             }
             
+            void safe_copy(T& in,int i)
+            {
+                m_mutex.lock();
+                in = m_vector[i];
+                m_mutex.unlock();
+            }
+
+            #if 0 
             const T& operator[](size_t i) const
             {
                 return m_vector[i];
             }
+            #endif
             
             size_t size() const
             {
@@ -84,25 +93,6 @@ namespace debug
                 m_mutex.unlock();
             }
 
-            void unsafe_clear()
-            {
-                m_vector.clear();
-            }
-            
-            iterator begin() const
-            {
-                return m_vector.begin();
-            }
-            
-            iterator end() const
-            {
-                return m_vector.end();
-            }
-
-            std::mutex& get_mutex()
-            {
-                return m_mutex;
-            }
             
         protected:
             std::mutex       m_mutex;
@@ -353,12 +343,14 @@ namespace debug
             {
                 while(m_messages.size())
                 {
-                    //message
-                    message_raw data = m_messages[0];
-                    //to client
-                    ::send(m_client.m_socket, (void*)data.data(), data.size(), 0);
+                    //message temp data
+                    message_raw data;
+                    //copy
+                    m_messages.safe_copy(data, 0);
                     //remove
                     m_messages.remove_first();
+                    //to client
+                    ::send(m_client.m_socket, (void*)data.data(), data.size(), 0);
                 }
             }
         }

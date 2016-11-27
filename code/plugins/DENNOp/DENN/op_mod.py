@@ -19,6 +19,7 @@ def create(*args, **kwargs):
             path.dirname(__file__), 'DENNOp_training.so')
         )
 
-    del kwargs['training']
+    if 'training' in kwargs:
+        del kwargs['training']
 
     return module.denn(*args, **kwargs)

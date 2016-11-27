@@ -1,6 +1,7 @@
 from tensorflow.python.framework import ops
 from tensorflow import Session
 from multiprocessing import Process
+from multiprocessing import Event
 import socket
 import struct
 from select import select
@@ -8,36 +9,42 @@ from select import select
 __all__ = ['get_graph_proto', 'get_best_vector', 'OpListener']
 
 
+CURSOR_UP_ONE = '\x1b[1A'
+ERASE_LINE = '\x1b[2K'
+
 class OpListener(object):
 
-    def __init__(self, host='', port=6545):
-        self.db_listner = DebugListner(host, port)
+    def __init__(self, host='', port=6545, msg_header="msg"):
+        self.db_listener = DebugListner(host, port, msg_header)
 
     def __enter__(self):
-        self.db_listner.start()
-        return self.db_listner
+        self.db_listener.start()
+        return self.db_listener
 
     def __exit__(self, ex_type, ex_value, traceback):
-        self.db_listner.stop_run()
-        self.db_listner.join()
+        self.db_listener.stop_run()
+        print("++ DebugListner: stop to listen and exit", end='\r')
+        self.db_listener.join(2.)
+        print("++ DebugListner: exited...              ")
 
 
 class DebugListner(Process):
 
-    def __init__(self, host, port):
+    def __init__(self, host, port, msg_header):
 
         super(DebugListner, self).__init__()
 
-        print(
-            "+ Connect to Op: host->[{}] port->[{}]".format(host, port))
+        # print(
+        #     "+ Connect to Op: host->[{}] port->[{}]".format(host, port))
         self._sock = socket.socket(
-            socket.AF_INET, socket.SOCK_STREAM | socket.SOCK_NONBLOCK)
-        self._sock.setblocking(False)
+            socket.AF_INET, socket.SOCK_STREAM)
+        self._sock.settimeout(None)
 
-        self._run = True
+        self._exit = Event()
 
         self.host = host
         self.port = port
+        self.msg_header = msg_header
 
         # struct type correspondance
         self.__msg_types = {
@@ -48,26 +55,29 @@ class DebugListner(Process):
         }
 
     def stop_run(self):
-        self._run = False
-        return self._run
+        self._exit.set()
 
     def run(self):
 
-        print("+ DebugListner: start main loop")
-
         res = None
 
-        while res != 0 and self._run:
+        print("++ DebugListner: connecting", end='\r')
+
+        while res != 0 and not self._exit.is_set():
             res = self._sock.connect_ex((self.host, self.port))
 
-        print("+ DebugListner: connected")
+        print("++ DebugListner: connected", end='\r')
 
-        while self._run:
+        print("++ DebugListner: start main loop")
+        print(CURSOR_UP_ONE + ERASE_LINE, end='\r')
+
+        while not self._exit.is_set():
 
             readables, writables, specials = select(
                 [self._sock], [], [])
 
             # print("Available:", readables, writables)
+            # print(self._exit.is_set())
 
             for readable in readables:
                 data = readable.recv(4)
@@ -75,13 +85,13 @@ class DebugListner(Process):
                     type_ = struct.unpack("<i", data)[0]
                     #print("+ data -> {} -> {}".format(data, type_))
                     if type_ in self.__msg_types:
-                        #print(type_)
+                        # print(type_)
                         msg = self.read_msg(
                             readable, self.__msg_types[type_])
-                        print("+ [msg]-> {}".format(msg))
+                        print(
+                            "++ [{}]-> {}".format(self.msg_header, msg), end='\r')
 
     def __del__(self):
-        # self._sock.shutdown(socket.SHUT_RDWR)
         self._sock.close()
 
     @staticmethod

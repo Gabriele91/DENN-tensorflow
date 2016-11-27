@@ -12,11 +12,13 @@
 #include <thread>
 #include <mutex>
 #include <unistd.h>
-
+       
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <netinet/tcp.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 namespace tensorflow
 {
@@ -104,7 +106,8 @@ namespace debug
             MSG_INT,
             MSG_FLOAT,
             MSG_DOUBLE,
-            MSG_STRING
+            MSG_STRING,
+            MSG_CLOSE_CONNECTION
         };
 
         using message_raw = std::vector< unsigned char >;
@@ -137,7 +140,15 @@ namespace debug
                 m_server.m_socket_addr.sin_addr.s_addr = INADDR_ANY;
                 m_server.m_socket_addr.sin_port = htons(m_port);
                 //create socket
-                m_server.m_socket = socket(AF_INET, SOCK_STREAM, 0);
+                m_server.m_socket = socket(
+                      AF_INET
+                    , SOCK_STREAM
+                    #ifdef __linux__
+                    , 0
+                    #else
+                    , 0
+                    #endif
+                );
                 //test
                 if (m_server.m_socket < 0)
                 {
@@ -145,6 +156,24 @@ namespace debug
                     m_run=false;
                     return;
                 }
+                //on linux disable linger
+                #if defined( __linux__ ) && 0
+                //struct
+                struct  
+                {
+                    int l_onoff;    /* linger active */
+                    int l_linger;   /* how many seconds to linger for */
+                }
+                linger;
+                //disable 
+                linger.l_onoff = 0;
+                linger.l_linger = 0;
+                //set
+                if(setsockopt(m_server.m_socket, SOL_SOCKET, SO_LINGER, (int*)&linger, sizeof(linger)) < 0)
+                {
+                    //wrong
+                }
+                #endif
                 //set nonblocking and async
                 result nb_ret = set_nonblocking(m_server.m_socket);
                 //test
@@ -154,11 +183,28 @@ namespace debug
                     return;
                 }
                 //try to connect
-                if (bind(m_server.m_socket, (struct sockaddr *) &m_server.m_socket_addr, sizeof(m_server.m_socket_addr)) < 0)
+                const short      n_max_test       = 10;
+                const useconds_t ms_time_to_sleep = 100;
+                //do connect
+                for(short i_test=1;  i_test != (n_max_test+1); ++i_test) 
                 {
-                    m_error = RESULT_FAIL_TO_CONNECTION;
-                    m_run = false;
-                    return;
+                    int ret = bind(m_server.m_socket, (struct sockaddr *)
+                                   &m_server.m_socket_addr, 
+                                   sizeof(m_server.m_socket_addr));
+                    //ok
+                    if(ret >= 0) 
+                    { 
+                        break;
+                    }
+                    //re-try or goodbye
+                    else if (ret < 0 && (i_test == n_max_test))
+                    {
+                        m_error = RESULT_FAIL_TO_CONNECTION;
+                        m_run = false;
+                        return;
+                    }
+                    //wait
+                    usleep(ms_time_to_sleep * 1000);
                 }
                 //enale listen
                 if(::listen(m_server.m_socket,1) < 0)
@@ -171,10 +217,12 @@ namespace debug
                 //run
                 while(m_run)
                 {
-                    //add new connection(s)
+                    //get new connection
                     accept_client();
                     //send messages
                     send_messages();
+                    //read messages 
+                    read_messages();
                 }
             });
         }
@@ -200,7 +248,7 @@ namespace debug
             std::memcpy(&msg[sizeof(unsigned int)  ],&len,        sizeof(unsigned int));
             std::memcpy(&msg[sizeof(unsigned int)*2],str.c_str(), str.length());
             //add into queue
-            m_messages.push(msg);
+            m_send_msg.push(msg);
         }
         
         void write(int i)
@@ -216,7 +264,7 @@ namespace debug
             std::memcpy(&msg[0                   ],&type,sizeof(unsigned int));
             std::memcpy(&msg[sizeof(unsigned int)],&i,   sizeof(int));
             //add into queue
-            m_messages.push(msg);
+            m_send_msg.push(msg);
         }
         
         void write(float f)
@@ -232,7 +280,7 @@ namespace debug
             std::memcpy(&msg[0                   ],&type,sizeof(unsigned int));
             std::memcpy(&msg[sizeof(unsigned int)],&f,   sizeof(float));
             //add into queue
-            m_messages.push(msg);
+            m_send_msg.push(msg);
         }
 
         void write(double d)
@@ -248,23 +296,27 @@ namespace debug
             std::memcpy(&msg[0                   ],&type,sizeof(unsigned int));
             std::memcpy(&msg[sizeof(unsigned int)],&d,   sizeof(double));
             //add into queue
-            m_messages.push(msg);
+            m_send_msg.push(msg);
         }
 
     protected:
 
+        //close connection
+        void send_close_connection_immediately()
+        {
+            //values 
+            unsigned int type = MSG_CLOSE_CONNECTION;
+            //to client
+            ::send(m_client.m_socket, (void*)&type, sizeof(unsigned int), 0);
+        }
+
         //close connection and stop thread
         void close()
         {
-            if(m_run)
-            {
-                //stop thrad
-                join();
-                //close socket
-                close_server_socket();
-            }
-            //stop thread anyway
-            else join();
+            //stop thread
+            join();
+            //close socket
+            close_server_socket();
         }
         
         //join thread
@@ -291,6 +343,17 @@ namespace debug
             return RESULT_OK;
         }
 
+        //set bloking
+        static result set_blocking(int socket)
+        {
+            if( fcntl(socket, F_SETFL, fcntl(socket, F_GETFL, 0)  & (~O_NONBLOCK)) == -1 )
+            {
+                return RESULT_FAIL_SET_NONBLOCK;
+            }
+            
+            return RESULT_OK;
+        }
+
         //set async
         static result set_async(int socket)
         {
@@ -306,7 +369,7 @@ namespace debug
         static bool keepalive(int socket)
         {
             //value
-            int is_live = false;
+            int is_live = 0;
             //size of value
             socklen_t sizeo_of_is_live = sizeof(is_live);
             //get result
@@ -315,13 +378,56 @@ namespace debug
                 return false;
             }
             //return
-            return sizeo_of_is_live != 0;
+            return is_live != 0;
         }
         
+        // enable TCP keepalive on the socket
+        static int set_tcp_keepalive(int sockfd)
+        {
+            int optval = 1;
+            return setsockopt(sockfd, SOL_SOCKET, SO_KEEPALIVE, &optval, sizeof(optval)) == 0;
+        }
+
+        /**
+        *  Set time of keep is live
+        *  @param keepcnt, The time (in seconds) the connection needs to remain idle before TCP starts sending keepalive probes.
+        *  @param keepidle, The maximum number of keepalive probes TCP should send before dropping the connection.      
+        *  @param keepintvl, The time (in seconds) between individual keepalive probes.
+        **/
+        static int set_tcp_keepalive_cfg(int sockfd, int keepcnt, int keepidle,int keepintvl)
+        {
+            int rc;
+            #ifdef __APPLE__
+                        //set the keepalive option
+                        int seconds = keepcnt + keepidle*keepintvl;
+                        rc = setsockopt(skt, IPPROTO_TCP, TCP_KEEPALIVE, &seconds, sizeof(seconds));
+                        if (rc != 0) return rc;
+            #else
+                        //set the keepalive options
+                        rc = setsockopt(sockfd, IPPROTO_TCP, TCP_KEEPCNT, &keepcnt, sizeof(keepcnt));
+                        if (rc != 0) return rc;
+
+                        rc = setsockopt(sockfd, IPPROTO_TCP, TCP_KEEPIDLE, &keepidle, sizeof(keepidle));
+                        if (rc != 0) return rc;
+
+                        rc = setsockopt(sockfd, IPPROTO_TCP, TCP_KEEPINTVL, &keepintvl, sizeof(keepintvl));
+                        if (rc != 0) return rc;
+            #endif
+            return 0;
+        }
+
         //accept now sockets
         void accept_client()
         {
-            if(m_client.m_socket < 0) //|| !keepalive(m_client.m_socket))
+            if(m_client.m_socket >=0 && !keepalive(m_client.m_socket))
+            {
+                //close socket
+                ::close(m_client.m_socket);
+                //clean info
+                m_client = socket_info();
+            }
+
+            if(m_client.m_socket < 0)
             {
                 //close stream
                 if(m_client.m_socket >= 0) ::close(m_client.m_socket);
@@ -332,6 +438,18 @@ namespace debug
                 socklen_t size_addr              = sizeof(struct sockaddr_in);
                 //accept
                 m_client.m_socket = accept(m_server.m_socket, ref_socket_addr, &size_addr);
+                //enable keepalive
+                if(m_client.m_socket >= 0)
+                {
+                    set_nonblocking(m_client.m_socket);
+                    set_tcp_keepalive(m_client.m_socket);
+                    set_tcp_keepalive_cfg(
+                          m_client.m_socket
+                        , 1 //time to wait (in seconds)
+                        , 1  //n-ack to determinete if is live
+                        , 1  //time between ack (in seconds)
+                    );
+                }
             }
         }
         
@@ -339,18 +457,90 @@ namespace debug
         void send_messages()
         {
             //send
-            if((m_client.m_socket >= 0) && (m_messages.size()!= 0))
+            if((m_client.m_socket >= 0) && (m_send_msg.size()!= 0))
             {
-                while(m_messages.size())
+                while(m_send_msg.size())
                 {
                     //message temp data
                     message_raw data;
                     //copy
-                    m_messages.safe_copy(data, 0);
+                    m_send_msg.safe_copy(data, 0);
                     //remove
-                    m_messages.remove_first();
+                    m_send_msg.remove_first();
                     //to client
-                    ::send(m_client.m_socket, (void*)data.data(), data.size(), 0);
+                    if(data.size())
+                    {
+                        if(::send(m_client.m_socket, (void*)data.data(), data.size(), 0) < 0)
+                        {
+                            return;
+                        } 
+                    }
+                }
+            }
+        }
+
+        //send message
+        void read_messages()
+        {
+            //read
+            if(m_client.m_socket >= 0)
+            {
+                //message temp data
+                message_raw data; 
+                //alloc type
+                data.resize(sizeof(unsigned int));
+                //try to recv 
+                int ret = ::recv(m_client.m_socket, (void*)data.data(), sizeof(unsigned int), 0);
+                //read type
+                if(ret > 0)
+                {
+                    //get type
+                    unsigned int type = *((unsigned int*)(data.data()));
+                    //read by type 
+                    switch(type)
+                    {
+                        case MSG_INT:
+                            data.resize(data.size()+sizeof(int));   
+                            ::recv(m_client.m_socket, (void*)data.data()+sizeof(unsigned int), sizeof(int), 0);
+                            //add msg into the list
+                            m_recv_msg.push(data);
+                        break;
+                        case MSG_FLOAT:
+                            data.resize(data.size()+sizeof(float));   
+                            ::recv(m_client.m_socket, (void*)data.data()+sizeof(unsigned int), sizeof(float), 0);
+                            //add msg into the list
+                            m_recv_msg.push(data);
+                        break;
+                        case MSG_DOUBLE:
+                            data.resize(data.size()+sizeof(double));   
+                            ::recv(m_client.m_socket, (void*)data.data()+sizeof(unsigned int), sizeof(double), 0);
+                            //add msg into the list
+                            m_recv_msg.push(data);
+                        break;
+                        case MSG_STRING:
+                        {
+                            const size_t size_len   = sizeof(int);
+                            const size_t offset_len = sizeof(unsigned int);
+                            const size_t offset_str = offset_len + size_len;
+                            //get len 
+                            data.resize(data.size()+size_len);  
+                            ::recv(m_client.m_socket, (void*)(data.data()+size_len), size_len, 0);
+                            int str_len = *((int*)(data.data()+offset_len));
+                            //read str 
+                            data.resize(data.size()+offset_str+str_len);  
+                            ::recv(m_client.m_socket, (void*)(data.data()+offset_str), str_len, 0);
+                            //add msg into the list
+                            m_recv_msg.push(data);
+                        }
+                        break;
+                        case MSG_CLOSE_CONNECTION: 
+                            //close
+                            ::shutdown(m_client.m_socket, SHUT_RDWR);
+                            ::close(m_client.m_socket);
+                            m_client = socket_info();
+                        break;
+                        default: break;
+                    }
                 }
             }
         }
@@ -360,22 +550,34 @@ namespace debug
         {
             if(m_client.m_socket >= 0)
             {
+                //send message
+                send_close_connection_immediately();
+                #if 1
+                //close
                 ::shutdown(m_client.m_socket, SHUT_RDWR);
                 ::close(m_client.m_socket);
+                #endif
             }
             if(m_server.m_socket >= 0)
             {
+                set_blocking(m_server.m_socket);
+                //disable 
+                ::shutdown(m_server.m_socket, SHUT_RDWR);
+                //force to close
                 ::close(m_server.m_socket);
             }
             //clean
             m_server = socket_info();
             m_client = socket_info();
         }
+
         //soket info
         socket_info m_client;
         socket_info m_server;
-        //pessage list
-        atomic_vector < message_raw > m_messages;
+        //send messam_clientge list
+        atomic_vector < message_raw > m_send_msg;
+        //recv message list
+        atomic_vector < message_raw > m_recv_msg;
         //thread info
         std::thread              m_thread;
         std::atomic< bool >      m_run  { 0 };

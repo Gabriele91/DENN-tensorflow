@@ -89,4 +89,4 @@ $(O_DIR)/%.o: $(S_DIR)/%.cpp
 #clear dir
 clean:
 	rm -f -R $(TOP)/$(MODULE_FOLDER)/obj
-	rm -f -R $(TOP)/$(MODULE_FOLDER)/*.so
+	rm -f -R $(TOP)/$(MODULE_FOLDER)/$(OUT_FILE_NAME)$(OUT_FILE_NAME_INFO).so

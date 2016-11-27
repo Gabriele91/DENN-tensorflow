@@ -4,6 +4,9 @@ from multiprocessing import Process
 from multiprocessing import Event
 import socket
 import struct
+import time
+import os
+import errno
 from select import select
 
 __all__ = ['get_graph_proto', 'get_best_vector', 'OpListener']
@@ -11,6 +14,7 @@ __all__ = ['get_graph_proto', 'get_best_vector', 'OpListener']
 
 CURSOR_UP_ONE = '\x1b[1A'
 ERASE_LINE = '\x1b[2K'
+
 
 class OpListener(object):
 
@@ -24,7 +28,12 @@ class OpListener(object):
     def __exit__(self, ex_type, ex_value, traceback):
         self.db_listener.stop_run()
         print("++ DebugListner: stop to listen and exit", end='\r')
+        #stop process
         self.db_listener.join(2.)
+        #remove
+        #del self.db_listener
+        #self.db_listener = None
+        #print
         print("++ DebugListner: exited...              ")
 
 
@@ -36,9 +45,9 @@ class DebugListner(Process):
 
         # print(
         #     "+ Connect to Op: host->[{}] port->[{}]".format(host, port))
-        self._sock = socket.socket(
-            socket.AF_INET, socket.SOCK_STREAM)
-        self._sock.settimeout(None)
+        self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._sock.setblocking(False)
+        self._connected = False
 
         self._exit = Event()
 
@@ -48,61 +57,87 @@ class DebugListner(Process):
 
         # struct type correspondance
         self.__msg_types = {
-            0: 'i',
-            1: 'f',
-            2: 'd',
-            3: 'c',
+            0: ('i', 'int'),
+            1: ('f', 'float'),
+            2: ('d', 'double'),
+            3: ('c', 'string'),
+            4: ('', 'close')
+        }
+        self.__str_to_msg_type = {
+            'int'   :0,
+            'float' :1,
+            'double':2,
+            'string':3,
+            'close' :4
         }
 
     def stop_run(self):
         self._exit.set()
 
     def run(self):
-
+        # main vars
         res = None
 
         print("++ DebugListner: connecting", end='\r')
 
-        while res != 0 and not self._exit.is_set():
+        while (res != 0 or res == errno.EISCONN) and not self._exit.is_set():
+            #try
             res = self._sock.connect_ex((self.host, self.port))
+            #wait
+            #if res != 0:
+            #   print("++ DebugListner: connecting({},{})".format(res, os.strerror(res))+" "*10, end='\r')
+            #   time.sleep(0.25)
+        
+        self._connected = True
 
         print("++ DebugListner: connected", end='\r')
-
         print("++ DebugListner: start main loop")
         print(CURSOR_UP_ONE + ERASE_LINE, end='\r')
 
-        while not self._exit.is_set():
-
-            readables, writables, specials = select(
-                [self._sock], [], [])
-
+        while not self._exit.is_set() and self._connected:
+            # read
+            readables, writables, specials = select([self._sock], [], [], 0.1)
             # print("Available:", readables, writables)
-            # print(self._exit.is_set())
-
             for readable in readables:
                 data = readable.recv(4)
                 if data:
+                    #get type
                     type_ = struct.unpack("<i", data)[0]
-                    #print("+ data -> {} -> {}".format(data, type_))
+                    #return
                     if type_ in self.__msg_types:
-                        # print(type_)
-                        msg = self.read_msg(
-                            readable, self.__msg_types[type_])
-                        print(
-                            "++ [{}]-> {}".format(self.msg_header, msg), end='\r')
+                        msg = self.read_msg(readable, self.__msg_types[type_])
+                        print("++ [{}]-> {}".format(self.msg_header, msg), end='\r')
+        # close connection (anyway)
+        self.close_connection()
 
     def __del__(self):
-        self._sock.close()
+        self.close_connection()
+
+    def close_connection(self):
+        if self._connected:
+            self._sock.setblocking(True)
+            try: 
+                self._sock.shutdown(socket.SHUT_RDWR)
+            except Exception:
+                pass
+            finally:
+                self._sock.close()
+            self._connected = False
+
+    def send_close_message(self):
+        self._sock.send(struct.pack('<i',self.__str_to_msg_type['close']))
 
     @staticmethod
     def read_msg(conn, type_):
-        if type_ != 'c':
-            data = conn.recv(struct.calcsize(type_))
-            return struct.unpack("<{}".format(type_), data)[0]
-        else:
+        if type_[1] == 'string':
             size = struct.unpack("<i", conn.recv(4))[0]
-            data = conn.recv(struct.calcsize(type_) * size)
-            return struct.unpack("<{}".format(type_ * size), data)[0]
+            data = conn.recv(struct.calcsize(type_[0]) * size)
+            return struct.unpack("<{}".format(type_[0] * size), data)[0]
+        if type_[1] == 'close':
+            return (None,'close')
+        else:
+            data = conn.recv(struct.calcsize(type_[0]))
+            return struct.unpack("<{}".format(type_[0]), data)[0]
 
 
 def get_graph_proto(graph_or_graph_def, as_text=True):

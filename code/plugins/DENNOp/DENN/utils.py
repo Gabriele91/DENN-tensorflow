@@ -10,7 +10,7 @@ __all__ = ['get_graph_proto', 'get_best_vector', 'OpListener']
 
 class OpListener(object):
 
-    def __init__(self, host='', port=6540):
+    def __init__(self, host='', port=6545):
         self.db_listner = DebugListner(host, port)
 
     def __enter__(self):
@@ -32,7 +32,7 @@ class DebugListner(Process):
             "+ Connect to Op: host->[{}] port->[{}]".format(host, port))
         self._sock = socket.socket(
             socket.AF_INET, socket.SOCK_STREAM | socket.SOCK_NONBLOCK)
-        self._sock.setblocking(True)
+        self._sock.setblocking(False)
 
         self._run = True
 
@@ -53,13 +53,19 @@ class DebugListner(Process):
 
     def run(self):
 
-        print("+ start main loop")
+        print("+ DebugListner: start main loop")
 
-        self._sock.connect((self.host, self.port))
-        
+        res = None
+
+        while res != 0:
+            res = self._sock.connect_ex((self.host, self.port))
+
+        print("+ DebugListner: connected")
+
         while self._run:
 
-            readables, writables, _ = select([self._sock], [self._sock], [self._sock])
+            readables, writables, specials = select(
+                [self._sock], [], [])
 
             # print("Available:", readables, writables)
 
@@ -67,14 +73,14 @@ class DebugListner(Process):
                 data = readable.recv(4)
                 if data:
                     type_ = struct.unpack("<i", data)[0]
-                    # print("+ data -> {} -> {}".format(data, type_))
+                    print("+ data -> {} -> {}".format(data, type_))
                     if type_ in self.__msg_types:
                         msg = self.read_msg(
                             readable, self.__msg_types[type_])
-                        # print("+ [msg]-> {}".format(msg))
+                        print("+ [msg]-> {}".format(msg))
 
     def __del__(self):
-        #self._sock.shutdown(socket.SHUT_RDWR)
+        # self._sock.shutdown(socket.SHUT_RDWR)
         self._sock.close()
 
     @staticmethod

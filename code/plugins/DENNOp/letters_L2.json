@@ -1,4 +1,4 @@
-{
+[
     {
         "name": "letter_dataset",
         "dataset_file": "./datasets/letter_20_batches.bzip",

@@ -123,7 +123,7 @@ namespace debug
             RESULT_FAIL_TO_LISTEN
         };
         
-        socket_messages_server(int port)
+        socket_messages_server(int port=6500)
         {
             //default: error socket
             m_server.m_socket = -1;
@@ -142,12 +142,12 @@ namespace debug
                 m_server.m_socket_addr.sin_port = htons(m_port);
                 //create socket
                 m_server.m_socket = socket(
-                      AF_INET
+                      PF_INET
                     , SOCK_STREAM
                     #ifdef __linux__
-                    , 0
+                    , IPPROTO_TCP
                     #else
-                    , 0
+                    , IPPROTO_TCP
                     #endif
                 );
                 //test
@@ -158,12 +158,14 @@ namespace debug
                     return;
                 }
                 //enable reuse of addrs 
+                #if 0
                 if(!set_reuse_addrs(m_server.m_socket))
                 {
                     m_error = RESULT_FAIL_TO_ENABLE_REUSEADDRS;
                     m_run=false;
                     return;
                 }
+                #endif 
                 //on linux disable linger
                 #if defined( __linux__ ) && 0
                 //struct

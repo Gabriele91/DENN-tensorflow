@@ -18,7 +18,7 @@ ERASE_LINE = '\x1b[2K'
 
 class OpListener(object):
 
-    def __init__(self, host='', port=6545, msg_header="msg"):
+    def __init__(self, host='172.0.0.1', port=6500, msg_header="msg"):
         self.db_listener = DebugListner(host, port, msg_header)
 
     def __enter__(self):
@@ -84,9 +84,9 @@ class DebugListner(Process):
             #try
             res = self._sock.connect_ex((self.host, self.port))
             #wait
-            #if res != 0:
-            #   print("++ DebugListner: connecting({},{})".format(res, os.strerror(res))+" "*10, end='\r')
-            #   time.sleep(0.25)
+            if res != 0:
+               print("++ DebugListner: connecting({},{})".format(res, os.strerror(res))+" "*10, end='\r')
+               time.sleep(0.25)
         
         self._connected = True
 

@@ -116,6 +116,7 @@ namespace debug
         {
             RESULT_OK,
             RESULT_FAIL_TO_CREATE_SOCKET,
+            RESULT_FAIL_TO_ENABLE_REUSEADDRS,
             RESULT_FAIL_SET_NONBLOCK,
             RESULT_FAIL_SET_ASYNC,
             RESULT_FAIL_TO_CONNECTION,
@@ -153,6 +154,13 @@ namespace debug
                 if (m_server.m_socket < 0)
                 {
                     m_error = RESULT_FAIL_TO_CREATE_SOCKET;
+                    m_run=false;
+                    return;
+                }
+                //enable reuse of addrs 
+                if(!set_reuse_addrs(m_server.m_socket))
+                {
+                    m_error = RESULT_FAIL_TO_ENABLE_REUSEADDRS;
                     m_run=false;
                     return;
                 }
@@ -381,8 +389,15 @@ namespace debug
             return is_live != 0;
         }
         
+        // enable re-use addrs 
+        static bool set_reuse_addrs(int sockfd)
+        {
+            int optval = 1;
+            return setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR,  &optval, sizeof(optval)) == 0;
+        }
+
         // enable TCP keepalive on the socket
-        static int set_tcp_keepalive(int sockfd)
+        static bool set_tcp_keepalive(int sockfd)
         {
             int optval = 1;
             return setsockopt(sockfd, SOL_SOCKET, SO_KEEPALIVE, &optval, sizeof(optval)) == 0;
@@ -400,7 +415,7 @@ namespace debug
             #ifdef __APPLE__
                         //set the keepalive option
                         int seconds = keepcnt + keepidle*keepintvl;
-                        rc = setsockopt(skt, IPPROTO_TCP, TCP_KEEPALIVE, &seconds, sizeof(seconds));
+                        rc = setsockopt(sockfd, IPPROTO_TCP, TCP_KEEPALIVE, &seconds, sizeof(seconds));
                         if (rc != 0) return rc;
             #else
                         //set the keepalive options
@@ -501,19 +516,19 @@ namespace debug
                     {
                         case MSG_INT:
                             data.resize(data.size()+sizeof(int));   
-                            ::recv(m_client.m_socket, (void*)data.data()+sizeof(unsigned int), sizeof(int), 0);
+                            ::recv(m_client.m_socket, (void*)(data.data()+sizeof(unsigned int)), sizeof(int), 0);
                             //add msg into the list
                             m_recv_msg.push(data);
                         break;
                         case MSG_FLOAT:
                             data.resize(data.size()+sizeof(float));   
-                            ::recv(m_client.m_socket, (void*)data.data()+sizeof(unsigned int), sizeof(float), 0);
+                            ::recv(m_client.m_socket, (void*)(data.data()+sizeof(unsigned int)), sizeof(float), 0);
                             //add msg into the list
                             m_recv_msg.push(data);
                         break;
                         case MSG_DOUBLE:
                             data.resize(data.size()+sizeof(double));   
-                            ::recv(m_client.m_socket, (void*)data.data()+sizeof(unsigned int), sizeof(double), 0);
+                            ::recv(m_client.m_socket, (void*)(data.data()+sizeof(unsigned int)), sizeof(double), 0);
                             //add msg into the list
                             m_recv_msg.push(data);
                         break;

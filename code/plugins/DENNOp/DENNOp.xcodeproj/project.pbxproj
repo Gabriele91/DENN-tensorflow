@@ -250,7 +250,7 @@
 /* Begin PBXLegacyTarget section */
 		E01A5C521DED92CF00493939 /* DENNOpTraningDebug */ = {
 			isa = PBXLegacyTarget;
-			buildArgumentsString = "$(ACTION) PYTHON_PATH=$(HOME)/.virtualenvs/TensorFlow DENN_TRANING=true USE_DEBUG=true";
+			buildArgumentsString = "$(ACTION) PYTHON_PATH=$(HOME)/.virtualenvs/TensorFlow DENN_TRAINING=true USE_DEBUG=true";
 			buildConfigurationList = E01A5C531DED92CF00493939 /* Build configuration list for PBXLegacyTarget "DENNOpTraningDebug" */;
 			buildPhases = (
 			);
@@ -264,7 +264,7 @@
 		};
 		E0A9F4F11DE4BA5700807B05 /* DENNOpTraning */ = {
 			isa = PBXLegacyTarget;
-			buildArgumentsString = "$(ACTION) PYTHON_PATH=$(HOME)/.virtualenvs/TensorFlow DENN_TRANING=true";
+			buildArgumentsString = "$(ACTION) PYTHON_PATH=$(HOME)/.virtualenvs/TensorFlow DENN_TRAINING=true";
 			buildConfigurationList = E0A9F4F21DE4BA5700807B05 /* Build configuration list for PBXLegacyTarget "DENNOpTraning" */;
 			buildPhases = (
 			);

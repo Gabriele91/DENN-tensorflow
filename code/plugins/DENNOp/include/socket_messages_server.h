@@ -139,7 +139,7 @@ namespace debug
             {
                 //create addres connection
                 m_server.m_socket_addr.sin_family = AF_INET;
-                m_server.m_socket_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+                m_server.m_socket_addr.sin_addr.s_addr = htonl (INADDR_ANY);
                 m_server.m_socket_addr.sin_port = htons(m_port);
                 //create socket
                 m_server.m_socket = socket( PF_INET, SOCK_STREAM, IPPROTO_TCP );
@@ -487,7 +487,7 @@ namespace debug
                 m_client = socket_info();
                 //enable keepalive
                 if(timeout_accept(m_server.m_socket, 2, 0, m_client))
-                {
+                { 
                     set_nonblocking(m_client.m_socket);
                     set_tcp_keepalive(m_client.m_socket);
                     set_tcp_keepalive_cfg(

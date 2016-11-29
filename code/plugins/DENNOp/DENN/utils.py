@@ -43,9 +43,7 @@ class DebugListner(Process):
     def __init__(self, host, port, msg_header):
         super(DebugListner, self).__init__()
         # print("+ Connect to Op: host->[{}] port->[{}]".format(host, port))
-        self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
-        fcntl.fcntl(self._sock, fcntl.F_SETFL, os.O_NONBLOCK)
-        self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self._sock = None
         self._connected = False
         self._exit = Event()
 
@@ -69,10 +67,19 @@ class DebugListner(Process):
             'close' :4
         }
 
+    def create_socket(self):
+        self.close_connection()
+        self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
+        fcntl.fcntl(self._sock, fcntl.F_SETFL, os.O_NONBLOCK)
+        self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
     def stop_run(self):
         self._exit.set()
 
+
     def run(self):
+        # create a new socket
+        self.create_socket()
         # main vars
         res = None
         # not connected
@@ -85,10 +92,13 @@ class DebugListner(Process):
         while res != 0 and (not res in ok_res) and (not self._exit.is_set()):
             #try
             res = self._sock.connect_ex((self.host, self.port))
-            #wait
+            #OSX, must to recreate socket
+            if res == errno.ECONNREFUSED:
+                self.create_socket()
+            #debug
             if res != 0:
                 print("++ DebugListner: connecting({},{})".format(res, os.strerror(res))+" "*10, end='\r')
-                time.sleep(1.10)
+                time.sleep(0.5)
         # kill thread? 
         if self._exit.is_set():
             return 
@@ -118,15 +128,21 @@ class DebugListner(Process):
         self.close_connection()
 
     def close_connection(self):
-        if self._connected:
-            self._sock.setblocking(True)
-            try: 
-                self._sock.shutdown(socket.SHUT_RDWR)
-            except Exception:
-                pass
-            finally:
+        #close socket
+        if self._sock != None:
+            if self._connected:
+                self._sock.setblocking(True)
+                try: 
+                    self._sock.shutdown(socket.SHUT_RDWR)
+                except Exception:
+                    pass
+                finally:
+                    self._sock.close()
+                self._connected = False
+            else:
                 self._sock.close()
-            self._connected = False
+        #delete socket
+        self._sock = None
 
     def send_close_message(self):
         self._sock.send(struct.pack('<i',self.__str_to_msg_type['close']))

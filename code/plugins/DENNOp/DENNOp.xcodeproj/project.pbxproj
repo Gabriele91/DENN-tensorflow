@@ -248,6 +248,20 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXLegacyTarget section */
+		E01A5C521DED92CF00493939 /* DENNOpTraningDebug */ = {
+			isa = PBXLegacyTarget;
+			buildArgumentsString = "$(ACTION) PYTHON_PATH=$(HOME)/.virtualenvs/TensorFlow DENN_TRANING=true USE_DEBUG=true";
+			buildConfigurationList = E01A5C531DED92CF00493939 /* Build configuration list for PBXLegacyTarget "DENNOpTraningDebug" */;
+			buildPhases = (
+			);
+			buildToolPath = /usr/bin/make;
+			buildWorkingDirectory = "$(SRCROOT)";
+			dependencies = (
+			);
+			name = DENNOpTraningDebug;
+			passBuildSettingsInEnvironment = 0;
+			productName = master_degree_thesis_so;
+		};
 		E0A9F4F11DE4BA5700807B05 /* DENNOpTraning */ = {
 			isa = PBXLegacyTarget;
 			buildArgumentsString = "$(ACTION) PYTHON_PATH=$(HOME)/.virtualenvs/TensorFlow DENN_TRANING=true";
@@ -331,6 +345,7 @@
 			targets = (
 				E0E1CCCD1DA68F1E009C4D35 /* DENNOp */,
 				E0A9F4F11DE4BA5700807B05 /* DENNOpTraning */,
+				E01A5C521DED92CF00493939 /* DENNOpTraningDebug */,
 				E0A7C66D1DA6A4FB005D74D0 /* DENNOpRunTestImages */,
 				E0C206981DCB2C610002A331 /* DENNOpRunTestLetter */,
 				E09B48C91DB7639C00333E4F /* DENNFakeDylib */,
@@ -347,7 +362,7 @@
 			files = (
 			);
 			inputPaths = (
-				"$(SRCROOT)/iris_L1.json",
+				"$(SRCROOT)/letters_L2.json ",
 			);
 			name = "Run Script";
 			outputPaths = (
@@ -423,6 +438,31 @@
 		CEF1F31A1DDBB134005FE9C7 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TENSOR_FLOW_PYTHON_PATH = "$(HOME)/.virtualenvs/TensorFlow/lib/python3.5";
+			};
+			name = Release;
+		};
+		E01A5C541DED92CF00493939 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEBUGGING_SYMBOLS = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TENSOR_FLOW_PYTHON_PATH = "$(HOME)/.virtualenvs/TensorFlow/lib/python3.5";
+			};
+			name = Debug;
+		};
+		E01A5C551DED92CF00493939 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				OTHER_CFLAGS = "";
+				OTHER_LDFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TENSOR_FLOW_PYTHON_PATH = "$(HOME)/.virtualenvs/TensorFlow/lib/python3.5";
 			};
@@ -669,6 +709,15 @@
 			buildConfigurations = (
 				CEF1F3191DDBB134005FE9C7 /* Debug */,
 				CEF1F31A1DDBB134005FE9C7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E01A5C531DED92CF00493939 /* Build configuration list for PBXLegacyTarget "DENNOpTraningDebug" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E01A5C541DED92CF00493939 /* Debug */,
+				E01A5C551DED92CF00493939 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

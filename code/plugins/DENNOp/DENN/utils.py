@@ -7,6 +7,7 @@ import struct
 import time
 import os
 import errno
+import fcntl
 from select import select
 
 __all__ = ['get_graph_proto', 'get_best_vector', 'OpListener']
@@ -18,7 +19,7 @@ ERASE_LINE = '\x1b[2K'
 
 class OpListener(object):
 
-    def __init__(self, host='172.0.0.1', port=6500, msg_header="msg"):
+    def __init__(self, host='127.0.0.1', port=8484, msg_header="msg"):
         self.db_listener = DebugListner(host, port, msg_header)
 
     def __enter__(self):
@@ -43,12 +44,11 @@ class DebugListner(Process):
 
         super(DebugListner, self).__init__()
 
-        # print(
-        #     "+ Connect to Op: host->[{}] port->[{}]".format(host, port))
-        self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # print("+ Connect to Op: host->[{}] port->[{}]".format(host, port))
+        self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
+        #fcntl.fcntl(self._sock, fcntl.F_SETFL, os.O_NONBLOCK)
         self._sock.setblocking(False)
         self._connected = False
-
         self._exit = Event()
 
         self.host = host
@@ -85,8 +85,8 @@ class DebugListner(Process):
             res = self._sock.connect_ex((self.host, self.port))
             #wait
             if res != 0:
-               print("++ DebugListner: connecting({},{})".format(res, os.strerror(res))+" "*10, end='\r')
-               time.sleep(0.25)
+                print("++ DebugListner: connecting({},{})".format(res, os.strerror(res))+" "*10, end='\r')
+                time.sleep(2.25)
         
         self._connected = True
 

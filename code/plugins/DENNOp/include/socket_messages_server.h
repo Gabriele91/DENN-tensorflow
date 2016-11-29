@@ -17,6 +17,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
+#include <arpa/inet.h>
 #include <fcntl.h>
 #include <unistd.h>
 
@@ -123,7 +124,7 @@ namespace debug
             RESULT_FAIL_TO_LISTEN
         };
         
-        socket_messages_server(int port=6500)
+        socket_messages_server(int port=8484)
         {
             //default: error socket
             m_server.m_socket = -1;
@@ -138,18 +139,10 @@ namespace debug
             {
                 //create addres connection
                 m_server.m_socket_addr.sin_family = AF_INET;
-                m_server.m_socket_addr.sin_addr.s_addr = INADDR_ANY;
+                m_server.m_socket_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
                 m_server.m_socket_addr.sin_port = htons(m_port);
                 //create socket
-                m_server.m_socket = socket(
-                      PF_INET
-                    , SOCK_STREAM
-                    #ifdef __linux__
-                    , IPPROTO_TCP
-                    #else
-                    , IPPROTO_TCP
-                    #endif
-                );
+                m_server.m_socket = socket( PF_INET, SOCK_STREAM, IPPROTO_TCP );
                 //test
                 if (m_server.m_socket < 0)
                 {
@@ -157,34 +150,16 @@ namespace debug
                     m_run=false;
                     return;
                 }
+                //disable linger
+                set_linger(m_server.m_socket,0,0);
                 //enable reuse of addrs 
-                #if 0
                 if(!set_reuse_addrs(m_server.m_socket))
                 {
                     m_error = RESULT_FAIL_TO_ENABLE_REUSEADDRS;
                     m_run=false;
                     return;
                 }
-                #endif 
-                //on linux disable linger
-                #if defined( __linux__ ) && 0
-                //struct
-                struct  
-                {
-                    int l_onoff;    /* linger active */
-                    int l_linger;   /* how many seconds to linger for */
-                }
-                linger;
-                //disable 
-                linger.l_onoff = 0;
-                linger.l_linger = 0;
-                //set
-                if(setsockopt(m_server.m_socket, SOL_SOCKET, SO_LINGER, (int*)&linger, sizeof(linger)) < 0)
-                {
-                    //wrong
-                }
-                #endif
-                //set nonblocking and async
+                //set nonblocking
                 result nb_ret = set_nonblocking(m_server.m_socket);
                 //test
                 if( nb_ret != RESULT_OK )
@@ -192,29 +167,13 @@ namespace debug
                     m_error = nb_ret;
                     return;
                 }
-                //try to connect
-                const short      n_max_test       = 10;
-                const useconds_t ms_time_to_sleep = 100;
-                //do connect
-                for(short i_test=1;  i_test != (n_max_test+1); ++i_test) 
+                //try to bind
+                result ntryb_ret = n_try_bind(m_server, 10, 100);
+                //test
+                if( ntryb_ret != RESULT_OK )
                 {
-                    int ret = bind(m_server.m_socket, (struct sockaddr *)
-                                   &m_server.m_socket_addr, 
-                                   sizeof(m_server.m_socket_addr));
-                    //ok
-                    if(ret >= 0) 
-                    { 
-                        break;
-                    }
-                    //re-try or goodbye
-                    else if (ret < 0 && (i_test == n_max_test))
-                    {
-                        m_error = RESULT_FAIL_TO_CONNECTION;
-                        m_run = false;
-                        return;
-                    }
-                    //wait
-                    usleep(ms_time_to_sleep * 1000);
+                    m_error = ntryb_ret;
+                    return;
                 }
                 //enale listen
                 if(::listen(m_server.m_socket,1) < 0)
@@ -223,16 +182,17 @@ namespace debug
                     m_run = false;
                     return;
                 }
-                
                 //run
                 while(m_run)
                 {
                     //get new connection
                     accept_client();
+#if 0
                     //send messages
                     send_messages();
                     //read messages 
                     read_messages();
+#endif
                 }
             });
         }
@@ -342,6 +302,51 @@ namespace debug
             }
         }
         
+        //set linux linger
+        static bool set_linger(int socket,int onoff,int secs_to_linger)
+        {
+            //only on linux
+            #if defined( __linux__ )
+            //struct
+            struct
+            {
+                int l_onoff;    /* linger active */
+                int l_linger;   /* how many seconds to linger for */
+            }
+            linger;
+            //disable
+            linger.l_onoff = onoff;
+            linger.l_linger = secs_to_linger;
+            //set
+            if(setsockopt(socket, SOL_SOCKET, SO_LINGER, (int*)&linger, sizeof(linger)) < 0)
+            {
+                return false;
+            }
+            #endif
+            return true;
+        }
+        
+        //try to bind
+        static result n_try_bind(const socket_info& socket,const short n_test,const useconds_t ms_time_to_try)
+        {
+            //do connect
+            for(short i_test=1;  i_test != (n_test+1); ++i_test)
+            {
+                int ret = bind(socket.m_socket, (struct sockaddr *)
+                               &socket.m_socket_addr,
+                               sizeof(socket.m_socket_addr));
+                //ok
+                if(ret >= 0)
+                {
+                    return  RESULT_OK;
+                }
+                //wait
+                usleep(ms_time_to_try * 1000);
+            }
+            
+            return RESULT_FAIL_TO_CONNECTION;
+        }
+        
         //set nonbloking
         static result set_nonblocking(int socket)
         {
@@ -433,6 +438,36 @@ namespace debug
             return 0;
         }
 
+        //safe non-blocking accept
+        static bool timeout_accept(int server_socket,int secs,int usecs,socket_info& client_out)
+        {
+            //alloc struct
+            fd_set readfds;
+            //to zero
+            FD_ZERO(&readfds);
+            //init read set
+            FD_SET(server_socket,&readfds);
+            //init timeout
+            timeval select_timeout;
+            select_timeout.tv_sec = secs;
+            select_timeout.tv_usec = usecs; 
+            //try to accept 
+            if (select(server_socket+1,&readfds,nullptr,nullptr,&select_timeout) >= 0)
+            {
+                if (FD_ISSET(server_socket, &readfds))
+                {
+                    //ref
+                    struct sockaddr* ref_socket_addr = (struct sockaddr*)&client_out.m_socket_addr;
+                    socklen_t        size_addr       = sizeof(struct sockaddr_in);
+                    //accept
+                    client_out.m_socket = accept(server_socket, ref_socket_addr, &size_addr);
+                    //success
+                    return client_out.m_socket >= 0;
+                }
+            }
+            return false;
+        }
+
         //accept now sockets
         void accept_client()
         {
@@ -450,14 +485,10 @@ namespace debug
                 if(m_client.m_socket >= 0) ::close(m_client.m_socket);
                 //init
                 m_client = socket_info();
-                //ref
-                struct sockaddr* ref_socket_addr = (struct sockaddr*)&m_client.m_socket_addr;
-                socklen_t size_addr              = sizeof(struct sockaddr_in);
-                //accept
-                m_client.m_socket = accept(m_server.m_socket, ref_socket_addr, &size_addr);
                 //enable keepalive
-                if(m_client.m_socket >= 0)
+                if(timeout_accept(m_server.m_socket, 1, 0, m_client))
                 {
+                    std::cout << "new client" << std::endl;
                     set_nonblocking(m_client.m_socket);
                     set_tcp_keepalive(m_client.m_socket);
                     set_tcp_keepalive_cfg(

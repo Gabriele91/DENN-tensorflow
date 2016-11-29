@@ -187,7 +187,7 @@ namespace debug
                 {
                     //get new connection
                     accept_client();
-#if 0
+#if 1
                     //send messages
                     send_messages();
                     //read messages 
@@ -486,16 +486,15 @@ namespace debug
                 //init
                 m_client = socket_info();
                 //enable keepalive
-                if(timeout_accept(m_server.m_socket, 1, 0, m_client))
+                if(timeout_accept(m_server.m_socket, 2, 0, m_client))
                 {
-                    std::cout << "new client" << std::endl;
                     set_nonblocking(m_client.m_socket);
                     set_tcp_keepalive(m_client.m_socket);
                     set_tcp_keepalive_cfg(
                           m_client.m_socket
                         , 1 //time to wait (in seconds)
-                        , 1  //n-ack to determinete if is live
-                        , 1  //time between ack (in seconds)
+                        , 0  //n-ack to determinete if is live
+                        , 0  //time between ack (in seconds)
                     );
                 }
             }

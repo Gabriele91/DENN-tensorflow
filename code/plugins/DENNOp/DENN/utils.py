@@ -77,19 +77,24 @@ class DebugListner(Process):
     def run(self):
         # main vars
         res = None
+        # not connected
+        self._connected = False
 
+        # try to connect
         print("++ DebugListner: connecting", end='\r')
-
+        # wait
         while (res != 0 or res == errno.EISCONN) and not self._exit.is_set():
             #try
             res = self._sock.connect_ex((self.host, self.port))
             #wait
             if res != 0:
                 print("++ DebugListner: connecting({},{})".format(res, os.strerror(res))+" "*10, end='\r')
-                time.sleep(2.25)
-        
+                time.sleep(0.10)
+        # kill thread? 
+        if self._exit.is_set():
+            return 
+        # or connected 
         self._connected = True
-
         print("++ DebugListner: connected", end='\r')
         print("++ DebugListner: start main loop")
         print(CURSOR_UP_ONE + ERASE_LINE, end='\r')

@@ -6,12 +6,11 @@ MODULE_FOLDER ?= DENN
 TOP         ?= $(shell pwd)
 PYTHON_PATH ?= $(HOME)/.virtualenvs/TensorFlow/
 USE_DEBUG   ?= false
-DENN_TRAINING?= false
 #include list
 TF_INCLUDE = $(PYTHON_PATH)/lib/python3.5/site-packages/tensorflow/include
 #Output name
-OUT_FILE_NAME = DENNOp
-OUT_FILE_NAME_INFO =
+OUT_FILE_NAME_DENNOP = DENNOp
+OUT_FILE_NAME_DENNOP_TRAINING = DENNOp_training
 #project dirs
 S_DIR  = $(TOP)/source
 S_INC  = $(TOP)/include
@@ -50,12 +49,6 @@ ifeq ($(USE_OLD_ABI),true)
 	C_FLAGS += -D_GLIBCXX_USE_CXX11_ABI=0
 endif
 
-#denn traing
-ifeq ($(DENN_TRAINING),true)
-	C_FLAGS += -DDENN_USE_SOCKET_DEBUG -DDENN_USE_TRAINING
-	OUT_FILE_NAME_INFO = _training
-endif
-
 #flags C++
 ifeq ($(USE_DEBUG),true)
 	CPP_FLAGS = -g -D_DEBUG
@@ -67,13 +60,18 @@ endif
 SOURCE_FILES = $(S_DIR)/DENNOp.cpp
 SOURCE_OBJS = $(addprefix $(O_DIR)/,$(notdir $(SOURCE_FILES:.cpp=.o)))
 
+SOURCE_TRAINING_FILES = $(S_DIR)/DENNOpTraining.cpp
+SOURCE_TRAINING_OBJS = $(addprefix $(O_DIR)/,$(notdir $(SOURCE_TRAINING_FILES:.cpp=.o)))
 #########################################################################
 
-all: make_denn_op
+all: make_denn_op make_denn_traning_op
 
 #create plugin
 make_denn_op: directories $(SOURCE_OBJS)
-	$(CC) $(C_FLAGS) $(CPP_FLAGS) -shared -o $(TOP)/$(MODULE_FOLDER)/$(OUT_FILE_NAME)$(OUT_FILE_NAME_INFO).so $(SOURCE_OBJS) $(LIKNER_FLAGS)
+	$(CC) $(C_FLAGS) $(CPP_FLAGS) -shared -o $(TOP)/$(MODULE_FOLDER)/$(OUT_FILE_NAME_DENNOP).so $(SOURCE_OBJS) $(LIKNER_FLAGS)
+
+make_denn_traning_op: directories $(SOURCE_TRAINING_OBJS)
+	$(CC) $(C_FLAGS) $(CPP_FLAGS) -shared -o $(TOP)/$(MODULE_FOLDER)/$(OUT_FILE_NAME_DENNOP_TRAINING).so $(SOURCE_TRAINING_OBJS) $(LIKNER_FLAGS)
 
 #required directories
 directories: ${O_DIR}
@@ -89,4 +87,5 @@ $(O_DIR)/%.o: $(S_DIR)/%.cpp
 #clear dir
 clean:
 	rm -f -R $(TOP)/$(MODULE_FOLDER)/obj
-	rm -f -R $(TOP)/$(MODULE_FOLDER)/$(OUT_FILE_NAME)$(OUT_FILE_NAME_INFO).so
+	rm -f -R $(TOP)/$(MODULE_FOLDER)/$(OUT_FILE_NAME_DENNOP).so
+	rm -f -R $(TOP)/$(MODULE_FOLDER)/$(OUT_FILE_NAME_DENNOP_TRAINING).so

@@ -11,19 +11,28 @@
         { 
             "taskName": "build",
             "isBuildCommand": true,
-            "args": ["clean", "make_denn_op"]
-        },
-        { 
-            "taskName": "build-training",
-            "args": ["clean", "make_denn_op", "DENN_TRAINING=true"]
+            "args": ["clean", "all"]
         },
         { 
             "taskName": "build-debug",
+            "isBuildCommand": true,
+            "args": ["clean", "all", "USE_DEBUG=true"]
+        },
+        { 
+            "taskName": "build-denn-training",
+            "args": ["clean", "make_denn_op" ]
+        },
+        { 
+            "taskName": "build-denn-debug",
             "args": ["clean", "make_denn_op", "USE_DEBUG=true"]
         },
         { 
-            "taskName": "build-training-debug",
-            "args": ["clean", "make_denn_op", "DENN_TRAINING=true", "USE_DEBUG=true"]
+            "taskName": "build-denn-training",
+            "args": ["clean", "make_denn_traning_op"]
+        },
+        { 
+            "taskName": "build-denn-training-debug",
+            "args": ["clean", "make_denn_traning_op", "USE_DEBUG=true"]
         },
         { 
             "taskName": "clean",

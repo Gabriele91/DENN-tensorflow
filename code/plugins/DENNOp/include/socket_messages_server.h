@@ -202,7 +202,7 @@ namespace debug
             close();
         }
         
-        void write(const std::string& str)
+        void write(const std::string& str) const
         {
             //alloc
             message_raw msg(
@@ -221,7 +221,7 @@ namespace debug
             m_send_msg.push(msg);
         }
         
-        void write(int i)
+        void write(int i) const
         {
             //alloc
             message_raw msg(
@@ -237,7 +237,7 @@ namespace debug
             m_send_msg.push(msg);
         }
         
-        void write(float f)
+        void write(float f) const
         {
             //alloc
             message_raw msg(
@@ -253,7 +253,7 @@ namespace debug
             m_send_msg.push(msg);
         }
 
-        void write(double d)
+        void write(double d) const
         {
             //alloc
             message_raw msg(
@@ -622,9 +622,9 @@ namespace debug
         socket_info m_client;
         socket_info m_server;
         //send messam_clientge list
-        atomic_vector < message_raw > m_send_msg;
+        mutable atomic_vector < message_raw > m_send_msg;
         //recv message list
-        atomic_vector < message_raw > m_recv_msg;
+        mutable atomic_vector < message_raw > m_recv_msg;
         //thread info
         std::thread              m_thread;
         std::atomic< bool >      m_run  { 0 };

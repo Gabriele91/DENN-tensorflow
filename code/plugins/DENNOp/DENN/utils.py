@@ -96,9 +96,9 @@ class DebugListner(Process):
             if res == errno.ECONNREFUSED:
                 self.create_socket()
             #debug
-            if res != 0:
-                print("++ DebugListner: connecting({},{})".format(res, os.strerror(res))+" "*10, end='\r')
-                time.sleep(0.5)
+            #if res != 0:
+            #    print("++ DebugListner: connecting({},{})".format(res, os.strerror(res))+" "*10, end='\r')
+            #    time.sleep(0.5)
         # kill thread? 
         if self._exit.is_set():
             return 

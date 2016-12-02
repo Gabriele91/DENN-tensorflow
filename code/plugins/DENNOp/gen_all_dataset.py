@@ -12,6 +12,7 @@ def main():
 
     for dataset, loader, batch_size, out_name in datasets:
         DENN.training.create_dataset(dataset, loader, batch_size, out_name)
+        DENN.training.create_cpp_dataset(dataset, loader, batch_size, out_name)
 
 if __name__ == '__main__':
     main()

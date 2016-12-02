@@ -6,10 +6,12 @@ import zipfile
 from os import path
 from os import makedirs
 import time
+import struct
+import bz2
 from collections import namedtuple
 from . dataset_loaders import *
 
-__all__ = ['gen_network', 'Dataset', 'create_dataset']
+__all__ = ['gen_network', 'Dataset', 'create_dataset', 'create_cpp_dataset']
 
 BASEDATASETPATH = './datasets'
 Batch = namedtuple('Batch', ['data', 'labels'])
@@ -101,10 +103,10 @@ def create_dataset(dataset, loader, batch_size, name,
         'train_percentage': train_percentage
     }
 
-    with zipfile.ZipFile(path.join(BASEDATASETPATH, "{}_{}_batches.bzip".format(
-        name, batch_size)
-    ),
-            mode='w', compression=zipfile.ZIP_BZIP2) as zip_file:
+    with zipfile.ZipFile(
+          path.join(BASEDATASETPATH, "{}_{}_batches.bzip".format(name, batch_size))
+        , mode='w'
+        , compression=zipfile.ZIP_BZIP2) as zip_file:
 
         zip_file.writestr(
             'stats.json',
@@ -136,6 +138,135 @@ def create_dataset(dataset, loader, batch_size, name,
             test_labels.tobytes()
         )
 
+
+def create_cpp_dataset(dataset, loader, batch_size, name,
+                       seed=None, train_percentage=0.8, validation_percentage=0.1,
+                       debug=False):
+    #create output dir
+    makedirs(BASEDATASETPATH, exist_ok=True)
+
+    #data and labels
+    data, labels = globals().get(loader)(dataset, debug)
+
+    # print(len(data), len(labels))
+
+    np.random.seed(seed)
+
+    if len(data) == 2 and len(labels) == 2:
+        ##
+        # Test set is already splitted
+        # Train set will split by train_percentage
+        partial_data, test_data = data
+        partial_labels, test_labels = labels
+
+        train_size = int(len(partial_data) * train_percentage)
+        validation_size = len(partial_data) - train_size
+        test_size = len(test_data)
+
+        indexes = np.random.permutation(len(partial_data))
+        partial_data = partial_data[indexes]
+        partial_labels = partial_labels[indexes]
+
+        train_data, validation_data = np.array_split(
+            partial_data, [train_size])
+        train_labels, validation_labels = np.array_split(
+            partial_labels, [train_size])
+
+    else:
+        ##
+        # Will create all the sets
+        train_size = int(len(data) * train_percentage)
+        validation_size = int(len(data) * validation_percentage)
+        test_size = len(data) - train_size - validation_size
+
+        indexes = np.random.permutation(len(data))
+        data = data[indexes]
+        labels = labels[indexes]
+
+        train_data, validation_data, test_data = np.split(data, [
+            train_size,
+            train_size + validation_size
+        ])
+
+        train_labels, validation_labels, test_labels = np.split(labels, [
+            train_size,
+            train_size + validation_size
+        ])
+    
+    if len(train_data) != len(train_labels):
+        raise Exception("len(train_data) != len(train_labels)")
+
+    if len(validation_data) != len(validation_labels):
+        raise Exception("len(validation_data) != len(validation_labels)")
+
+    if len(test_data) != len(test_labels):
+        raise Exception("len(train_data) != len(test_labels)")
+
+    # Size header
+    header_size = struct.pack("<"+"i"*8
+        , len(train_labels[0]) #'n_classes'
+        , len(train_data[0])   #'n_features'
+        # Elems
+        , len(train_data)               #'n_train_elms'
+        , len(train_data[0].shape)      # Shape size
+        , len(validation_data)          #'n_validation_elms'
+        , len(validation_data[0].shape) # Shape size
+        , len(test_data)                #'n_test_elms'
+        , len(test_data[0].shape)       # Shape size
+    )
+    #train_data_shape
+    header_train_data_shape = struct.pack("<"+"i"*len(train_data)*len(train_data[0].shape)
+        , *np.array([elm.shape for elm in train_data]).ravel()    
+    )
+    #train_labels_shape
+    header_train_labels_shape = struct.pack("<"+"i"*len(train_labels)*len(train_labels[0].shape)
+        , *np.array([elm.shape for elm in train_labels]).ravel()   
+    )
+    #validation_data
+    header_validation_data_shape = struct.pack("<"+"i"*len(validation_data.shape)
+        , *np.array(validation_data.shape).ravel()   
+    )
+    #validation_labels
+    header_validation_labels_shape = struct.pack("<"+"i"*len(validation_labels.shape)
+        , *np.array(validation_labels.shape).ravel()   
+    )
+    #'test_data_shape'
+    header_test_data_shape = struct.pack("<"+"i"*len(test_data.shape)
+        , *np.array(test_data.shape).ravel()   
+    )
+    #'test_labels_shape'
+    header_test_labels_shape = struct.pack("<"+"i"*len(test_labels.shape)
+        , *np.array(test_labels.shape).ravel()   
+    )
+    #'Stats'
+    header_stats = struct.pack("<"+"?dd"
+        , seed != None
+        , seed if seed != None else 0.0 
+        , train_percentage
+    )
+    #header
+    header_file =  header_size \
+                 + header_train_data_shape \
+                 + header_train_labels_shape \
+                 + header_validation_data_shape \
+                 + header_validation_labels_shape \
+                 + header_test_data_shape \
+                 + header_test_labels_shape \
+                 + header_stats
+
+    with bz2.BZ2File(path.join(BASEDATASETPATH, "{}_{}_batches.bz2".format(name, batch_size)), 'wb') as ofile:
+        #write header
+        ofile.write(header_file)
+        #train values
+        for index, t_data in enumerate(train_data):
+            ofile.write(t_data.tobytes())
+            ofile.write(train_labels[index].tobytes())
+        #validation values
+        ofile.write(validation_data.tobytes())
+        ofile.write(validation_labels.tobytes())
+        #test values
+        ofile.write(test_data.tobytes())
+        ofile.write(test_labels.tobytes())
 
 class Dataset(object):
 

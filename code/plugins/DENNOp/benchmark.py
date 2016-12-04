@@ -9,6 +9,8 @@ from sys import argv
 from time import sleep
 from time import time
 
+#from memory_profiler import profile
+
 # sleep(6)
 
 
@@ -23,6 +25,7 @@ class NDict(dict):
     pass
 
 
+#@profile
 def main():
     ##
     # Select device
@@ -134,7 +137,8 @@ def main():
                             if gen == 0:
                                 cur_pop = sess.run(cur_nn.rand_pop)
                                 prev_NN[de_type] = cur_pop
-
+                            
+                            time_node_creation = time()
                             ##
                             # DENN op
                             denn_op = DENN.create(  # input params
@@ -150,31 +154,35 @@ def main():
                                 names=[elm.name for elm in cur_nn.targets],
                                 CR=options.CR,
                                 DE=de_type,
-                                training=True
+                                #training=True
                             )
 
-                            with DENN.OpListener() as listener:
+                            print("++ Node creation {}".format(time() - time_node_creation))
 
-                                time_start_gen = time()
+                            #with DENN.OpListener() as listener:
 
-                                if gen == 0:
-                                    results = sess.run(denn_op, feed_dict=dict(
-                                        [
-                                            (pop_ref, prev_NN[de_type][num])
-                                            for num, pop_ref in enumerate(cur_nn.populations)
-                                        ]
-                                    ))
-                                else:
-                                    results = sess.run(denn_op, feed_dict=dict(
-                                        [
-                                            (pop_ref, prev_NN[de_type][num])
-                                            for num, pop_ref in enumerate(cur_nn.populations)
-                                        ]
-                                        +
-                                        [
-                                            (cur_nn.evaluated, v_res)
-                                        ]
-                                    ))
+                            time_start_gen = time()
+
+                            if gen == 0:
+                                results = sess.run(denn_op, feed_dict=dict(
+                                    [
+                                        (pop_ref, prev_NN[de_type][num])
+                                        for num, pop_ref in enumerate(cur_nn.populations)
+                                    ]
+                                ))
+                            else:
+                                results = sess.run(denn_op, feed_dict=dict(
+                                    [
+                                        (pop_ref, prev_NN[de_type][num])
+                                        for num, pop_ref in enumerate(cur_nn.populations)
+                                    ]
+                                    +
+                                    [
+                                        (cur_nn.evaluated, v_res)
+                                    ]
+                                ))
+                            
+                            print("++ Op time {}".format(time() - time_start_gen))
 
                             # get output
                             cur_pop = results.final_populations
@@ -186,6 +194,8 @@ def main():
 
                             evaluations = []
 
+                            time_valutation = time()
+
                             for idx in range(options.NP):
                                 cur_evaluation = sess.run(cur_nn.accuracy_validation, feed_dict=dict(
                                     [
@@ -196,8 +206,11 @@ def main():
                                 evaluations.append(cur_evaluation)
                             
                             # print(evaluations)
+                            print("++ Valutation {}".format(time() - time_valutation))
 
                             best_idx = np.argmin(evaluations)
+                        
+                            time_test = time()
 
                             cur_accuracy = sess.run(cur_nn.accuracy, feed_dict=dict(
                                 [
@@ -207,6 +220,8 @@ def main():
                             ))
 
                             test_results[de_type].values.append(cur_accuracy)
+
+                            print("++ Test {}".format(time() - time_test))
 
                             print(
                                 "+ DENN[{}] up to {} gen on {} completed in {:.05} sec.".format(

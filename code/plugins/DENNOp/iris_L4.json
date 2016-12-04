@@ -2,7 +2,7 @@
     {
         "name": "iris_dataset",
         "dataset_file": "./datasets/iris_3_batches.gz",
-        "TOT_GEN": 20000,
+        "TOT_GEN": 2000,
         "GEN_STEP": 100,
         "W": 0.8,
         "NP": 20,
@@ -14,7 +14,10 @@
         ],
         "CR": 0.5,
         "levels": [
-            [[[4,8], [8]], "relu6"],
+            [[[4,8], [8]], "relu"],
+            [[[8,8], [8]], "relu6"],
+            [[[8,8], [8]], "elu"],
+            [[[8,8], [8]], "elu"],
             [[[8,3], [3]], "softmax_cross_entropy_with_logits"]
         ]
     }

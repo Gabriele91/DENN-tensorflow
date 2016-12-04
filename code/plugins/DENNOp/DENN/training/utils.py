@@ -214,7 +214,7 @@ def create_dataset(dataset, loader, batch_size, name,
     train_labels = np.split(train_labels, batch_size)
 
     header = Header(
-        "<5if3L",
+        "<5if3I",
         [
             # Dataset values
             ("n_batch", len(train_data)),
@@ -255,10 +255,11 @@ def create_dataset(dataset, loader, batch_size, name,
             "d" if type_ == "double" else "f")
         )
 
-        header.set_label("test_offset", len(header))
-        header.set_label("validation_offset", len(header) + test_size)
+
+        header.set_label("test_offset", len(header))  # size header
+        header.set_label("validation_offset", len(header) + test_size + 4)  # size header + test size + num elm test
         header.set_label("train_offset", len(header) +
-                         test_size + validation_size)
+                         test_size + validation_size + 8) # size header + test size + validation size + num elm test + num elm validation
 
         # print(header)
 
@@ -274,6 +275,8 @@ def create_dataset(dataset, loader, batch_size, name,
         gz_file.write(test_data.tobytes())
         gz_file.write(test_labels.tobytes())
 
+        # print(gz_file.tell())
+
         ##
         # VALIDATION
         #
@@ -283,6 +286,8 @@ def create_dataset(dataset, loader, batch_size, name,
         gz_file.write(struct.pack("<I", len(validation_data)))
         gz_file.write(validation_data.tobytes())
         gz_file.write(validation_labels.tobytes())
+
+        # print(gz_file.tell())
 
         ##
         # TRAIN

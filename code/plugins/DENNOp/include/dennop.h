@@ -52,12 +52,12 @@ public:
         std::string graph_proto_string;
         // Get the index of the value to preserve
         OP_REQUIRES_OK(context, context->GetAttr("graph", &graph_proto_string));
-        // Get name of eval function
-        OP_REQUIRES_OK(context, context->GetAttr("f_name_eval", &m_name_eval));
         // Get names of eval inputs
-        OP_REQUIRES_OK(context, context->GetAttr("f_inputs_eval", &m_inputs_eval));
+        OP_REQUIRES_OK(context, context->GetAttr("f_inputs", &m_inputs));
+        // Get name of eval function
+        OP_REQUIRES_OK(context, context->GetAttr("f_name_train", &m_name_train));
         // Test size == sizeof(names)
-        if( m_space_size != m_inputs_eval.size() )
+        if( m_space_size != m_inputs.size() )
         {
             context->CtxFailure({tensorflow::error::Code::ABORTED,"Attribute error: sizeof(names) != sizeof(populations) "});
         }
@@ -349,7 +349,7 @@ public:
         for(size_t p=0; p!=populations_list.size(); ++p)
         {
             input.push_back({
-                m_inputs_eval[p],
+                m_inputs[p],
                 populations_list[p][NP_i]
             });
         }
@@ -358,7 +358,7 @@ public:
         status= m_session->Run(//input
                                input,
                                //function
-                               NameList{ m_name_eval+":0" } ,
+                               NameList{ m_name_train+":0" } ,
                                //one
                                NameList{ },
                                //output
@@ -482,8 +482,8 @@ private:
     // population variables
     int                                   m_space_size{ 1 };
     //input evaluate
-    std::string                           m_name_eval;
-    NameList                              m_inputs_eval;
+    std::string                           m_name_train;
+    NameList                              m_inputs;
     //DE types
     CRType           m_cr_type    { CR_BIN    };
     DifferenceVector m_diff_vector{ DIFF_ONE  };

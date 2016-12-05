@@ -1,9 +1,7 @@
 #pragma once 
 #include <cstdio>
 #include <string>
-#include <point.h>
 #include <zlib.h>
-#include <bzlib.h>
 
 namespace io_wrapper
 {
@@ -179,6 +177,7 @@ public:
     }
 };
 
+#if 0
 template < size_t block_size = 9, size_t work_factor = 30 >
 class bzip2_file
 {
@@ -294,5 +293,6 @@ public:
         return size;
     }
 };
+#endif
 
 }

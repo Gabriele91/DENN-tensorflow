@@ -32,3 +32,10 @@
 #else
     #define SOCKET_DEBUG(x)
 #endif
+
+//LOADER UTILS
+#if defined( _MSC_VER )
+    #define ASPACKED( __Declaration__ ) __pragma( pack(push, 1) ) __Declaration__ __pragma( pack(pop) )
+#else 
+    #define ASPACKED( __Declaration__ ) __Declaration__ __attribute__((__packed__))
+#endif

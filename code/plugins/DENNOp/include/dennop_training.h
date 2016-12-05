@@ -3,8 +3,8 @@
 #define DENN_USE_SOCKET_DEBUG 
 #define DENN_USE_TRAINING
 
-#include <config.h>
-#include <dennop.h>
+#include "config.h"
+#include "dennop.h"
 
 namespace tensorflow
 {

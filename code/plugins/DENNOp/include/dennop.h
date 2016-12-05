@@ -332,7 +332,7 @@ public:
 
 
     //execute evaluate function (tensorflow function)
-    double ExecuteEvaluate
+    virtual double ExecuteEvaluate
     (
         OpKernelContext* context,
         const int NP_i,

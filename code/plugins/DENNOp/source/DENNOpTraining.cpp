@@ -5,6 +5,7 @@ using namespace tensorflow;
 REGISTER_OP("DENN")
 .Attr("space: int")
 .Attr("graph: string")
+.Attr("dataset: string")
 .Attr("CR: float = 0.5")
 .Attr("fmin: float = -1.0")
 .Attr("fmax: float = +1.0")

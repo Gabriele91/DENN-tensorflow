@@ -60,11 +60,11 @@ namespace tensorflow
         unsigned int m_n_row;
     });
 
-    ASPACKED(struct DataSetRaw
+    struct DataSetRaw
     {
         Tensor m_features;
         Tensor m_labels;
-    });
+    };
 
     template < class IO >
     class DataSetLoader 
@@ -153,7 +153,7 @@ namespace tensorflow
             return false;
         }
 
-        bool read_bach(bool loop = true)
+        bool read_bach(DataSetRaw& t_out,bool loop = true)
         {
             if(is_open())
             {
@@ -175,7 +175,7 @@ namespace tensorflow
 
     protected:
 
-        static bool read_raw(DataSetRaw& t_out,const unsigned int size)
+        bool read_raw(DataSetRaw& t_out,const unsigned int size)
         {
             //alloc output
             t_out.m_features = Tensor

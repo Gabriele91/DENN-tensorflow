@@ -65,6 +65,14 @@
 		E067D9731DE248410032CC68 /* letters_L1.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = letters_L1.json; sourceTree = "<group>"; };
 		E067D9741DE248410032CC68 /* letters_L2.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = letters_L2.json; sourceTree = "<group>"; };
 		E067D9751DE248410032CC68 /* mnist_L1.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = mnist_L1.json; sourceTree = "<group>"; };
+		E06C062F1DF624C100960CBA /* config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = config.h; sourceTree = "<group>"; };
+		E06C06301DF624C100960CBA /* dataset_loader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dataset_loader.h; sourceTree = "<group>"; };
+		E06C06311DF624C100960CBA /* dennop_training.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dennop_training.h; sourceTree = "<group>"; };
+		E06C06321DF624C100960CBA /* dennop.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dennop.h; sourceTree = "<group>"; };
+		E06C06331DF624C100960CBA /* io_wrapper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = io_wrapper.h; sourceTree = "<group>"; };
+		E06C06341DF624C100960CBA /* random_indices_util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = random_indices_util.h; sourceTree = "<group>"; };
+		E06C06351DF624C100960CBA /* tensorflow_util.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = tensorflow_util.h; sourceTree = "<group>"; };
+		E06C06361DF624C900960CBA /* DENNOpTraining.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DENNOpTraining.cpp; sourceTree = "<group>"; };
 		E09B48CA1DB7639C00333E4F /* libDENNFakeDylib.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libDENNFakeDylib.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0A9F4EC1DE4515300807B05 /* socket_messages_server.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = socket_messages_server.h; sourceTree = "<group>"; };
 		E0A9F4F61DE4BB5500807B05 /* __init__.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = __init__.py; sourceTree = "<group>"; };
@@ -210,6 +218,7 @@
 		E0E1CCD41DA6927F009C4D35 /* source */ = {
 			isa = PBXGroup;
 			children = (
+				E06C06361DF624C900960CBA /* DENNOpTraining.cpp */,
 				E0E1CCD51DA6927F009C4D35 /* DENNOp.cpp */,
 			);
 			path = source;
@@ -218,6 +227,13 @@
 		E0E1CCD61DA6927F009C4D35 /* include */ = {
 			isa = PBXGroup;
 			children = (
+				E06C062F1DF624C100960CBA /* config.h */,
+				E06C06301DF624C100960CBA /* dataset_loader.h */,
+				E06C06311DF624C100960CBA /* dennop_training.h */,
+				E06C06321DF624C100960CBA /* dennop.h */,
+				E06C06331DF624C100960CBA /* io_wrapper.h */,
+				E06C06341DF624C100960CBA /* random_indices_util.h */,
+				E06C06351DF624C100960CBA /* tensorflow_util.h */,
 				E0A9F4EC1DE4515300807B05 /* socket_messages_server.h */,
 			);
 			path = include;
@@ -250,7 +266,7 @@
 /* Begin PBXLegacyTarget section */
 		E01A5C521DED92CF00493939 /* DENNOpTraningDebug */ = {
 			isa = PBXLegacyTarget;
-			buildArgumentsString = "$(ACTION) PYTHON_PATH=$(HOME)/.virtualenvs/TensorFlow DENN_TRAINING=true USE_DEBUG=true";
+			buildArgumentsString = "$(ACTION) make_denn_traning_op PYTHON_PATH=$(HOME)/.virtualenvs/TensorFlow USE_DEBUG=true";
 			buildConfigurationList = E01A5C531DED92CF00493939 /* Build configuration list for PBXLegacyTarget "DENNOpTraningDebug" */;
 			buildPhases = (
 			);
@@ -264,7 +280,7 @@
 		};
 		E0A9F4F11DE4BA5700807B05 /* DENNOpTraning */ = {
 			isa = PBXLegacyTarget;
-			buildArgumentsString = "$(ACTION) PYTHON_PATH=$(HOME)/.virtualenvs/TensorFlow DENN_TRAINING=true";
+			buildArgumentsString = "$(ACTION) make_denn_traning_op PYTHON_PATH=$(HOME)/.virtualenvs/TensorFlow";
 			buildConfigurationList = E0A9F4F21DE4BA5700807B05 /* Build configuration list for PBXLegacyTarget "DENNOpTraning" */;
 			buildPhases = (
 			);
@@ -278,7 +294,7 @@
 		};
 		E0E1CCCD1DA68F1E009C4D35 /* DENNOp */ = {
 			isa = PBXLegacyTarget;
-			buildArgumentsString = "$(ACTION) PYTHON_PATH=$(HOME)/.virtualenvs/TensorFlow";
+			buildArgumentsString = "$(ACTION) make_denn_op PYTHON_PATH=$(HOME)/.virtualenvs/TensorFlow";
 			buildConfigurationList = E0E1CCCE1DA68F1E009C4D35 /* Build configuration list for PBXLegacyTarget "DENNOp" */;
 			buildPhases = (
 			);

@@ -52,10 +52,12 @@ public:
         std::string graph_proto_string;
         // Get the index of the value to preserve
         OP_REQUIRES_OK(context, context->GetAttr("graph", &graph_proto_string));
+        // Get name of eval function
+        OP_REQUIRES_OK(context, context->GetAttr("f_name_eval", &m_name_eval));
         // Get names of eval inputs
-        OP_REQUIRES_OK(context, context->GetAttr("names", &m_input_eval_names));
+        OP_REQUIRES_OK(context, context->GetAttr("f_inputs_eval", &m_inputs_eval));
         // Test size == sizeof(names)
-        if( m_space_size != m_input_eval_names.size() )
+        if( m_space_size != m_inputs_eval.size() )
         {
             context->CtxFailure({tensorflow::error::Code::ABORTED,"Attribute error: sizeof(names) != sizeof(populations) "});
         }
@@ -67,9 +69,9 @@ public:
         // get CR
         context->GetAttr("CR", &f_CR);
         // get f min
-        context->GetAttr("fmin", &f_f_min);
+        context->GetAttr("f_min", &f_f_min);
         // get f max
-        context->GetAttr("fmax", &f_f_max);
+        context->GetAttr("f_max", &f_f_max);
         // get DE
         std::string de_type;
         context->GetAttr("DE", &de_type);
@@ -347,7 +349,7 @@ public:
         for(size_t p=0; p!=populations_list.size(); ++p)
         {
             input.push_back({
-                m_input_eval_names[p],
+                m_inputs_eval[p],
                 populations_list[p][NP_i]
             });
         }
@@ -356,7 +358,7 @@ public:
         status= m_session->Run(//input
                                input,
                                //function
-                               NameList{ "evaluate:0" } ,
+                               NameList{ m_name_eval+":0" } ,
                                //one
                                NameList{ },
                                //output
@@ -480,7 +482,8 @@ private:
     // population variables
     int                                   m_space_size{ 1 };
     //input evaluate
-    NameList                              m_input_eval_names;
+    std::string                           m_name_eval;
+    NameList                              m_inputs_eval;
     //DE types
     CRType           m_cr_type    { CR_BIN    };
     DifferenceVector m_diff_vector{ DIFF_ONE  };

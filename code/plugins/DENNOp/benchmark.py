@@ -151,7 +151,7 @@ def main():
                                 # space = 2,
                                 graph=DENN.get_graph_proto(
                                     sess.graph.as_graph_def()),
-                                names=[elm.name for elm in cur_nn.targets],
+                                f_inputs_eval=[elm.name for elm in cur_nn.targets],
                                 CR=options.CR,
                                 DE=de_type,
                                 #training=True

@@ -29,8 +29,7 @@ ifeq ($(shell uname -s),Linux)
 	LIKNER_FLAGS += -L$(TOP)/tf_static/ -lprotobuf_custom
 	LIKNER_FLAGS += -L$(TOP)/tf_static/ -lprotobuf_lite_custom
 	LIKNER_FLAGS += -L$(TOP)/tf_static/ -lpng_custom
-	LIKNER_FLAGS += -L$(TOP)/tf_static/ -lc_api
-	LIKNER_FLAGS += -L$(TOP)/tf_static/ -lscope
+	LIKNER_FLAGS += -L$(TOP)/tf_static/ -lc_api_custom
 	LIKNER_FLAGS += -Wl,--no-whole-archive 
 	#must to be false
 	USE_OLD_ABI=false

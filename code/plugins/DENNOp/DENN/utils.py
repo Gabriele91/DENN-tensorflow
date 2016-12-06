@@ -161,7 +161,7 @@ class DebugListner(Process):
             return struct.unpack("<{}".format(type_[0]), data)[0]
 
 
-def get_graph_proto(graph_or_graph_def, as_text=False):
+def get_graph_proto(graph_or_graph_def, as_text=True):
     """Return graph in binary format or as string.
 
     Reference:

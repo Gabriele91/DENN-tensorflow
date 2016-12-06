@@ -445,9 +445,9 @@ def gen_network(options, rand_pop):
         input_size = levels[0][0][0][0]
         label_size = levels[-1][0][-1][0]
         input_placeholder = tf.placeholder(tf.float64,
-                                        [None, input_size], name="inputs")
+                                           [None, input_size], name="inputs")
         label_placeholder = tf.placeholder(tf.float64,
-                                        [None, label_size], name="labels")
+                                           [None, label_size], name="labels")
 
         last_input = input_placeholder
 

@@ -1,9 +1,0 @@
-tf_static/libc_api.a filter=lfs diff=lfs merge=lfs -text
-tf_static/libpng_custom.a filter=lfs diff=lfs merge=lfs -text
-tf_static/libprotobuf_custom.a filter=lfs diff=lfs merge=lfs -text
-tf_static/libprotobuf_lite_custom.a filter=lfs diff=lfs merge=lfs -text
-tf_static/libprotoc_custom.a filter=lfs diff=lfs merge=lfs -text
-tf_static/libscope.a filter=lfs diff=lfs merge=lfs -text
-datasets/iris_3_batches.bzip filter=lfs diff=lfs merge=lfs -text
-datasets/letter_20_batches.bzip filter=lfs diff=lfs merge=lfs -text
-datasets/mnist_12_batches.bzip filter=lfs diff=lfs merge=lfs -text

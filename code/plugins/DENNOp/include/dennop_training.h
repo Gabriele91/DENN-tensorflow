@@ -35,6 +35,7 @@ namespace tensorflow
         //star execution from python
         virtual void Compute(OpKernelContext *context) override
         {
+            ////////////////////////////////////////////////////////////////////////////
             // get input
             const Tensor& t_metainfo_i = context->input(0);
             //info 1: (NUM GEN)
@@ -43,10 +44,12 @@ namespace tensorflow
             const int sub_gen = t_metainfo_i.flat<int>()(1);
             //info 3; (COMPUTE FIRST VALUTATION OF POPULATION)
             const int calc_first_eval = t_metainfo_i.flat<int>()(2);
+            ////////////////////////////////////////////////////////////////////////////
             //get population first eval
             const Tensor& population_first_eval = context->input(1);
+            ////////////////////////////////////////////////////////////////////////////
             // start input
-            const size_t start_input = 3;
+            const size_t start_input = 2;
             //super gen
             const int n_sub_gen = tot_gen / sub_gen;
             ////////////////////////////////////////////////////////////////////////////

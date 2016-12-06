@@ -29,13 +29,13 @@ class OpListener(object):
     def __exit__(self, ex_type, ex_value, traceback):
         self.db_listener.stop_run()
         print("++ DebugListner: stop to listen and exit", end='\r')
-        #stop process
+        # stop process
         self.db_listener.join(2.)
-        #remove
+        # remove
         #del self.db_listener
         #self.db_listener = None
-        #print
-        print("++ DebugListner: exited..."+" "*10)
+        # print
+        print("++ DebugListner: exited..." + " " * 10)
 
 
 class DebugListner(Process):
@@ -60,22 +60,22 @@ class DebugListner(Process):
             4: ('', 'close')
         }
         self.__str_to_msg_type = {
-            'int'   :0,
-            'float' :1,
-            'double':2,
-            'string':3,
-            'close' :4
+            'int': 0,
+            'float': 1,
+            'double': 2,
+            'string': 3,
+            'close': 4
         }
 
     def create_socket(self):
         self.close_connection()
-        self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
+        self._sock = socket.socket(
+            socket.AF_INET, socket.SOCK_STREAM, socket.IPPROTO_TCP)
         fcntl.fcntl(self._sock, fcntl.F_SETFL, os.O_NONBLOCK)
         self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
     def stop_run(self):
         self._exit.set()
-
 
     def run(self):
         # create a new socket
@@ -90,19 +90,19 @@ class DebugListner(Process):
         ok_res = [errno.EISCONN]
         # wait
         while res != 0 and (not res in ok_res) and (not self._exit.is_set()):
-            #try
+            # try
             res = self._sock.connect_ex((self.host, self.port))
-            #OSX, must to recreate socket
+            # OSX, must to recreate socket
             if res == errno.ECONNREFUSED:
                 self.create_socket()
-            #debug
-            #if res != 0:
+            # debug
+            # if res != 0:
             #    print("++ DebugListner: connecting({},{})".format(res, os.strerror(res))+" "*10, end='\r')
             #    time.sleep(0.5)
-        # kill thread? 
+        # kill thread?
         if self._exit.is_set():
-            return 
-        # or connected 
+            return
+        # or connected
         self._connected = True
         print("++ DebugListner: connected", end='\r')
         print("++ DebugListner: start main loop")
@@ -115,12 +115,13 @@ class DebugListner(Process):
             for readable in readables:
                 data = readable.recv(4)
                 if data:
-                    #get type
+                    # get type
                     type_ = struct.unpack("<i", data)[0]
-                    #return
+                    # return
                     if type_ in self.__msg_types:
                         msg = self.read_msg(readable, self.__msg_types[type_])
-                        print("++ [{}]-> {}".format(self.msg_header, msg), end='\r')
+                        print(
+                            "++ [{}]-> {}".format(self.msg_header, msg), end='\r')
         # close connection (anyway)
         self.close_connection()
 
@@ -128,11 +129,11 @@ class DebugListner(Process):
         self.close_connection()
 
     def close_connection(self):
-        #close socket
+        # close socket
         if self._sock != None:
             if self._connected:
                 self._sock.setblocking(True)
-                try: 
+                try:
                     self._sock.shutdown(socket.SHUT_RDWR)
                 except Exception:
                     pass
@@ -141,11 +142,11 @@ class DebugListner(Process):
                 self._connected = False
             else:
                 self._sock.close()
-        #delete socket
+        # delete socket
         self._sock = None
 
     def send_close_message(self):
-        self._sock.send(struct.pack('<i',self.__str_to_msg_type['close']))
+        self._sock.send(struct.pack('<i', self.__str_to_msg_type['close']))
 
     @staticmethod
     def read_msg(conn, type_):
@@ -154,13 +155,13 @@ class DebugListner(Process):
             data = conn.recv(struct.calcsize(type_[0]) * size)
             return struct.unpack("<{}".format(type_[0] * size), data)[0]
         if type_[1] == 'close':
-            return (None,'close')
+            return (None, 'close')
         else:
             data = conn.recv(struct.calcsize(type_[0]))
             return struct.unpack("<{}".format(type_[0]), data)[0]
 
 
-def get_graph_proto(graph_or_graph_def, as_text=True):
+def get_graph_proto(graph_or_graph_def, as_text=False):
     """Return graph in binary format or as string.
 
     Reference:

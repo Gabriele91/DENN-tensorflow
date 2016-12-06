@@ -93,104 +93,91 @@ def main():
                 list(zip(options.de_types, [
                     None for _ in range(len(options.de_types))]))
             )
-            v_res = None
+
+            v_res = [0.0 for _ in range(options.NP)]
 
             batch_counter = 0
 
-            for gen in range(int(options.TOT_GEN / options.GEN_STEP)):
+            cur_nn = DENN.training.gen_network(
+                options,
+                True  # rand population only if gen is the first one
+            )
 
-                print(
-                    "+ Start gen. [{}] with batch[{}]".format((gen + 1) * options.GEN_STEP, batch_counter))
+            with cur_nn.graph.as_default():
+                with tf.Session(config=session_config) as sess:
 
-                # print(batch_counter)
+                    denn_operators = {}
 
-                cur_batch = dataset[batch_counter]
-                batch_counter = (batch_counter + 1) % dataset.num_batches
+                    time_node_creation = time()
+                    
+                    for de_type in options.de_types:
 
-                cur_nn = DENN.training.gen_network(
-                    options,
-                    gen == 0  # rand population only if gen is the first one
-                )
-
-                with cur_nn.graph.as_default():
-                    with tf.Session(config=session_config) as sess:
                         ##
-                        # init vars
-                        # We don't need this, we don't have variables at the moment
-                        # sess.run(tf.global_variables_initializer())
+                        # Random initialization of the NN
+                        cur_pop = sess.run(cur_nn.rand_pop)
+                        prev_NN[de_type] = cur_pop
 
-                        for de_type in options.de_types:
+                        
+                        ##
+                        # DENN op
+                        denn_operators[de_type] = DENN.create(  
+                            # input params
+                            # [num_gen, eval_individual]
+                            cur_nn.cur_gen_options,
+                            cur_nn.label_placeholder,
+                            cur_nn.input_placeholder,
+                            cur_nn.evaluated,  # FIRST EVAL
+                            cur_nn.weights,  # PASS WEIGHTS
+                            cur_nn.populations,  # POPULATIONS
+                            # attributes
+                            # space = 2,
+                            graph=DENN.get_graph_proto(
+                                cur_nn.graph.as_graph_def()),
+                            f_name_train=cur_nn.cross_entropy.name,
+                            f_inputs=[elm.name for elm in cur_nn.targets],
+                            f_input_labels=cur_nn.label_placeholder.name,
+                            f_input_features=cur_nn.input_placeholder.name,
+                            CR=options.CR,
+                            DE=de_type,
+                            # training=True
+                        )
 
-                            ##
-                            # Random initialization of the NN
-                            if gen == 0:
-                                cur_pop = sess.run(cur_nn.rand_pop)
-                                prev_NN[de_type] = cur_pop
+                    print(
+                        "++ Node creation {}".format(time() - time_node_creation))
+                    
+                    for de_type, denn_op in denn_operators.items():
 
-                            time_node_creation = time()
-                            ##
-                            # DENN op
-                            denn_op = DENN.create(  
-                                # input params
-                                # [num_gen, eval_individual]
-                                [options.GEN_STEP, gen == 0],
-                                cur_nn.label_placeholder,
-                                cur_nn.input_placeholder,
-                                [] if gen == 0 else cur_nn.evaluated,  # FIRST EVAL
-                                cur_nn.weights,  # PASS WEIGHTS
-                                cur_nn.populations,  # POPULATIONS
-                                # attributes
-                                # space = 2,
-                                graph=DENN.get_graph_proto(
-                                    cur_nn.graph.as_graph_def()),
-                                f_name_train=cur_nn.cross_entropy.name,
-                                f_inputs=[elm.name for elm in cur_nn.targets],
-                                f_input_labels=cur_nn.label_placeholder.name,
-                                f_input_features=cur_nn.input_placeholder.name,
-                                CR=options.CR,
-                                DE=de_type,
-                                # training=True
-                            )
+                        first_time = True
+
+                        for gen in range(int(options.TOT_GEN / options.GEN_STEP)):
 
                             print(
-                                "++ Node creation {}".format(time() - time_node_creation))
+                                "+ Start gen. [{}] with batch[{}]".format((gen + 1) * options.GEN_STEP, batch_counter))
 
-                            # with DENN.OpListener() as listener:
+                            cur_batch = dataset[batch_counter]
+                            batch_counter = (batch_counter + 1) % dataset.num_batches
 
                             time_start_gen = time()
 
-                            if gen == 0:
-                                results = sess.run(denn_op, feed_dict=dict(
-                                    [
-                                        (pop_ref, prev_NN[de_type][num])
-                                        for num, pop_ref in enumerate(cur_nn.populations)
-                                    ]
-                                    +
-                                    [
-                                        (cur_nn.label_placeholder,
-                                         cur_batch.labels),
-                                        (cur_nn.input_placeholder,
-                                          cur_batch.data)
-                                    ]
-                                ))
-                            else:
-                                results = sess.run(denn_op, feed_dict=dict(
-                                    [
-                                        (pop_ref, prev_NN[de_type][num])
-                                        for num, pop_ref in enumerate(cur_nn.populations)
-                                    ]
-                                    +
-                                    [
-                                        (cur_nn.label_placeholder,
-                                         cur_batch.labels),
-                                        (cur_nn.input_placeholder,
-                                          cur_batch.data)
-                                    ]
-                                    +
-                                    [
-                                        (cur_nn.evaluated, v_res)
-                                    ]
-                                ))
+                            results = sess.run(denn_op, feed_dict=dict(
+                                [
+                                    (pop_ref, prev_NN[de_type][num])
+                                    for num, pop_ref in enumerate(cur_nn.populations)
+                                ]
+                                +
+                                [
+                                    (cur_nn.label_placeholder, cur_batch.labels),
+                                    (cur_nn.input_placeholder, cur_batch.data)
+                                ]
+                                +
+                                [
+                                    (cur_nn.evaluated, v_res)
+                                ]
+                                +
+                                [
+                                    (cur_nn.cur_gen_options, [options.GEN_STEP, first_time])
+                                ]
+                            ))
 
                             print("++ Op time {}".format(time() - time_start_gen))
 
@@ -257,7 +244,7 @@ def main():
                             prev_NN[de_type] = cur_pop
                             del cur_pop
 
-                tf.reset_default_graph()
+                            first_time = False
 
             print("+ Completed all test on dataset {} in {} sec.".format(options.name,
                                                                          time() - time_start_dataset))

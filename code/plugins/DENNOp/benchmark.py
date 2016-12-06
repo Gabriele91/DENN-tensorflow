@@ -142,6 +142,8 @@ def main():
                                     cur_nn.graph.as_graph_def()),
                                 f_name_train=cur_nn.cross_entropy.name,
                                 f_inputs=[elm.name for elm in cur_nn.targets],
+                                f_input_labels=cur_nn.label_placeholder.name,
+                                f_input_features=cur_nn.input_placeholder.name,
                                 CR=options.CR,
                                 DE=de_type,
                                 # training=True
@@ -157,12 +159,23 @@ def main():
                             if gen == 0:
                                 results = sess.run(denn_op, feed_dict=dict(
                                     [
+                                        cur_batch.labels,
+                                        cur_batch.data
+                                    ]
+                                    +
+                                    [
                                         (pop_ref, prev_NN[de_type][num])
                                         for num, pop_ref in enumerate(cur_nn.populations)
                                     ]
                                 ))
                             else:
                                 results = sess.run(denn_op, feed_dict=dict(
+                                    [
+                                        cur_batch.labels,
+                                        cur_batch.data
+
+                                    ]
+                                    +
                                     [
                                         (pop_ref, prev_NN[de_type][num])
                                         for num, pop_ref in enumerate(cur_nn.populations)
@@ -188,16 +201,24 @@ def main():
                             time_valutation = time()
 
                             for idx in range(options.NP):
-                                cur_evaluation = sess.run(cur_nn.accuracy_validation, feed_dict=dict(
+                                cur_evaluation = sess.run(cur_nn.accuracy, feed_dict=dict(
                                     [
                                         (target, cur_pop[num][idx])
                                         for num, target in enumerate(cur_nn.targets)
+                                    ]
+                                    +
+                                    [
+                                        (cur_nn.label_placeholder,
+                                         dataset.validation_data),
+                                        (cur_nn.input_placeholder,
+                                         dataset.validation_labels)
                                     ]
                                 ))
                                 evaluations.append(cur_evaluation)
 
                             # print(evaluations)
-                            print("++ Valutation {}".format(time() - time_valutation))
+                            print(
+                                "++ Valutation {}".format(time() - time_valutation))
 
                             best_idx = np.argmin(evaluations)
 
@@ -207,6 +228,11 @@ def main():
                                 [
                                     (target, cur_pop[num][best_idx])
                                     for num, target in enumerate(cur_nn.targets)
+                                ]
+                                +
+                                [
+                                    (cur_nn.label_placeholder, dataset.test_data),
+                                    (cur_nn.input_placeholder, dataset.test_labels)
                                 ]
                             ))
 

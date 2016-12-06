@@ -520,5 +520,7 @@ def gen_network(options, rand_pop):
         ('y_test', y_test),
         ('cross_entropy', cross_entropy),
         ('accuracy', accuracy),
-        ('graph', graph)
+        ('graph', graph),
+        ('input_placeholder', input_placeholder),
+        ('label_placeholder', label_placeholder)
     ])

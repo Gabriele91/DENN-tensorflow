@@ -215,9 +215,9 @@ def main():
                                     +
                                     [
                                         (cur_nn.label_placeholder,
-                                         dataset.validation_data),
+                                         dataset.validation_labels),
                                         (cur_nn.input_placeholder,
-                                         dataset.validation_labels)
+                                         dataset.validation_data)
                                     ]
                                 ))
                                 evaluations.append(cur_evaluation)
@@ -237,8 +237,8 @@ def main():
                                 ]
                                 +
                                 [
-                                    (cur_nn.label_placeholder, dataset.test_data),
-                                    (cur_nn.input_placeholder, dataset.test_labels)
+                                    (cur_nn.label_placeholder, dataset.test_labels),
+                                    (cur_nn.input_placeholder, dataset.test_data)
                                 ]
                             ))
 

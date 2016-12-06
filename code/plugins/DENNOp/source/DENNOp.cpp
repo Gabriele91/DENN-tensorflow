@@ -10,7 +10,7 @@ REGISTER_OP("DENN")
 .Attr("f_min: float = -1.0")
 .Attr("f_max: float = +1.0")
 .Attr("f_inputs: list(string)")
-.Attr("f_name_train: string = 'evaluate'")
+.Attr("f_name_train: string = 'cross_entropy'")
 .Attr("DE: {'rand/1/bin', 'rand/1/exp', 'rand/2/bin', 'rand/2/exp'} = 'rand/1/bin'")
 .Input("info: int32") //[ NUM_GEN, CALC_FIRST_EVAL ]
 .Input("population_first_eval: double")

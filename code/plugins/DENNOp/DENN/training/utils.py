@@ -440,6 +440,7 @@ def gen_network(options, rand_pop):
         pop_ref = []
         rand_pop_ref = []
         cur_pop_VAL = tf.placeholder(tf.float64, [options.NP])
+        cur_gen_options = tf.placeholder(tf.int32, [2])
         weights = []
 
         input_size = levels[0][0][0][0]
@@ -505,7 +506,7 @@ def gen_network(options, rand_pop):
                     tf.argmax(label_placeholder, 1)
                 )
                 accuracy = tf.reduce_mean(
-                    tf.cast(correct_prediction, tf.float32), name="accuracy")
+                    tf.cast(correct_prediction, tf.float64), name="accuracy")
             else:
                 last_input = getattr(tf.nn, type_)(
                     tf.matmul(last_input, target_w) + target_b)
@@ -522,5 +523,6 @@ def gen_network(options, rand_pop):
         ('accuracy', accuracy),
         ('graph', graph),
         ('input_placeholder', input_placeholder),
-        ('label_placeholder', label_placeholder)
+        ('label_placeholder', label_placeholder),
+        ('cur_gen_options', cur_gen_options)
     ])

@@ -109,18 +109,18 @@ def main():
 
                 print("++ Node creation {}".format(time() - time_node_creation))
 
-                # with DENN.OpListener() as listener:
+                with DENN.OpListener() as listener:
 
-                time_start_gen = time()
+                    time_start_gen = time()
 
-                results = sess.run(denn_op, feed_dict=dict(
-                    [
-                        (pop_ref, cur_pop[num])
-                        for num, pop_ref in enumerate(cur_nn.populations)
-                    ]
-                ))
+                    results = sess.run(denn_op, feed_dict=dict(
+                        [
+                            (pop_ref, cur_pop[num])
+                            for num, pop_ref in enumerate(cur_nn.populations)
+                        ]
+                    ))
 
-                print("++ Op time {}".format(time() - time_start_gen))
+                    print("++ Op time {}".format(time() - time_start_gen))
 
 
     tf.reset_default_graph()   

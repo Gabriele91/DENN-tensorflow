@@ -4,7 +4,7 @@
         "dataset_file": "./datasets/letter_20_batches.gz",
         "TOT_GEN": 5000,
         "GEN_STEP": 100,
-        "W": 0.8,
+        "F": 0.8,
         "NP": 100,
         "de_types": [
             "rand/1/bin"

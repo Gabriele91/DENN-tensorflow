@@ -255,11 +255,11 @@ def create_dataset(dataset, loader, batch_size, name,
             "d" if type_ == "double" else "f")
         )
 
-
         header.set_label("test_offset", len(header))  # size header
-        header.set_label("validation_offset", len(header) + test_size + 4)  # size header + test size + num elm test
+        # size header + test size + num elm test
+        header.set_label("validation_offset", len(header) + test_size + 4)
         header.set_label("train_offset", len(header) +
-                         test_size + validation_size + 8) # size header + test size + validation size + num elm test + num elm validation
+                         test_size + validation_size + 8)  # size header + test size + validation size + num elm test + num elm validation
 
         # print(header)
 
@@ -431,101 +431,84 @@ class Dataset(object):
         return Batch(data, labels)
 
 
-def gen_network(levels, options,
-                cur_data, cur_label,
-                validation_data, validation_labels,
-                test_data, test_labels,
-                rand_pop):
-    target_ref = []
-    pop_ref = []
-    rand_pop_ref = []
-    cur_pop_VAL = tf.placeholder(tf.float64, [options.NP])
-    weights = []
+def gen_network(options, rand_pop):
 
-    last_input_train = cur_data
-    last_input_validation = validation_data
-    last_input_test = test_data
+    graph = tf.Graph()
+    with graph.as_default():
+        levels = options.levels
+        target_ref = []
+        pop_ref = []
+        rand_pop_ref = []
+        cur_pop_VAL = tf.placeholder(tf.float64, [options.NP])
+        weights = []
 
-    # print(cur_data)
-    # print(cur_label)
-    # print(validation_data)
-    # print(validation_labels)
-    # print(test_data)
-    # print(test_labels)
+        input_size = levels[0][0][0][0]
+        label_size = levels[-1][0][-1][0]
+        input_placeholder = tf.placeholder(tf.float64,
+                                        [None, input_size], name="inputs")
+        label_placeholder = tf.placeholder(tf.float64,
+                                        [None, label_size], name="labels")
 
-    for num, cur_level in enumerate(levels, 1):
-        level, type_ = cur_level
+        last_input = input_placeholder
 
-        SIZE_W, SIZE_B = level
+        for num, cur_level in enumerate(levels, 1):
+            level, type_ = cur_level
 
-        ##
-        # DE W -> NN (W, B)
-        deW_nnW = np.full(SIZE_W, options.W)
-        deW_nnB = np.full(SIZE_B, options.W)
-
-        weights.append(deW_nnW)
-        weights.append(deW_nnB)
-
-        ##
-        # Random functions
-        if rand_pop:
-            create_random_population_W = tf.random_uniform(
-                [options.NP] + SIZE_W, dtype=tf.float64, seed=1)
-            create_random_population_B = tf.random_uniform(
-                [options.NP] + SIZE_B, dtype=tf.float64, seed=1)
-
-            rand_pop_ref.append(create_random_population_W)
-            rand_pop_ref.append(create_random_population_B)
-
-        ##
-        # Placeholder
-        target_w = tf.placeholder(tf.float64, SIZE_W)
-        target_b = tf.placeholder(tf.float64, SIZE_B)
-
-        target_ref.append(target_w)
-        target_ref.append(target_b)
-
-        cur_pop_W = tf.placeholder(tf.float64, [options.NP] + SIZE_W)
-        cur_pop_B = tf.placeholder(tf.float64, [options.NP] + SIZE_B)
-
-        pop_ref.append(cur_pop_W)
-        pop_ref.append(cur_pop_B)
-
-        if num == len(levels):
-            ##
-            # NN TRAIN
-            y = tf.matmul(last_input_train, target_w) + target_b
-            cross_entropy = tf.reduce_mean(
-                getattr(tf.nn, type_)(
-                    y, cur_label), name="evaluate")
+            SIZE_W, SIZE_B = level
 
             ##
-            # NN VALIDATION
-            y_validation = tf.matmul(
-                last_input_validation, target_w) + target_b
-            correct_prediction_validation = tf.equal(
-                tf.argmax(y_validation, 1),
-                tf.argmax(validation_labels, 1)
-            )
-            accuracy_validation = tf.reduce_mean(
-                tf.cast(correct_prediction_validation, tf.float32))
+            # DE W -> NN (W, B)
+            deW_nnW = np.full(SIZE_W, options.F)
+            deW_nnB = np.full(SIZE_B, options.F)
+
+            weights.append(deW_nnW)
+            weights.append(deW_nnB)
 
             ##
-            # NN TEST
-            y_test = tf.matmul(last_input_test, target_w) + target_b
-            correct_prediction = tf.equal(
-                tf.argmax(y_test, 1),
-                tf.argmax(test_labels, 1)
-            )
-            accuracy = tf.reduce_mean(
-                tf.cast(correct_prediction, tf.float32))
-        else:
-            last_input_train = getattr(tf.nn, type_)(
-                tf.matmul(last_input_train, target_w) + target_b)
-            last_input_validation = getattr(tf.nn, type_)(
-                tf.matmul(last_input_validation, target_w) + target_b)
-            last_input_test = getattr(tf.nn, type_)(
-                tf.matmul(last_input_test, target_w) + target_b)
+            # Random functions
+            if rand_pop:
+                create_random_population_W = tf.random_uniform(
+                    [options.NP] + SIZE_W, dtype=tf.float64, seed=1)
+                create_random_population_B = tf.random_uniform(
+                    [options.NP] + SIZE_B, dtype=tf.float64, seed=1)
+
+                rand_pop_ref.append(create_random_population_W)
+                rand_pop_ref.append(create_random_population_B)
+
+            ##
+            # Placeholder
+            target_w = tf.placeholder(tf.float64, SIZE_W)
+            target_b = tf.placeholder(tf.float64, SIZE_B)
+
+            target_ref.append(target_w)
+            target_ref.append(target_b)
+
+            cur_pop_W = tf.placeholder(tf.float64, [options.NP] + SIZE_W)
+            cur_pop_B = tf.placeholder(tf.float64, [options.NP] + SIZE_B)
+
+            pop_ref.append(cur_pop_W)
+            pop_ref.append(cur_pop_B)
+
+            if num == len(levels):
+                ##
+                # NN TRAIN
+                y = tf.matmul(last_input, target_w) + target_b
+                cross_entropy = tf.reduce_mean(
+                    getattr(tf.nn, type_)(
+                        y, label_placeholder), name="cross_entropy")
+
+                ##
+                # NN TEST
+                y_test = tf.matmul(last_input, target_w) + target_b
+                correct_prediction = tf.equal(
+                    tf.argmax(y_test, 1),
+                    tf.argmax(label_placeholder, 1)
+                )
+                accuracy = tf.reduce_mean(
+                    tf.cast(correct_prediction, tf.float32), name="accuracy")
+            else:
+                last_input = getattr(tf.nn, type_)(
+                    tf.matmul(last_input, target_w) + target_b)
 
     return ENDict([
         ('targets', target_ref),
@@ -537,5 +520,5 @@ def gen_network(levels, options,
         ('y_test', y_test),
         ('cross_entropy', cross_entropy),
         ('accuracy', accuracy),
-        ('accuracy_validation', accuracy_validation)
+        ('graph', graph)
     ])

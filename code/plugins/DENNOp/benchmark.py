@@ -134,8 +134,8 @@ def main():
                                 # input params
                                 # [num_gen, eval_individual]
                                 [options.GEN_STEP, gen == 0],
-                                cur_batch.labels,
-                                cur_batch.data,
+                                cur_nn.label_placeholder,
+                                cur_nn.input_placeholder,
                                 [] if gen == 0 else cur_nn.evaluated,  # FIRST EVAL
                                 cur_nn.weights,  # PASS WEIGHTS
                                 cur_nn.populations,  # POPULATIONS

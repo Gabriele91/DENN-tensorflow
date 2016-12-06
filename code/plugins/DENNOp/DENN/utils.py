@@ -153,7 +153,11 @@ class DebugListner(Process):
         if type_[1] == 'string':
             size = struct.unpack("<i", conn.recv(4))[0]
             data = conn.recv(struct.calcsize(type_[0]) * size)
-            return struct.unpack("<{}".format(type_[0] * size), data)[0]
+            bytesstr = b''
+            tuplestr = struct.unpack("<{}".format(type_[0] * size), data)
+            for tuplechar in tuplestr:
+                bytesstr += tuplechar
+            return bytesstr.decode("utf-8")
         if type_[1] == 'close':
             return (None, 'close')
         else:

@@ -255,10 +255,12 @@ public:
                     }
                     ref_current_eval_result(index) = new_eval;
                 }
-            }
+            }   
+            #if 0
             SOCKET_DEBUG(
                 m_debug.write(i);
             )
+            #endif
         }
     }
  

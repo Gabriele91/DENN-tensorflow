@@ -119,9 +119,7 @@ def main():
                             for num, pop_ref in enumerate(cur_nn.populations)
                         ]
                     ))
-
                     print("++ Op time {}".format(time() - time_start_gen))
-
 
     tf.reset_default_graph()   
 

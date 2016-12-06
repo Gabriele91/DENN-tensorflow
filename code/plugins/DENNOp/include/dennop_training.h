@@ -79,12 +79,19 @@ namespace tensorflow
             //Alloc temp vector of populations
             GenCachePopulation(current_populations_list,new_populations_list);
             
+            
             ////////////////////////////////////////////////////////////////////////////
             //Alloc input 
             AllocCacheInputs(current_populations_list);
 
             ////////////////////////////////////////////////////////////////////////////
-            //Tensor first evaluation of all populations
+            // START STREAM
+            m_dataset.start_read_bach();
+            // Load first bach
+            if(!LoadNextBach(context)) return ;//false;
+
+            ////////////////////////////////////////////////////////////////////////////
+            // Tensor of first evaluation of all populations
             Tensor current_eval_result;
             // init evaluation
             DoFirstEvaluationIfRequired
@@ -95,33 +102,20 @@ namespace tensorflow
              , population_first_eval 
              , current_eval_result
             );
-            
-            ////////////////////////////////////////////////////////////////////////////
-            // START STREAM
-            m_dataset.start_read_bach();
-            
+
             ////////////////////////////////////////////////////////////////////////////
             // Execute DE
-            for(size_t i_sub_gen = 0; i_sub_gen != n_sub_gen; ++i_sub_gen)
+            for
+            (
+                //gen counter
+                size_t i_sub_gen = 0;          
+                //exit case
+                i_sub_gen != n_sub_gen;    
+                //next    
+                ++i_sub_gen, 
+                LoadNextBach(context) 
+            )
             {
-                //Load bach
-                if( !m_dataset.read_bach(m_bach) )
-                {
-                    context->CtxFailure({
-                        tensorflow::error::Code::ABORTED,
-                        "Error stream dataset: can't read ["+std::to_string(m_dataset.get_last_bach_info().m_bach_id)+"] bach' "
-                    });
-                }
-
-                //Set bach in input
-                if( !SetBachInCacheInputs() )
-                {
-                    context->CtxFailure({
-                        tensorflow::error::Code::ABORTED,
-                        "Error add bach data in inputs"
-                    });
-                }
-
                 //execute
                 RunDe
                 (
@@ -150,20 +144,62 @@ namespace tensorflow
                         + std::to_string(result_test)
                     );
                 )
+                
             }
             ////////////////////////////////////////////////////////////////////////////
+            //Search best pop
+            int best_of_populations = FindBest(context,current_populations_list); 
             // Output best pop
+            for(int i=0; i != m_space_size; ++i)
             {
-                //Search best pop
-                int best_of_populations = FindBest(context,current_populations_list); 
-                //Create output tensor
-                Tensor current_pop = concatDim0(current_populations_list[best_of_populations]);
-                //Send output
+                //Output ptr
                 Tensor* new_generation_tensor = nullptr;
-                OP_REQUIRES_OK(context, context->allocate_output(0, current_pop.shape(), &new_generation_tensor));
-                (*new_generation_tensor) = current_pop;
+                //Get output tensor
+                const Tensor& best_population = current_populations_list[i][best_of_populations];
+                //debug
+                #if 0
+                std::cout 
+                << "\nbest_space[" 
+                << i
+                << "] = NDIM "
+                << best_population.shape().dims()
+                << ", TYPE: "
+                << (best_population.dtype() == tensorflow::DataType::DT_DOUBLE
+                   ? "double"
+                   : "unknow");
+                #endif
+                //Alloct and send
+                OP_REQUIRES_OK(context, context->allocate_output(i, best_population.shape(), &new_generation_tensor));
+                (*new_generation_tensor) = current_populations_list[i][best_of_populations];
             }
 
+        }
+
+        /**
+        * Load next bach
+        */
+        bool LoadNextBach(OpKernelContext *context)
+        {
+            //Load bach
+            if( !m_dataset.read_bach(m_bach) )
+            {
+                context->CtxFailure({
+                    tensorflow::error::Code::ABORTED,
+                    "Error stream dataset: can't read ["+std::to_string(m_dataset.get_last_bach_info().m_bach_id)+"] bach' "
+                });
+                return false;
+            }
+
+            //Set bach in input
+            if( !SetBachInCacheInputs() )
+            {
+                context->CtxFailure({
+                    tensorflow::error::Code::ABORTED,
+                    "Error add bach data in inputs"
+                });
+                return false;
+            }
+            return true;
         }
 
         /**

@@ -31,6 +31,9 @@ namespace tensorflow
             {
                 context->CtxFailure({tensorflow::error::Code::ABORTED,"Attribute error: can't open dataset' "});
             }
+            //Load dataset
+            m_dataset.read_test(m_test);
+            m_dataset.read_validation(m_validation);
         }
 
         //star execution from python

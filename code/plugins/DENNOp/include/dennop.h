@@ -345,7 +345,9 @@ public:
         const std::vector < std::vector<Tensor> >& populations_list
     ) const
     {
-        NameList function{ m_name_train+":0" };
+        NameList function{
+             m_name_train //+":0" 
+        };
         return ExecuteEvaluate(context, NP_i, populations_list, function);
     }
 
@@ -383,7 +385,7 @@ public:
             context->CtxFailure({tensorflow::error::Code::ABORTED,"Run evaluate: "+status.ToString()});
         }
         //results
-        return f_on_values[0].flat<double>()(0);
+        return f_on_values.size() ? f_on_values[0].flat<double>()(0) : 0.0;
     }
 
 

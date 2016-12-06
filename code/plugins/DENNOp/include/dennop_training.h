@@ -226,7 +226,9 @@ namespace tensorflow
             const std::vector < std::vector<Tensor> >& populations_list
         ) const
         {
-            NameList function{ m_name_validation+":0" };
+            NameList function{ 
+                m_name_validation //+":0"
+            };
             return ExecuteEvaluate(context, NP_i, populations_list, function);
         }
 
@@ -238,7 +240,9 @@ namespace tensorflow
             const std::vector < std::vector<Tensor> >& populations_list
         ) const
         {
-            NameList function{ m_name_test+":0" };
+            NameList function{
+                 m_name_testn //+":0" 
+                 };
             return ExecuteEvaluate(context, NP_i, populations_list, function);
         }
 

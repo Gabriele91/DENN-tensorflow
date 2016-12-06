@@ -165,12 +165,26 @@ def main():
                                         (pop_ref, prev_NN[de_type][num])
                                         for num, pop_ref in enumerate(cur_nn.populations)
                                     ]
+                                    +
+                                    [
+                                        (cur_nn.label_placeholder,
+                                         cur_batch.labels),
+                                        (cur_nn.input_placeholder,
+                                          cur_batch.data)
+                                    ]
                                 ))
                             else:
                                 results = sess.run(denn_op, feed_dict=dict(
                                     [
                                         (pop_ref, prev_NN[de_type][num])
                                         for num, pop_ref in enumerate(cur_nn.populations)
+                                    ]
+                                    +
+                                    [
+                                        (cur_nn.label_placeholder,
+                                         cur_batch.labels),
+                                        (cur_nn.input_placeholder,
+                                          cur_batch.data)
                                     ]
                                     +
                                     [

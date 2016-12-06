@@ -530,7 +530,7 @@ protected:
     ) const
     {
         //test size
-        if(m_inputs_tensor_cache.size() != populations_list.size()) return false;
+        if(m_inputs_tensor_cache.size() != (populations_list.size()+2)) return false;
         //add all Tensor
         for(size_t p=0; p!=populations_list.size(); ++p)
         {

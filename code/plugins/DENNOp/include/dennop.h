@@ -379,6 +379,18 @@ public:
         {
             context->CtxFailure({tensorflow::error::Code::ABORTED,"Run evaluate: error to set inputs"});
         }
+        #if 0
+        //values
+        for (auto t : m_inputs_tensor_cache)
+        {
+            std::cout 
+            << "Input[" 
+            << t.first 
+            << "] = NDIM "
+            << t.second.shape().dims()
+            << std::endl;
+        }
+        #endif
         //execute
         auto
         status= m_session->Run(//input
@@ -513,8 +525,8 @@ protected:
         {
             m_inputs_tensor_cache[p].first = m_inputs_names[p];
         }
-        m_inputs_tensor_cache[populations_list.size()-1].first = m_input_labels;
-        m_inputs_tensor_cache[populations_list.size()-2].first = m_input_features;
+        m_inputs_tensor_cache[m_inputs_tensor_cache.size()-2].first = m_input_features;
+        m_inputs_tensor_cache[m_inputs_tensor_cache.size()-1].first = m_input_labels;
         return true;
     }
 
@@ -553,8 +565,8 @@ protected:
         //test size
         if(m_inputs_tensor_cache.size() < 2) return false;
         //add dataset in input
-        m_inputs_tensor_cache[m_inputs_tensor_cache.size()-1].second  = labels;
         m_inputs_tensor_cache[m_inputs_tensor_cache.size()-2].second  = features;
+        m_inputs_tensor_cache[m_inputs_tensor_cache.size()-1].second  = labels;
         //ok
         return true;
     }

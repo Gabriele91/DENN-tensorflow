@@ -16,10 +16,6 @@ namespace tensorflow
         //init DENN from param
         explicit DENNOpTraining(OpKernelConstruction *context) : DENNOp(context)
         {
-            // Get dataset path
-            OP_REQUIRES_OK(context, context->GetAttr("f_input_labels", &m_input_labels));
-            // Get dataset path
-            OP_REQUIRES_OK(context, context->GetAttr("f_input_features", &m_input_features));
             // Get validation function
             OP_REQUIRES_OK(context, context->GetAttr("f_name_validation", &m_name_validation));
             // Get test function
@@ -241,64 +237,19 @@ namespace tensorflow
         ) const
         {
             NameList function{
-                 m_name_testn //+":0" 
-                 };
+                 m_name_test //+":0" 
+            };
             return ExecuteEvaluate(context, NP_i, populations_list, function);
         }
 
     protected:
 
         /**
-        * Alloc m_inputs_tensor_cache
-        * @param populations_list, (input) populations
-        */
-        virtual bool AllocCacheInputs(const std::vector < std::vector<Tensor> >& populations_list) const override
-        {
-            //resize
-            m_inputs_tensor_cache.resize(populations_list.size()+2);
-            //add all names
-            for(size_t p=0; p!=populations_list.size(); ++p)
-            {
-                m_inputs_tensor_cache[p].first = m_inputs_names[p];
-            }
-            m_inputs_tensor_cache[populations_list.size()-1].first = m_input_labels;
-            m_inputs_tensor_cache[populations_list.size()-2].first = m_input_features;
-            return true;
-        }
-
-        /**
-        * Set tensors in m_inputs_tensor_cache
-        * @param populations_list, (input) populations
-        * @param NP_i, (input) population index
-        */
-        virtual bool SetCacheInputs
-        (
-            const std::vector < std::vector<Tensor> >& populations_list,
-            const int NP_i
-        ) const override
-        {
-            //test size
-            if(m_inputs_tensor_cache.size() != populations_list.size()) return false;
-            //add all Tensor
-            for(size_t p=0; p!=populations_list.size(); ++p)
-            {
-                m_inputs_tensor_cache[p].second = populations_list[p][NP_i];
-            }
-            return true;
-        }
-
-        /**
         * Set dataset in m_inputs_tensor_cache
         */
         virtual bool SetBachInCacheInputs() const
         {
-            //test size
-            if(m_inputs_tensor_cache.size() < 2) return false;
-            //add dataset in input
-            m_inputs_tensor_cache[m_inputs_tensor_cache.size()-1].second  = m_bach.m_labels;
-            m_inputs_tensor_cache[m_inputs_tensor_cache.size()-2].second  = m_bach.m_features;
-            //ok
-            return true;
+            return SetDatasetInCacheInputs( m_bach.m_labels, m_bach.m_features);
         }
 
         /**
@@ -306,27 +257,15 @@ namespace tensorflow
         */
         virtual bool SetValidationDataInCacheInputs() const
         {
-            //test size
-            if(m_inputs_tensor_cache.size() < 2) return false;
-            //add dataset in input
-            m_inputs_tensor_cache[m_inputs_tensor_cache.size()-1].second  = m_validation.m_labels;
-            m_inputs_tensor_cache[m_inputs_tensor_cache.size()-2].second  = m_validation.m_features;
-            //ok
-            return true;
+            return SetDatasetInCacheInputs( m_validation.m_labels, m_validation.m_features);
         }
 
         /**
         * Set test data in m_inputs_tensor_cache
         */
         virtual bool SetTestDataInCacheInputs() const
-        {
-            //test size
-            if(m_inputs_tensor_cache.size() < 2) return false;
-            //add dataset in input
-            m_inputs_tensor_cache[m_inputs_tensor_cache.size()-1].second  = m_test.m_labels;
-            m_inputs_tensor_cache[m_inputs_tensor_cache.size()-2].second  = m_test.m_features;
-            //ok
-            return true;
+        { 
+            return SetDatasetInCacheInputs( m_test.m_labels, m_test.m_features);;
         }
 
 
@@ -344,9 +283,6 @@ namespace tensorflow
         std::string m_name_validation;
         //test function
         std::string m_name_test;
-        //bach inputs
-        std::string m_input_labels;
-        std::string m_input_features;
 
     };
 };

@@ -54,6 +54,10 @@ public:
         OP_REQUIRES_OK(context, context->GetAttr("graph", &graph_proto_string));
         // Get names of eval inputs
         OP_REQUIRES_OK(context, context->GetAttr("f_inputs", &m_inputs_names));
+        // Get dataset path
+        OP_REQUIRES_OK(context, context->GetAttr("f_input_labels", &m_input_labels));
+        // Get dataset path
+        OP_REQUIRES_OK(context, context->GetAttr("f_input_features", &m_input_features));
         // Get name of eval function
         OP_REQUIRES_OK(context, context->GetAttr("f_name_train", &m_name_train));
         // Test size == sizeof(names)
@@ -119,9 +123,12 @@ public:
         const int calc_first_eval = t_metainfo_i.flat<int>()(1);
         //get population first eval
         const Tensor& population_first_eval = context->input(1);
+        // get input bach labels
+        const Tensor& t_bach_labels = context->input(2);
+        // get input bach data
+        const Tensor& t_bach_features = context->input(3);
         // start input
-        const size_t start_input = 2;
-
+        const size_t start_input = 4;
         ////////////////////////////////////////////////////////////////////////////
         // W
         std::vector < Tensor >  W_list;
@@ -152,6 +159,8 @@ public:
         ////////////////////////////////////////////////////////////////////////////
         //Alloc input 
         AllocCacheInputs(current_populations_list);
+        //Copy bach in input
+        SetDatasetInCacheInputs(t_bach_labels,t_bach_features);
 
         ////////////////////////////////////////////////////////////////////////////
         //Tensor first evaluation of all ppopulations
@@ -390,9 +399,7 @@ public:
 
 
 protected:
-    
-    //clamp
-    
+       
     /**
      * Clamp DE final value
      * @param t value,
@@ -491,23 +498,25 @@ protected:
     }
     
     /**
-     * Alloc m_inputs_tensor_cache
-     * @param populations_list, (input) populations
-     */
-    virtual bool AllocCacheInputs(const std::vector < std::vector<Tensor> >& populations_list) const
+    * Alloc m_inputs_tensor_cache
+    * @param populations_list, (input) populations
+    */
+    virtual bool AllocCacheInputs(const std::vector < std::vector<Tensor> >& populations_list) const 
     {
         //resize
-        m_inputs_tensor_cache.resize(populations_list.size());
+        m_inputs_tensor_cache.resize(populations_list.size()+2);
         //add all names
         for(size_t p=0; p!=populations_list.size(); ++p)
         {
             m_inputs_tensor_cache[p].first = m_inputs_names[p];
         }
+        m_inputs_tensor_cache[populations_list.size()-1].first = m_input_labels;
+        m_inputs_tensor_cache[populations_list.size()-2].first = m_input_features;
         return true;
     }
 
     /**
-     * Set tensors in m_inputs_tensor_cache
+     * Set tensors of pupulation in m_inputs_tensor_cache
      * @param populations_list, (input) populations
      * @param NP_i, (input) population index
      */
@@ -526,7 +535,27 @@ protected:
         }
         return true;
     }
-
+    
+    /**
+    * Set dataset in m_inputs_tensor_cache
+    * @param labels, tensor of labels
+    * @param features, tensor of features
+    */
+    virtual bool SetDatasetInCacheInputs
+    (
+        const Tensor& labels, 
+        const Tensor& features
+    ) const
+    {
+        //test size
+        if(m_inputs_tensor_cache.size() < 2) return false;
+        //add dataset in input
+        m_inputs_tensor_cache[m_inputs_tensor_cache.size()-1].second  = labels;
+        m_inputs_tensor_cache[m_inputs_tensor_cache.size()-2].second  = features;
+        //ok
+        return true;
+    }
+    
 protected:
 
     //session
@@ -542,6 +571,9 @@ protected:
     std::string                m_name_train;
     NameList                   m_inputs_names;
     mutable TensorInputs       m_inputs_tensor_cache;
+    //bach inputs
+    std::string m_input_labels;
+    std::string m_input_features;
     //DE types
     CRType           m_cr_type    { CR_BIN    };
     DifferenceVector m_diff_vector{ DIFF_ONE  };

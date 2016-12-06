@@ -130,9 +130,12 @@ def main():
                             time_node_creation = time()
                             ##
                             # DENN op
-                            denn_op = DENN.create(  # input params
+                            denn_op = DENN.create(  
+                                # input params
                                 # [num_gen, eval_individual]
                                 [options.GEN_STEP, gen == 0],
+                                cur_batch.labels,
+                                cur_batch.data,
                                 [] if gen == 0 else cur_nn.evaluated,  # FIRST EVAL
                                 cur_nn.weights,  # PASS WEIGHTS
                                 cur_nn.populations,  # POPULATIONS
@@ -159,23 +162,12 @@ def main():
                             if gen == 0:
                                 results = sess.run(denn_op, feed_dict=dict(
                                     [
-                                        cur_batch.labels,
-                                        cur_batch.data
-                                    ]
-                                    +
-                                    [
                                         (pop_ref, prev_NN[de_type][num])
                                         for num, pop_ref in enumerate(cur_nn.populations)
                                     ]
                                 ))
                             else:
                                 results = sess.run(denn_op, feed_dict=dict(
-                                    [
-                                        cur_batch.labels,
-                                        cur_batch.data
-
-                                    ]
-                                    +
                                     [
                                         (pop_ref, prev_NN[de_type][num])
                                         for num, pop_ref in enumerate(cur_nn.populations)

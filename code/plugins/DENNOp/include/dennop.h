@@ -115,18 +115,21 @@ public:
     //star execution from python
     virtual void Compute(OpKernelContext *context) override
     {
-        // get input
+        ////////////////////////////////////////////////////////////////////////////
+        // get input info
         const Tensor& t_metainfo_i = context->input(0);
         //info 1: (NUM GEN)
         const int num_gen = t_metainfo_i.flat<int>()(0);
         //info 2; (COMPUTE FIRST VALUTATION OF POPULATION)
         const int calc_first_eval = t_metainfo_i.flat<int>()(1);
-        //get population first eval
-        const Tensor& population_first_eval = context->input(1);
+        ////////////////////////////////////////////////////////////////////////////
         // get input bach labels
-        const Tensor& t_bach_labels = context->input(2);
+        const Tensor& t_bach_labels = context->input(1);
         // get input bach data
-        const Tensor& t_bach_features = context->input(3);
+        const Tensor& t_bach_features = context->input(2);
+        ////////////////////////////////////////////////////////////////////////////
+        //get population first eval
+        const Tensor& population_first_eval = context->input(3);
         // start input
         const size_t start_input = 4;
         ////////////////////////////////////////////////////////////////////////////

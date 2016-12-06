@@ -53,11 +53,11 @@ public:
         // Get the index of the value to preserve
         OP_REQUIRES_OK(context, context->GetAttr("graph", &graph_proto_string));
         // Get names of eval inputs
-        OP_REQUIRES_OK(context, context->GetAttr("f_inputs", &m_inputs));
+        OP_REQUIRES_OK(context, context->GetAttr("f_inputs", &m_inputs_names));
         // Get name of eval function
         OP_REQUIRES_OK(context, context->GetAttr("f_name_train", &m_name_train));
         // Test size == sizeof(names)
-        if( m_space_size != m_inputs.size() )
+        if( m_space_size != m_inputs_names.size() )
         {
             context->CtxFailure({tensorflow::error::Code::ABORTED,"Attribute error: sizeof(names) != sizeof(populations) "});
         }
@@ -150,6 +150,10 @@ public:
         GenCachePopulation(current_populations_list,new_populations_list);
 
         ////////////////////////////////////////////////////////////////////////////
+        //Alloc input 
+        AllocCacheInputs(current_populations_list);
+
+        ////////////////////////////////////////////////////////////////////////////
         //Tensor first evaluation of all ppopulations
         Tensor current_eval_result;
         // init evaluation
@@ -229,7 +233,7 @@ public:
             for(int index = 0; index!=NP ;++index)
             {
                 //Evaluation
-                double new_eval = ExecuteEvaluate(context, index, new_populations_list);
+                double new_eval = ExecuteEvaluateTrain(context, index, new_populations_list);
                 //Choice
                 if(new_eval < ref_current_eval_result(index))
                 {
@@ -301,7 +305,7 @@ public:
             //First eval
             for(int index = 0; index!=NP ;++index)
             {
-                current_eval_result.flat<double>()(index) = ExecuteEvaluate(context, index,current_populations_list);
+                current_eval_result.flat<double>()(index) = ExecuteEvaluateTrain(context, index, current_populations_list);
             }
         }
 
@@ -333,32 +337,40 @@ public:
     }
 
 
-    //execute evaluate function (tensorflow function)
-    virtual double ExecuteEvaluate
+    //execute evaluate train function (tensorflow function)   
+    virtual double ExecuteEvaluateTrain
     (
         OpKernelContext* context,
         const int NP_i,
         const std::vector < std::vector<Tensor> >& populations_list
     ) const
     {
-        
+        NameList function{ m_name_train+":0" };
+        return ExecuteEvaluate(context, NP_i, populations_list, function);
+    }
+
+    //execute evaluate function (tensorflow function)
+    virtual double ExecuteEvaluate
+    (
+        OpKernelContext* context,
+        const int NP_i,
+        const std::vector < std::vector<Tensor> >& populations_list,
+        const NameList& functions_list
+    ) const
+    {
+        //Output
         TensorList f_on_values;
-        //create input
-        TensorInputs input;
-        //append
-        for(size_t p=0; p!=populations_list.size(); ++p)
+        //Set input
+        if(!SetCacheInputs(populations_list, NP_i))
         {
-            input.push_back({
-                m_inputs[p],
-                populations_list[p][NP_i]
-            });
+            context->CtxFailure({tensorflow::error::Code::ABORTED,"Run evaluate: error to set inputs"});
         }
         //execute
         auto
         status= m_session->Run(//input
-                               input,
+                               m_inputs_tensor_cache,
                                //function
-                               NameList{ m_name_train+":0" } ,
+                               functions_list,
                                //one
                                NameList{ },
                                //output
@@ -374,9 +386,16 @@ public:
         return f_on_values[0].flat<double>()(0);
     }
 
+
 protected:
     
     //clamp
+    
+    /**
+     * Clamp DE final value
+     * @param t value,
+     * @return t between f_min and f_max
+     */
     double f_clamp(const double t) const
     {
         return std::min(std::max(t, m_f_min), m_f_max);
@@ -469,21 +488,58 @@ protected:
         }
     }
     
+    /**
+     * Alloc m_inputs_tensor_cache
+     * @param populations_list, (input) populations
+     */
+    virtual bool AllocCacheInputs(const std::vector < std::vector<Tensor> >& populations_list) const
+    {
+        //resize
+        m_inputs_tensor_cache.resize(populations_list.size());
+        //add all names
+        for(size_t p=0; p!=populations_list.size(); ++p)
+        {
+            m_inputs_tensor_cache[p].first = m_inputs_names[p];
+        }
+        return true;
+    }
 
-private:
+    /**
+     * Set tensors in m_inputs_tensor_cache
+     * @param populations_list, (input) populations
+     * @param NP_i, (input) population index
+     */
+    virtual bool SetCacheInputs
+    (
+        const std::vector < std::vector<Tensor> >& populations_list,
+        const int NP_i
+    ) const
+    {
+        //test size
+        if(m_inputs_tensor_cache.size() != populations_list.size()) return false;
+        //add all Tensor
+        for(size_t p=0; p!=populations_list.size(); ++p)
+        {
+            m_inputs_tensor_cache[p].second = populations_list[p][NP_i];
+        }
+        return true;
+    }
+
+protected:
 
     //session
-    std::unique_ptr< Session >            m_session;
+    std::unique_ptr< Session > m_session;
     //clamp
-    double                                m_f_min{ -1.0 };
-    double                                m_f_max{  1.0 };
+    double                     m_f_min{ -1.0 };
+    double                     m_f_max{  1.0 };
     //update factors
-    double                                m_CR   {  0.5 };
+    double                     m_CR   {  0.5 };
     // population variables
-    int                                   m_space_size{ 1 };
+    int                        m_space_size{ 1 };
     //input evaluate
-    std::string                           m_name_train;
-    NameList                              m_inputs;
+    std::string                m_name_train;
+    NameList                   m_inputs_names;
+    mutable TensorInputs       m_inputs_tensor_cache;
     //DE types
     CRType           m_cr_type    { CR_BIN    };
     DifferenceVector m_diff_vector{ DIFF_ONE  };

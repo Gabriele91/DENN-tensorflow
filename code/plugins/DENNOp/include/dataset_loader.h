@@ -186,7 +186,7 @@ namespace tensorflow
             //read features
             m_file.read
             (   
-                  const_cast<void*>(t_out.m_features.tensor_data().data())
+                  (void*)(t_out.m_features.tensor_data().data())
                 , t_out.m_features.tensor_data().size()
                 , 1
             );
@@ -199,7 +199,7 @@ namespace tensorflow
             //read labels
             m_file.read
             (
-                  const_cast<void*>(t_out.m_labels.tensor_data().data())
+                  (void*)(t_out.m_labels.tensor_data().data())
                 , t_out.m_labels.tensor_data().size()
                 , 1
             );

@@ -1,7 +1,7 @@
-[
+[arr.tobytes()
     {
         "name": "letter_dataset",
-        "dataset_file": "./datasets/letter_20_batches.gz",
+        "dataset_file": "./datasets/letter_100-B_5s.gz",
         "TOT_GEN": 1000,
         "GEN_STEP": 100,
         "F": 0.8,

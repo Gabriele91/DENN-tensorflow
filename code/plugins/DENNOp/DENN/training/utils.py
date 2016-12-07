@@ -153,16 +153,71 @@ class Header(object):
         return string
 
 
-def create_dataset(dataset, loader, batch_size, name,
+def create_dataset(dataset, loader, size, name, n_shuffle=1, batch_size=True,
                    seed=None, train_percentage=0.8, validation_percentage=0.1,
                    debug=False, type_="double"):
+    """Generate a dataset useful for DENN.
+
+    Params:
+        dataset (str): dataset file to convert (original)
+        loader (str): name of the original data loader
+        size (int): num. of elements in a batch or num. of bathes.
+                    Set also 'batch_size' properly
+        n_shuffle (integer, default=1): number of shuffle of the single dataset.
+                                        Subsequent shuffles will be added at
+                                        the end of the dataset
+        batch_size (bool, default=True): indicate if size is the num. of elems.
+                                         or the num. of batches
+        seed (int, default=None): seed of random number generator
+        train_percentage (float, default=0.8): size in percentage of the train
+                                               set
+        validation_percentage (float, default=0.1): size in percentage of the
+                                                    validation set
+        debug (bool, default=False): indicate if the loader enables the debug
+                                     output
+        type_ (str, default="double"): indicate the type of the elements. 
+                                       Values can be ["double", "float"]
+
+    Notes:
+        If the loaded dataset has already a test set (line MNIST) the 
+        subdivision will be the subsequent:
+
+        With train_percentage = 0.8
+
+           data                        test set
+        +--------+                    +--------+
+        |        |                    |        |
+        |  80%   |<- train set        |        |
+        |        |                    |        |
+        |--------|                    |        |
+        |  20%   |<- validation set   |        |
+        +--------+                    +--------+
+
+        Otherwise the data available will split depending on the percentages:
+
+        With train_percentage = 0.8 and validation_percentage = 0.1
+
+           data
+        +--------+
+        |        |
+        |  80%   |<- train set
+        |        |
+        |--------|
+        |  10%   |<- validation set
+        |--------|
+        |  10%   |<- test set
+        +--------+
+    """
     makedirs(BASEDATASETPATH, exist_ok=True)
 
+    print("+ Load data of {}".format(dataset))
     data, labels = globals().get(loader)(dataset, debug)
 
     # print(len(data), len(labels))
 
     np.random.seed(seed)
+
+    print("++ Prepare data of {}".format(dataset))
 
     if len(data) == 2 and len(labels) == 2:
         ##
@@ -210,9 +265,29 @@ def create_dataset(dataset, loader, batch_size, name,
     # print(validation_data.shape, validation_labels.shape)
     # print(test_data.shape, test_labels.shape)
 
-    train_data = np.split(train_data, batch_size)
-    train_labels = np.split(train_labels, batch_size)
+    tmp_data = train_data.copy()
+    tmp_labels = train_labels.copy()
 
+    # print(tmp_data.shape, len(tmp_data), tmp_data.size)
+
+    for num in range(1, n_shuffle):
+        print("++ Add {} shuffle".format(num), end="\r")
+        indexes = np.random.permutation(len(tmp_data))
+        train_data = np.append(train_data, tmp_data[indexes], axis=0)
+        train_labels = np.append(train_labels, tmp_labels[indexes], axis=0)
+
+    # print(train_data.shape, train_labels.shape)
+
+    if not batch_size:
+        print("++ Calculate num batches")
+        num_elms = len(tmp_data)
+        elm_x_batch = size
+        size = int(num_elms / size)
+
+    train_data = np.split(train_data, size * n_shuffle)
+    train_labels = np.split(train_labels, size * n_shuffle)
+
+    print("++ Prepare Header")
     header = Header(
         "<5if3I",
         [
@@ -238,8 +313,15 @@ def create_dataset(dataset, loader, batch_size, name,
     # print(header)
     # print(len(header))
 
-    with gzip.GzipFile(path.join(BASEDATASETPATH, "{}_{}_batches.gz".format(name, batch_size)), mode='wb') as gz_file:
+    is_batch = "-B" if batch_size else "xB"
 
+    print("+++ Create gz file")
+    file_name = path.join(
+        BASEDATASETPATH, "{}_{}{}_{}s.gz".format(name, size * n_shuffle if batch_size else elm_x_batch, is_batch, n_shuffle))
+
+    with gzip.GzipFile(file_name, mode='wb') as gz_file:
+
+        print("+++ Calculate test size")
         test_size = struct.calcsize("{}{}".format(
             len(test_data) * header.n_features,
             "d" if type_ == "double" else "f")
@@ -247,6 +329,7 @@ def create_dataset(dataset, loader, batch_size, name,
             len(test_data) * header.n_classes,
             "d" if type_ == "double" else "f")
         )
+        print("+++ Calculate validation size")
         validation_size = struct.calcsize("{}{}".format(
             len(validation_data) * header.n_features,
             "d" if type_ == "double" else "f")
@@ -255,6 +338,7 @@ def create_dataset(dataset, loader, batch_size, name,
             "d" if type_ == "double" else "f")
         )
 
+        print("+++ Update offsets in header")
         header.set_label("test_offset", len(header))  # size header
         # size header + test size + num elm test
         header.set_label("validation_offset", len(header) + test_size + 4)
@@ -263,6 +347,7 @@ def create_dataset(dataset, loader, batch_size, name,
 
         # print(header)
 
+        print("+++ Write header")
         gz_file.write(header.binary)
 
         ##
@@ -271,6 +356,7 @@ def create_dataset(dataset, loader, batch_size, name,
         # + num. elems (unsigned long)
         # + data
         # + labels
+        print("+++ Write test data and labels")
         gz_file.write(struct.pack("<I", len(test_data)))
         gz_file.write(test_data.tobytes())
         gz_file.write(test_labels.tobytes())
@@ -283,6 +369,7 @@ def create_dataset(dataset, loader, batch_size, name,
         # + num. elems (unsigned long)
         # + data
         # + labels
+        print("+++ Write validation data and labels")
         gz_file.write(struct.pack("<I", len(validation_data)))
         gz_file.write(validation_data.tobytes())
         gz_file.write(validation_labels.tobytes())
@@ -299,10 +386,14 @@ def create_dataset(dataset, loader, batch_size, name,
         #   + labels
         # ]
         for index, t_data in enumerate(train_data):
+            print("+++ Write batch {}/{}".format(index +
+                                                 1, len(train_data)), end="\r")
             gz_file.write(struct.pack("<I", index))
             gz_file.write(struct.pack("<I", len(t_data)))
             gz_file.write(t_data.tobytes())
             gz_file.write(train_labels[index].tobytes())
+
+    print("+! Dataset {} completed!".format(file_name))
 
 
 class Dataset(object):

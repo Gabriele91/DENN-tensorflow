@@ -1,15 +1,15 @@
 [
     {
         "name": "mnist_dataset",
-        "dataset_file": "./datasets/mnist_12_batches.gz",
-        "TOT_GEN": 50000,
-        "GEN_STEP": 200,
-        "F": 0.8,
+        "dataset_file": "./datasets/mnist_200xB_5s.gz",
+        "TOT_GEN": 10000,
+        "GEN_STEP": 50,
+        "F": 0.5,
         "NP": 20,
         "de_types": [
             "rand/1/bin"
         ],
-        "CR": 0.5,
+        "CR": 0.8,
         "levels": [
             [[[784,256], [256]], "relu6"],
             [[[256,10], [10]], "softmax_cross_entropy_with_logits"]

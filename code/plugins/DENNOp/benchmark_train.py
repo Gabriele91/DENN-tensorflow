@@ -4,7 +4,7 @@ from tensorflow.python.client import device_lib
 
 import numpy as np
 import json
-
+from os import path
 from sys import argv
 from time import sleep
 from time import time
@@ -45,28 +45,27 @@ def main():
     # jobs
     jobs = []
 
-    ##
-    # datasets
-    datasets = []
-
     with open(argv[1], 'r') as job_f:
         jobs = json.load(job_f)
 
     for idx in range(len(jobs)):
         jobs[idx] = ENDict(jobs[idx].items())
 
-    #for all jobs first
+    # test results
+    results_tests = []
+
+    # for all jobs first
     for options in jobs:
-        #start
+        # start
         print("+ Start tests")
-        #network
+        # network
         cur_nn = DENN.training.gen_network(
             options,
-            True # rand population only if gen is the first one
+            True  # rand population only if gen is the first one
         )
-        #network graph
+        # network graph
         with cur_nn.graph.as_default():
-            #start session
+            # start session
             with tf.Session(config=session_config) as sess:
                 ##
                 # init vars
@@ -80,7 +79,7 @@ def main():
                     time_node_creation = time()
                     ##
                     # DENN op
-                    denn_op = DENN.create(  
+                    denn_op = DENN.create(
                         # input params
                         # [num_gen, step_gen, eval_individual]
                         [options.TOT_GEN, options.GEN_STEP, False],
@@ -89,7 +88,8 @@ def main():
                         cur_nn.populations,  # POPULATIONS
                         # attributes
                         # space = 2,
-                        graph=DENN.get_graph_proto(cur_nn.graph.as_graph_def()),
+                        graph=DENN.get_graph_proto(
+                            cur_nn.graph.as_graph_def()),
                         dataset=options.dataset_file,
                         f_name_train=cur_nn.cross_entropy.name,
                         f_name_validation=cur_nn.accuracy.name,
@@ -103,20 +103,52 @@ def main():
                     )
 
                     print("++ Node creation {}".format(time() - time_node_creation))
-                    #Soket listener 
+                    # Soket listener
                     with DENN.OpListener() as listener:
-                        #time
+                        # time
                         time_start_gen = time()
-                        #session run
-                        results = sess.run(denn_op, feed_dict=dict(
+                        # session run
+                        current_result = sess.run(denn_op, feed_dict=dict(
                             [
                                 (pop_ref, cur_pop[num])
                                 for num, pop_ref in enumerate(cur_nn.populations)
                             ]
                         ))
-                        print("++ Op time {}".format(time() - time_start_gen))
-        #clena graph
-        tf.reset_default_graph()   
+                        run_time = time() - time_start_gen
+                        print("++ Op time {}".format(run_time))
+                        #######################################################
+                        # Open dataset
+                        dataset = DENN.training.Dataset(options.dataset_file)
+                        # test time
+                        time_test = time()
+                        # test result
+                        cur_accuracy = sess.run(cur_nn.accuracy, feed_dict=dict(
+                            [
+                                (target, current_result[num])
+                                for num, target in enumerate(cur_nn.targets)
+                            ]
+                            +
+                            [
+                                (cur_nn.label_placeholder, dataset.test_labels),
+                                (cur_nn.input_placeholder, dataset.test_data)
+                            ]
+                        ))
+                        test_time = time() - time_test
+                        print("++ Test {}, result {}".format(test_time, cur_accuracy))
+                        #######################################################
+                        options['results'] = ENDict(
+                            [
+                                ('time', run_time + test_time),
+                                ('accuracy', cur_accuracy),
+                                ('best', json.dumps([arr.tolist()
+                                                     for arr in current_result]))
+                            ]
+                        )
+                        with open(path.join("benchmark_results", argv[1]), "w") as out_file:
+                            json.dump(jobs, out_file, indent=4)
+                        #######################################################
+        # clena graph
+        tf.reset_default_graph()
 
 
 if __name__ == '__main__':

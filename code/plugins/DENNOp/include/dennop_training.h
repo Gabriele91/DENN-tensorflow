@@ -1,8 +1,5 @@
 #pragma once 
-
 #define DENN_USE_SOCKET_DEBUG 
-#define DENN_USE_TRAINING
-
 #include "config.h"
 #include "dennop.h"
 #include "dataset_loader.h"
@@ -131,6 +128,7 @@ namespace tensorflow
                 );
 
                 SOCKET_DEBUG(
+                    #if 0
                     //Search best pop
                     int best_of_populations = FindBest(context,current_populations_list); 
                     //Test best pop
@@ -143,8 +141,11 @@ namespace tensorflow
                         + "] complete, Test: " 
                         + std::to_string(result_test)
                     );
+                    #else 
+                    //output
+                    m_debug.write( "Stage[" + std::to_string(i_sub_gen*sub_gen) + "] complete" );
+                    #endif
                 )
-                
             }
             ////////////////////////////////////////////////////////////////////////////
             //Search best pop

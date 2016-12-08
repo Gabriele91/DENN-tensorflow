@@ -1,4 +1,4 @@
-[arr.tobytes()
+[
     {
         "name": "letter_dataset",
         "dataset_file": "./datasets/letter_100-B_5s.gz",

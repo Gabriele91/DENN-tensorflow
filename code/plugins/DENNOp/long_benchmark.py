@@ -8,8 +8,9 @@ import json
 from sys import argv
 from time import sleep
 from time import time
+from os import path
 
-#from memory_profiler import profile
+# from memory_profiler import profile
 
 # sleep(6)
 
@@ -46,8 +47,8 @@ def main():
     jobs = []
 
     ##
-    # datasets
-    datasets = []
+    # real_jobs
+    real_jobs = []
 
     with open(argv[1], 'r') as job_f:
         jobs = json.load(job_f)
@@ -59,35 +60,14 @@ def main():
     # Load data
     print("+ Load datasets")
     for job in jobs:
-        datasets.append((DENN.training.Dataset(job.dataset_file), job))
+        real_jobs.append((DENN.training.Dataset(job.dataset_file), job))
 
-    print("+ Start tests")
+    print("+ Start jobs")
     time_start_test = time()
 
-    for dataset, options in datasets:
+    for dataset, options in real_jobs:
         with tf.device(DEVICE):
-            time_start_dataset = time()
-
-            ##
-            # test data collections
-            test_results = NDict(
-                list(
-                    zip(options.de_types, [
-                        ENDict(
-                            [
-                                ('values', []),
-                            ]
-                        ) for _ in range(len(options.de_types))
-                    ])
-                )
-            )
-
-            out_options = ENDict(
-                [
-                    ('job', options),
-                    ('num_batches', dataset.num_batches)
-                ]
-            )
+            time_start_job = time()
 
             prev_NN = dict(
                 list(zip(options.de_types, [
@@ -109,7 +89,7 @@ def main():
                     denn_operators = {}
 
                     time_node_creation = time()
-                    
+
                     for de_type in options.de_types:
 
                         ##
@@ -117,10 +97,9 @@ def main():
                         cur_pop = sess.run(cur_nn.rand_pop)
                         prev_NN[de_type] = cur_pop
 
-                        
                         ##
                         # DENN op
-                        denn_operators[de_type] = DENN.create(  
+                        denn_operators[de_type] = DENN.create(
                             # input params
                             # [num_gen, eval_individual]
                             cur_nn.cur_gen_options,
@@ -144,10 +123,12 @@ def main():
 
                     print(
                         "++ Node creation {}".format(time() - time_node_creation))
-                    
+
                     for de_type, denn_op in denn_operators.items():
 
                         first_time = True
+
+                        time_start_all_gen = time()
 
                         for gen in range(int(options.TOT_GEN / options.GEN_STEP)):
 
@@ -155,7 +136,8 @@ def main():
                                 "+ Start gen. [{}] with batch[{}]".format((gen + 1) * options.GEN_STEP, batch_counter))
 
                             cur_batch = dataset[batch_counter]
-                            batch_counter = (batch_counter + 1) % dataset.num_batches
+                            batch_counter = (
+                                batch_counter + 1) % dataset.num_batches
 
                             time_start_gen = time()
 
@@ -175,11 +157,13 @@ def main():
                                 ]
                                 +
                                 [
-                                    (cur_nn.cur_gen_options, [options.GEN_STEP, first_time])
+                                    (cur_nn.cur_gen_options, [
+                                     options.GEN_STEP, first_time])
                                 ]
                             ))
 
-                            print("++ Op time {}".format(time() - time_start_gen))
+                            print("++ Op time {}".format(time() -
+                                                         time_start_gen))
 
                             # get output
                             cur_pop = results.final_populations
@@ -189,49 +173,9 @@ def main():
                             # print(cur_pop[0].shape)
                             # print(cur_pop[1].shape)
 
-                            evaluations = []
+                            prev_NN[de_type] = cur_pop
 
-                            time_valutation = time()
-
-                            for idx in range(options.NP):
-                                cur_evaluation = sess.run(cur_nn.accuracy, feed_dict=dict(
-                                    [
-                                        (target, cur_pop[num][idx])
-                                        for num, target in enumerate(cur_nn.targets)
-                                    ]
-                                    +
-                                    [
-                                        (cur_nn.label_placeholder,
-                                         dataset.validation_labels),
-                                        (cur_nn.input_placeholder,
-                                         dataset.validation_data)
-                                    ]
-                                ))
-                                evaluations.append(cur_evaluation)
-
-                            # print(evaluations)
-                            print(
-                                "++ Valutation {}".format(time() - time_valutation))
-
-                            best_idx = np.argmin(evaluations)
-
-                            time_test = time()
-
-                            cur_accuracy = sess.run(cur_nn.accuracy, feed_dict=dict(
-                                [
-                                    (target, cur_pop[num][best_idx])
-                                    for num, target in enumerate(cur_nn.targets)
-                                ]
-                                +
-                                [
-                                    (cur_nn.label_placeholder, dataset.test_labels),
-                                    (cur_nn.input_placeholder, dataset.test_data)
-                                ]
-                            ))
-
-                            test_results[de_type].values.append(cur_accuracy)
-
-                            print("++ Test {}".format(time() - time_test))
+                            first_time = False
 
                             print(
                                 "+ DENN[{}] up to {} gen on {} completed in {:.05} sec.".format(
@@ -241,26 +185,74 @@ def main():
                                 )
                             )
 
-                            prev_NN[de_type] = cur_pop
-                            del cur_pop
+                        ##
+                        # Final tests ------
 
-                            first_time = False
+                        evaluations = []
 
-            print("+ Completed all test on dataset {} in {} sec.".format(options.name,
-                                                                         time() - time_start_dataset))
-            print("+ Save results for {}".format(options.name))
+                        time_valutation = time()
 
-            description = "NP: {}  W: {}  CR: {}".format(
-                options.NP,
-                options.F,
-                options.CR
-            )
+                        for idx in range(options.NP):
+                            cur_evaluation = sess.run(cur_nn.accuracy, feed_dict=dict(
+                                [
+                                    (target, cur_pop[num][idx])
+                                    for num, target in enumerate(cur_nn.targets)
+                                ]
+                                +
+                                [
+                                    (cur_nn.label_placeholder,
+                                        dataset.validation_labels),
+                                    (cur_nn.input_placeholder,
+                                        dataset.validation_data)
+                                ]
+                            ))
+                            evaluations.append(cur_evaluation)
 
-            DENN.training.expand_results(
-                test_results, options.GEN_STEP, options.de_types)
+                        # print(evaluations)
+                        print(
+                            "++ Valutation {}".format(time() - time_valutation))
 
-            DENN.training.write_all_results(
-                options.name, test_results, description, out_options)
+                        best_idx = np.argmin(evaluations)
+
+                        time_test = time()
+
+                        cur_accuracy = sess.run(cur_nn.accuracy, feed_dict=dict(
+                            [
+                                (target, cur_pop[num][best_idx])
+                                for num, target in enumerate(cur_nn.targets)
+                            ]
+                            +
+                            [
+                                (cur_nn.label_placeholder, dataset.test_labels),
+                                (cur_nn.input_placeholder, dataset.test_data)
+                            ]
+                        ))
+
+                        print("++ Test {}".format(time() - time_test))
+
+                        tmp_time = time() - time_start_all_gen
+
+                        best = [
+                            cur_pop[num][best_idx]
+                            for num, target in enumerate(cur_nn.targets)
+                        ]
+
+                        # print(best)
+
+                        options['results'] = ENDict(
+                            [
+                                ('time', tmp_time),
+                                ('accuracy', cur_accuracy),
+                                ('best', json.dumps(
+                                    [arr.tolist() for arr in best]))
+                            ]
+                        )
+
+                        with open(path.join("benchmark_results", argv[1]), "w") as out_file:
+                            json.dump(jobs, out_file, indent = 4)
+
+            print("+ Completed all test on job {} in {} sec.".format(options.name,
+                                                                     time() - time_start_job))
 
     print("+ Completed all test {} sec.".format(time() - time_start_test))
 

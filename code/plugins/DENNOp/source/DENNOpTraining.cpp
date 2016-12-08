@@ -20,7 +20,8 @@ REGISTER_OP("DENN")
 .Input("population_first_eval: double")
 .Input("w_list: space * double")
 .Input("populations_list: space * double")
-.Output("final_population: double");
+.Output("best_population: space * double")
+;
 
 
 REGISTER_KERNEL_BUILDER(Name("DENN").Device(DEVICE_CPU), DENNOpTraining);

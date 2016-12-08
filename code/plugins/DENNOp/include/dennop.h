@@ -130,9 +130,9 @@ public:
         ////////////////////////////////////////////////////////////////////////////
         //get population first eval
         const Tensor& population_first_eval = context->input(3);
+        ////////////////////////////////////////////////////////////////////////////
         // start input
         const size_t start_input = 4;
-        ////////////////////////////////////////////////////////////////////////////
         // W
         std::vector < Tensor >  W_list;
         // pupulation inputs
@@ -255,10 +255,12 @@ public:
                     }
                     ref_current_eval_result(index) = new_eval;
                 }
-            }
+            }   
+            #if 0
             SOCKET_DEBUG(
                 m_debug.write(i);
             )
+            #endif
         }
     }
  

@@ -20,7 +20,7 @@ ERASE_LINE = '\x1b[2K'
 class OpListener(object):
 
     def __init__(self, host='127.0.0.1', port=8484, msg_header="msg"):
-        self.db_listener = DebugListner(host, port, msg_header)
+        self.db_listener = DebugListener(host, port, msg_header)
 
     def __enter__(self):
         self.db_listener.start()
@@ -28,20 +28,21 @@ class OpListener(object):
 
     def __exit__(self, ex_type, ex_value, traceback):
         self.db_listener.stop_run()
-        print("++ DebugListner: stop to listen and exit", end='\r')
+        print("++ DebugListener: stop to listen and exit", end='\r')
         # stop process
         self.db_listener.join(2.)
         # remove
         #del self.db_listener
         #self.db_listener = None
         # print
-        print("++ DebugListner: exited..." + " " * 10)
+        print(CURSOR_UP_ONE + ERASE_LINE, end='\r')
+        print("++ DebugListener: exited...")
 
 
-class DebugListner(Process):
+class DebugListener(Process):
 
     def __init__(self, host, port, msg_header):
-        super(DebugListner, self).__init__()
+        super(DebugListener, self).__init__()
         # print("+ Connect to Op: host->[{}] port->[{}]".format(host, port))
         self._sock = None
         self._connected = False
@@ -85,7 +86,7 @@ class DebugListner(Process):
         # not connected
         self._connected = False
         # try to connect
-        print("++ DebugListner: connecting", end='\r')
+        print("++ DebugListener: connecting", end='\r')
         # exit cases
         ok_res = [errno.EISCONN]
         # wait
@@ -97,15 +98,15 @@ class DebugListner(Process):
                 self.create_socket()
             # debug
             # if res != 0:
-            #    print("++ DebugListner: connecting({},{})".format(res, os.strerror(res))+" "*10, end='\r')
+            #    print("++ DebugListener: connecting({},{})".format(res, os.strerror(res))+" "*10, end='\r')
             #    time.sleep(0.5)
         # kill thread?
         if self._exit.is_set():
             return
         # or connected
         self._connected = True
-        print("++ DebugListner: connected", end='\r')
-        print("++ DebugListner: start main loop")
+        print("++ DebugListener: connected", end='\r')
+        print("++ DebugListener: start main loop")
         print(CURSOR_UP_ONE + ERASE_LINE, end='\r')
 
         while not self._exit.is_set() and self._connected:
@@ -146,14 +147,21 @@ class DebugListner(Process):
         self._sock = None
 
     def send_close_message(self):
-        self._sock.send(struct.pack('<i', self.__str_to_msg_type['close']))
+        try:
+            return self._sock.send(struct.pack('<i', self.__str_to_msg_type['close'])) == None
+        except Exception as err:
+            return False
 
     @staticmethod
     def read_msg(conn, type_):
         if type_[1] == 'string':
             size = struct.unpack("<i", conn.recv(4))[0]
             data = conn.recv(struct.calcsize(type_[0]) * size)
-            return struct.unpack("<{}".format(type_[0] * size), data)[0]
+            bytesstr = b''
+            tuplestr = struct.unpack("<{}".format(type_[0] * size), data)
+            for tuplechar in tuplestr:
+                bytesstr += tuplechar
+            return bytesstr.decode("utf-8")
         if type_[1] == 'close':
             return (None, 'close')
         else:

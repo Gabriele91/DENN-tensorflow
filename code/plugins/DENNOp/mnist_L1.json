@@ -1,7 +1,7 @@
 [
     {
         "name": "mnist_dataset",
-        "dataset_file": "./datasets/mnist_12_batches.gz",
+        "dataset_file": "./datasets/mnist_200xB_5s.gz",
         "TOT_GEN": 10000,
         "GEN_STEP": 50,
         "F": 0.6,

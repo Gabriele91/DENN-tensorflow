@@ -86,9 +86,9 @@ namespace tensorflow
             if(m_file.open(path_file,"rb"))
             {
                 m_file.read(&m_header,sizeof(DataSetHeader),1);
-                return false;
+                return true;
             }
-            return true;
+            return false;
         }
 
         bool is_open() const 

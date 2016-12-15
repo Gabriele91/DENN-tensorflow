@@ -283,7 +283,6 @@ namespace tensorflow
         }
 
     protected:
-
         /**
         * Set dataset in m_inputs_tensor_cache
         */

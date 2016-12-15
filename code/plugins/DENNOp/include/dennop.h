@@ -240,7 +240,12 @@ public:
         for(int i=0;i!=num_gen;++i)
         {
             //Create new population
-            TrialVectorsOp(context, NP,W_list,current_populations_list,new_populations_list);
+            switch(m_pert_vector)
+            {
+                case PV_RANDOM: RandTrialVectorsOp(context, NP,W_list,current_populations_list,new_populations_list); break;
+                case PV_BEST: BestTrialVectorsOp(context, NP,W_list,current_eval_result,current_populations_list,new_populations_list); break;
+                default: return /* FAILED */;
+            }
             //Change old population (if required)
             for(int index = 0; index!=NP ;++index)
             {
@@ -426,9 +431,16 @@ protected:
     {
         return std::min(std::max(t, m_f_min), m_f_max);
     }  
-    
-    //create new generation
-    void TrialVectorsOp
+       
+    /**
+     * RandTrialVectorsOp, create new generation (RAND DE METHOD)
+     * @param context,
+     * @param NP, size of population
+     * @param List, Factor to DE
+     * @param populations_list, input population list
+     * @param new_populations_list (output), return of function
+     */
+    void RandTrialVectorsOp
     (
         OpKernelContext*                           context,
         const int                                  NP,
@@ -499,6 +511,115 @@ protected:
                                 const double first_diff  = population[randoms_i[0]].flat<double>()(elm) - population[randoms_i[1]].flat<double>()(elm);
                                 const double second_diff = population[randoms_i[2]].flat<double>()(elm) - population[randoms_i[3]].flat<double>()(elm);
                                 new_generation(elm) = f_clamp( (first_diff + second_diff) * W(elm) + population[randoms_i[4]].flat<double>()(elm) );
+                            }
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        new_generation(elm) = population[index].flat_inner_dims<double>()(elm);
+                        //in exp case stop to rand values
+                        if(!do_random && m_cr_type == CR_EXP) do_random = false;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * BestTrialVectorsOp, create new generation (BEST DE METHOD)
+     * @param context,
+     * @param NP, size of population
+     * @param List, Factor of DE
+     * @param populations_valutation, list(f_train(popularion) of all populations)
+     * @param populations_list, input population list
+     * @param new_populations_list (output), return of function
+     */
+    void BestTrialVectorsOp
+    (
+        OpKernelContext*                           context,
+        const int                                  NP,
+        const std::vector < Tensor >&              W_list,
+              Tensor&                              cur_populations_eval,
+        const std::vector < std::vector<Tensor> >& cur_populations_list,
+        std::vector < std::vector<Tensor> >&       new_populations_list
+    ) const
+    {
+        //name space random indices
+        using namespace random_indices;
+        // Generate vector of random indexes
+        std::vector < int > randoms_i;
+        //First best
+        auto   pop_eval_ref = cur_populations_eval.flat<double>();
+        double val_best     = pop_eval_ref(0);
+        int    id_best      = 0;
+        //search best
+        for(int index = 1; index < NP ;++index)
+        {
+            //best?
+            if(val_best < pop_eval_ref(index))
+            {
+                val_best= pop_eval_ref(index);
+                id_best = index;
+            }
+        }
+        //Select type of method
+        switch (m_diff_vector)
+        {
+            default:
+            case DIFF_ONE: randoms_i.resize(2);  break;
+            case DIFF_TWO: randoms_i.resize(4);  break;
+        }        
+        //for all populations
+        for(size_t p=0; p!=cur_populations_list.size(); ++p)
+        {
+            //get values
+            const auto W = W_list[p].flat<double>();
+            //for all
+            for (int index = 0; index < NP; ++index)
+            {
+                //ref to population
+                const std::vector< Tensor >& population = cur_populations_list[p];
+                //Num of dimations
+                const int NUM_OF_D = population[index].shape().dims();
+                //Compute flat dimension
+                int D = NUM_OF_D ? 1 : 0;
+                //compute D
+                for(int i=0; i < NUM_OF_D; ++i)
+                {
+                    D *= population[index].shape().dim_size(i);
+                }
+                // alloc
+                new_populations_list[p][index] = Tensor(DataType::DT_DOUBLE, population[index].shape());
+                //ref new gen
+                auto new_generation = new_populations_list[p][index].flat_inner_dims<double>();
+                //do rand indices
+                threeRandIndicesDiffFrom(NP, index, randoms_i);
+                //do random
+                bool do_random = true;
+                //random index
+                int random_index = irand(D);
+                //compute
+                for (int elm = 0; elm < D; ++elm)
+                {
+                    if (do_random && (random() < m_CR || random_index == elm))
+                    {
+                        switch (m_diff_vector)
+                        {
+                            default:
+                            case DIFF_ONE:
+                            {
+                                const double a = population[randoms_i[0]].flat<double>()(elm);
+                                const double b = population[randoms_i[1]].flat<double>()(elm);
+                                const double c = population[id_best].flat<double>()(elm);
+                                new_generation(elm) = f_clamp( (a-b) * W(elm) + c );
+                            }
+                            break;
+                            case DIFF_TWO:
+                            {
+                                const double first_diff  = population[randoms_i[0]].flat<double>()(elm) - population[randoms_i[1]].flat<double>()(elm);
+                                const double second_diff = population[randoms_i[2]].flat<double>()(elm) - population[randoms_i[3]].flat<double>()(elm);
+                                new_generation(elm) = f_clamp( (first_diff + second_diff) * W(elm) + population[id_best].flat<double>()(elm) );
                             }
                             break;
                         }

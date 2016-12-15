@@ -284,8 +284,8 @@ def create_dataset(dataset, loader, size, name, n_shuffle=1, batch_size=True,
         elm_x_batch = size
         size = int(num_elms / size)
 
-    train_data = np.split(train_data, size * n_shuffle)
-    train_labels = np.split(train_labels, size * n_shuffle)
+    train_data = np.array_split(train_data, size * n_shuffle)
+    train_labels = np.array_split(train_labels, size * n_shuffle)
 
     print("++ Prepare Header")
     header = Header(

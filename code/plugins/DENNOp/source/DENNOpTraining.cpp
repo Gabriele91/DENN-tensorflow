@@ -15,7 +15,16 @@ REGISTER_OP("DENN")
 .Attr("f_name_train: string = 'cross_entropy:0'")
 .Attr("f_name_validation: string = 'accuracy:0'")
 .Attr("f_name_test: string = 'accuracy:0'")
-.Attr("DE: {'rand/1/bin', 'rand/1/exp', 'rand/2/bin', 'rand/2/exp'} = 'rand/1/bin'")
+.Attr("DE: {"
+      "'rand/1/bin', "
+      "'rand/1/exp', "
+      "'rand/2/bin', "
+      "'rand/2/exp',  "
+      "'best/1/bin', "
+      "'best/1/exp', "
+      "'best/2/bin', "
+      "'best/2/exp'  "
+      "} = 'rand/1/bin'")
 .Input("info: int32") //[ NUM_GEN, NUM_GEN_STEP, CALC_FIRST_EVAL ]
 .Input("population_first_eval: double")
 .Input("w_list: space * double")

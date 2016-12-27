@@ -4,6 +4,7 @@
 using namespace tensorflow;
 
 REGISTER_OP("DENN")
+.Attr("T: {float, double}")
 .Attr("space: int")
 .Attr("graph: string")
 .Attr("CR: float = 0.5")
@@ -24,14 +25,15 @@ REGISTER_OP("DENN")
       "'best/2/exp'  "
       "} = 'rand/1/bin'")
 .Input("info: int32") //[ NUM_GEN, CALC_FIRST_EVAL ]
-.Input("bach_labels: double")
-.Input("bach_data: double")
-.Input("population_first_eval: double")
-.Input("w_list: space * double")
-.Input("populations_list: space * double")
-.Output("final_populations: space * double")
-.Output("final_eval: double");
+.Input("bach_labels: T")
+.Input("bach_data: T")
+.Input("population_first_eval: T")
+.Input("w_list: space * T")
+.Input("populations_list: space * T")
+.Output("final_populations: space * T")
+.Output("final_eval: T");
 
 
-REGISTER_KERNEL_BUILDER(Name("DENN").Device(DEVICE_CPU), DENNOp<double>);
+REGISTER_KERNEL_BUILDER(Name("DENN").Device(DEVICE_CPU).TypeConstraint<float>("T"), DENNOp<float>);
+REGISTER_KERNEL_BUILDER(Name("DENN").Device(DEVICE_CPU).TypeConstraint<double>("T"), DENNOp<double>);
 

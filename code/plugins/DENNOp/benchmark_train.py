@@ -83,7 +83,7 @@ def main():
                         # input params
                         # [num_gen, step_gen, eval_individual]
                         [options.TOT_GEN, options.GEN_STEP, False],
-                        [],  # FIRST EVAL
+                        np.array([], dtype=np.float64),  # FIRST EVAL
                         cur_nn.weights,  # PASS WEIGHTS
                         cur_nn.populations,  # POPULATIONS
                         # attributes

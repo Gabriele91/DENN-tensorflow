@@ -4,6 +4,7 @@
         "dataset_file": "./datasets/letter_100-B_5s.gz",
         "TOT_GEN": 5000,
         "GEN_STEP": 100,
+        "TYPE": "double",
         "F": 0.8,
         "NP": 100,
         "de_types": [

@@ -38,10 +38,6 @@ def main():
         inter_op_parallelism_threads=NUM_THREADS
     )
 
-    for dev in device_lib.list_local_devices():
-        if dev.device_type == "CPU":
-            DEVICE = dev.name
-
     ##
     # jobs
     jobs = []
@@ -80,7 +76,8 @@ def main():
 
             cur_nn = DENN.training.gen_network(
                 options,
-                True  # rand population only if gen is the first one
+                True,  # rand population only if gen is the first one
+                type_=options.TYPE
             )
 
             with cur_nn.graph.as_default():
@@ -97,29 +94,30 @@ def main():
                         cur_pop = sess.run(cur_nn.rand_pop)
                         prev_NN[de_type] = cur_pop
 
-                        ##
-                        # DENN op
-                        denn_operators[de_type] = DENN.create(
-                            # input params
-                            # [num_gen, eval_individual]
-                            cur_nn.cur_gen_options,
-                            cur_nn.label_placeholder,
-                            cur_nn.input_placeholder,
-                            cur_nn.evaluated,  # FIRST EVAL
-                            cur_nn.weights,  # PASS WEIGHTS
-                            cur_nn.populations,  # POPULATIONS
-                            # attributes
-                            # space = 2,
-                            graph=DENN.get_graph_proto(
-                                cur_nn.graph.as_graph_def()),
-                            f_name_train=cur_nn.cross_entropy.name,
-                            f_inputs=[elm.name for elm in cur_nn.targets],
-                            f_input_labels=cur_nn.label_placeholder.name,
-                            f_input_features=cur_nn.input_placeholder.name,
-                            CR=options.CR,
-                            DE=de_type,
-                            # training=True
-                        )
+                        with tf.device("/cpu:0"):
+                            ##
+                            # DENN op
+                            denn_operators[de_type] = DENN.create(
+                                # input params
+                                # [num_gen, eval_individual]
+                                cur_nn.cur_gen_options,
+                                cur_nn.label_placeholder,
+                                cur_nn.input_placeholder,
+                                cur_nn.evaluated,  # FIRST EVAL
+                                cur_nn.weights,  # PASS WEIGHTS
+                                cur_nn.populations,  # POPULATIONS
+                                # attributes
+                                # space = 2,
+                                graph=DENN.get_graph_proto(
+                                    cur_nn.graph.as_graph_def()),
+                                f_name_train=cur_nn.cross_entropy.name,
+                                f_inputs=[elm.name for elm in cur_nn.targets],
+                                f_input_labels=cur_nn.label_placeholder.name,
+                                f_input_features=cur_nn.input_placeholder.name,
+                                CR=options.CR,
+                                DE=de_type,
+                                # training=True
+                            )
 
                     print(
                         "++ Node creation {}".format(time() - time_node_creation))
@@ -249,7 +247,7 @@ def main():
                         )
 
                         with open(path.join("benchmark_results", argv[1]), "w") as out_file:
-                            json.dump(jobs, out_file, indent = 4)
+                            json.dump(jobs, out_file, indent=4)
 
             print("+ Completed all test on job {} in {} sec.".format(options.name,
                                                                      time() - time_start_job))

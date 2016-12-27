@@ -4,6 +4,7 @@
         "dataset_file": "./datasets/mnist_200xB_5s.gz",
         "TOT_GEN": 10000,
         "GEN_STEP": 50,
+        "TYPE": "double",
         "F": 0.5,
         "NP": 20,
         "de_types": [

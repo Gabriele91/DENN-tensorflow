@@ -37,10 +37,6 @@ def main():
         inter_op_parallelism_threads=NUM_THREADS
     )
 
-    for dev in device_lib.list_local_devices():
-        if dev.device_type == "CPU":
-            DEVICE = dev.name
-
     ##
     # jobs
     jobs = []
@@ -61,7 +57,8 @@ def main():
         # network
         cur_nn = DENN.training.gen_network(
             options,
-            True  # rand population only if gen is the first one
+            True,  # rand population only if gen is the first one
+            type_=options.TYPE
         )
         # network graph
         with cur_nn.graph.as_default():
@@ -77,30 +74,32 @@ def main():
                     cur_pop = sess.run(cur_nn.rand_pop)
                     # take time
                     time_node_creation = time()
-                    ##
-                    # DENN op
-                    denn_op = DENN.create(
-                        # input params
-                        # [num_gen, step_gen, eval_individual]
-                        [options.TOT_GEN, options.GEN_STEP, False],
-                        np.array([], dtype=np.float64),  # FIRST EVAL
-                        cur_nn.weights,  # PASS WEIGHTS
-                        cur_nn.populations,  # POPULATIONS
-                        # attributes
-                        # space = 2,
-                        graph=DENN.get_graph_proto(
-                            cur_nn.graph.as_graph_def()),
-                        dataset=options.dataset_file,
-                        f_name_train=cur_nn.cross_entropy.name,
-                        f_name_validation=cur_nn.accuracy.name,
-                        f_name_test=cur_nn.accuracy.name,
-                        f_inputs=[elm.name for elm in cur_nn.targets],
-                        f_input_labels=cur_nn.label_placeholder.name,
-                        f_input_features=cur_nn.input_placeholder.name,
-                        CR=options.CR,
-                        DE=de_type,
-                        training=True
-                    )
+                    with tf.device("/cpu:0"):
+                        ##
+                        # DENN op
+                        denn_op = DENN.create(
+                            # input params
+                            # [num_gen, step_gen, eval_individual]
+                            [options.TOT_GEN, options.GEN_STEP, False],
+                            np.array([], dtype=np.float64 if options.TYPE ==
+                                     "double" else np.float32),  # FIRST EVAL
+                            cur_nn.weights,  # PASS WEIGHTS
+                            cur_nn.populations,  # POPULATIONS
+                            # attributes
+                            # space = 2,
+                            graph=DENN.get_graph_proto(
+                                cur_nn.graph.as_graph_def()),
+                            dataset=options.dataset_file,
+                            f_name_train=cur_nn.cross_entropy.name,
+                            f_name_validation=cur_nn.accuracy.name,
+                            f_name_test=cur_nn.accuracy.name,
+                            f_inputs=[elm.name for elm in cur_nn.targets],
+                            f_input_labels=cur_nn.label_placeholder.name,
+                            f_input_features=cur_nn.input_placeholder.name,
+                            CR=options.CR,
+                            DE=de_type,
+                            training=True
+                        )
 
                     print("++ Node creation {}".format(time() - time_node_creation))
                     # Soket listener

@@ -1,6 +1,5 @@
 import DENN
 import tensorflow as tf
-from tensorflow.python.client import device_lib
 
 import numpy as np
 import json
@@ -34,12 +33,9 @@ def main():
 
     session_config = tf.ConfigProto(
         intra_op_parallelism_threads=NUM_THREADS,
-        inter_op_parallelism_threads=NUM_THREADS
+        inter_op_parallelism_threads=NUM_THREADS,
+        log_device_placement=True
     )
-
-    for dev in device_lib.list_local_devices():
-        if dev.device_type == "CPU":
-            DEVICE = dev.name
 
     ##
     # jobs
@@ -65,62 +61,62 @@ def main():
     time_start_test = time()
 
     for dataset, options in datasets:
-        with tf.device(DEVICE):
-            time_start_dataset = time()
+        time_start_dataset = time()
 
-            ##
-            # test data collections
-            test_results = NDict(
-                list(
-                    zip(options.de_types, [
-                        ENDict(
-                            [
-                                ('values', []),
-                            ]
-                        ) for _ in range(len(options.de_types))
-                    ])
-                )
+        ##
+        # test data collections
+        test_results = NDict(
+            list(
+                zip(options.de_types, [
+                    ENDict(
+                        [
+                            ('values', []),
+                        ]
+                    ) for _ in range(len(options.de_types))
+                ])
             )
+        )
 
-            out_options = ENDict(
-                [
-                    ('job', options),
-                    ('num_batches', dataset.num_batches)
-                ]
-            )
+        out_options = ENDict(
+            [
+                ('job', options),
+                ('num_batches', dataset.num_batches)
+            ]
+        )
 
-            prev_NN = dict(
-                list(zip(options.de_types, [
-                    None for _ in range(len(options.de_types))]))
-            )
+        prev_NN = dict(
+            list(zip(options.de_types, [
+                None for _ in range(len(options.de_types))]))
+        )
 
-            v_res = [0.0 for _ in range(options.NP)]
+        v_res = [0.0 for _ in range(options.NP)]
 
-            batch_counter = 0
+        batch_counter = 0
 
-            cur_nn = DENN.training.gen_network(
-                options,
-                True  # rand population only if gen is the first one
-            )
+        cur_nn = DENN.training.gen_network(
+            options,
+            True,  # rand population only if gen is the first one
+            type_=options.TYPE
+        )
 
-            with cur_nn.graph.as_default():
-                with tf.Session(config=session_config) as sess:
+        with cur_nn.graph.as_default():
+            with tf.Session(config=session_config) as sess:
 
-                    denn_operators = {}
+                denn_operators = {}
 
-                    time_node_creation = time()
-                    
-                    for de_type in options.de_types:
+                time_node_creation = time()
 
-                        ##
-                        # Random initialization of the NN
-                        cur_pop = sess.run(cur_nn.rand_pop)
-                        prev_NN[de_type] = cur_pop
+                for de_type in options.de_types:
 
-                        
+                    ##
+                    # Random initialization of the NN
+                    cur_pop = sess.run(cur_nn.rand_pop)
+                    prev_NN[de_type] = cur_pop
+
+                    with tf.device("/cpu:0"):
                         ##
                         # DENN op
-                        denn_operators[de_type] = DENN.create(  
+                        denn_operators[de_type] = DENN.create(
                             # input params
                             # [num_gen, eval_individual]
                             cur_nn.cur_gen_options,
@@ -142,125 +138,127 @@ def main():
                             # training=True
                         )
 
-                    print(
-                        "++ Node creation {}".format(time() - time_node_creation))
-                    
-                    for de_type, denn_op in denn_operators.items():
+                print(
+                    "++ Node creation {}".format(time() - time_node_creation))
 
-                        first_time = True
+                for de_type, denn_op in denn_operators.items():
 
-                        for gen in range(int(options.TOT_GEN / options.GEN_STEP)):
+                    first_time = True
 
-                            print(
-                                "+ Start gen. [{}] with batch[{}]".format((gen + 1) * options.GEN_STEP, batch_counter))
+                    for gen in range(int(options.TOT_GEN / options.GEN_STEP)):
 
-                            cur_batch = dataset[batch_counter]
-                            batch_counter = (batch_counter + 1) % dataset.num_batches
+                        print(
+                            "+ Start gen. [{}] with batch[{}]".format((gen + 1) * options.GEN_STEP, batch_counter))
 
-                            time_start_gen = time()
+                        cur_batch = dataset[batch_counter]
+                        batch_counter = (
+                            batch_counter + 1) % dataset.num_batches
 
-                            results = sess.run(denn_op, feed_dict=dict(
+                        time_start_gen = time()
+
+                        results = sess.run(denn_op, feed_dict=dict(
+                            [
+                                (pop_ref, prev_NN[de_type][num])
+                                for num, pop_ref in enumerate(cur_nn.populations)
+                            ]
+                            +
+                            [
+                                (cur_nn.label_placeholder, cur_batch.labels),
+                                (cur_nn.input_placeholder, cur_batch.data)
+                            ]
+                            +
+                            [
+                                (cur_nn.evaluated, v_res)
+                            ]
+                            +
+                            [
+                                (cur_nn.cur_gen_options, [
+                                 options.GEN_STEP, first_time])
+                            ]
+                        ))
+
+                        print("++ Op time {}".format(time() - time_start_gen))
+
+                        # get output
+                        cur_pop = results.final_populations
+                        v_res = results.final_eval
+
+                        # print(len(cur_pop))
+                        # print(cur_pop[0].shape)
+                        # print(cur_pop[1].shape)
+
+                        evaluations = []
+
+                        time_valutation = time()
+
+                        for idx in range(options.NP):
+                            cur_evaluation = sess.run(cur_nn.accuracy, feed_dict=dict(
                                 [
-                                    (pop_ref, prev_NN[de_type][num])
-                                    for num, pop_ref in enumerate(cur_nn.populations)
-                                ]
-                                +
-                                [
-                                    (cur_nn.label_placeholder, cur_batch.labels),
-                                    (cur_nn.input_placeholder, cur_batch.data)
-                                ]
-                                +
-                                [
-                                    (cur_nn.evaluated, v_res)
-                                ]
-                                +
-                                [
-                                    (cur_nn.cur_gen_options, [options.GEN_STEP, first_time])
-                                ]
-                            ))
-
-                            print("++ Op time {}".format(time() - time_start_gen))
-
-                            # get output
-                            cur_pop = results.final_populations
-                            v_res = results.final_eval
-
-                            # print(len(cur_pop))
-                            # print(cur_pop[0].shape)
-                            # print(cur_pop[1].shape)
-
-                            evaluations = []
-
-                            time_valutation = time()
-
-                            for idx in range(options.NP):
-                                cur_evaluation = sess.run(cur_nn.accuracy, feed_dict=dict(
-                                    [
-                                        (target, cur_pop[num][idx])
-                                        for num, target in enumerate(cur_nn.targets)
-                                    ]
-                                    +
-                                    [
-                                        (cur_nn.label_placeholder,
-                                         dataset.validation_labels),
-                                        (cur_nn.input_placeholder,
-                                         dataset.validation_data)
-                                    ]
-                                ))
-                                evaluations.append(cur_evaluation)
-
-                            # print(evaluations)
-                            print(
-                                "++ Valutation {}".format(time() - time_valutation))
-
-                            best_idx = np.argmin(evaluations)
-
-                            time_test = time()
-
-                            cur_accuracy = sess.run(cur_nn.accuracy, feed_dict=dict(
-                                [
-                                    (target, cur_pop[num][best_idx])
+                                    (target, cur_pop[num][idx])
                                     for num, target in enumerate(cur_nn.targets)
                                 ]
                                 +
                                 [
-                                    (cur_nn.label_placeholder, dataset.test_labels),
-                                    (cur_nn.input_placeholder, dataset.test_data)
+                                    (cur_nn.label_placeholder,
+                                        dataset.validation_labels),
+                                    (cur_nn.input_placeholder,
+                                        dataset.validation_data)
                                 ]
                             ))
+                            evaluations.append(cur_evaluation)
 
-                            test_results[de_type].values.append(cur_accuracy)
+                        # print(evaluations)
+                        print(
+                            "++ Valutation {}".format(time() - time_valutation))
 
-                            print("++ Test {}".format(time() - time_test))
+                        best_idx = np.argmin(evaluations)
 
-                            print(
-                                "+ DENN[{}] up to {} gen on {} completed in {:.05} sec.".format(
-                                    de_type, (gen + 1) * options.GEN_STEP,
-                                    options.name,
-                                    time() - time_start_gen
-                                )
+                        time_test = time()
+
+                        cur_accuracy = sess.run(cur_nn.accuracy, feed_dict=dict(
+                            [
+                                (target, cur_pop[num][best_idx])
+                                for num, target in enumerate(cur_nn.targets)
+                            ]
+                            +
+                            [
+                                (cur_nn.label_placeholder, dataset.test_labels),
+                                (cur_nn.input_placeholder, dataset.test_data)
+                            ]
+                        ))
+
+                        test_results[de_type].values.append(cur_accuracy)
+
+                        print("++ Test {}".format(time() - time_test))
+
+                        print(
+                            "+ DENN[{}] up to {} gen on {} completed in {:.05} sec.".format(
+                                de_type, (gen + 1) * options.GEN_STEP,
+                                options.name,
+                                time() - time_start_gen
                             )
+                        )
 
-                            prev_NN[de_type] = cur_pop
-                            del cur_pop
+                        prev_NN[de_type] = cur_pop
+                        del cur_pop
 
-                            first_time = False
+                        first_time = False
 
-            print("+ Completed all test on dataset {} in {} sec.".format(options.name,
-                                                                         time() - time_start_dataset))
-            print("+ Save results for {}".format(options.name))
+        print("+ Completed all test on dataset {} in {} sec.".format(options.name,
+                                                                     time() - time_start_dataset))
+        print("+ Save results for {}".format(options.name))
 
-            description = "NP: {}  W: {}  CR: {}".format(
-                options.NP,
-                options.F,
-                options.CR
-            )
+        description = "NP: {}  W: {}  CR: {}".format(
+            options.NP,
+            options.F,
+            options.CR
+        )
 
-            DENN.training.expand_results(
-                test_results, options.GEN_STEP, options.de_types)
+        DENN.training.expand_results(
+            test_results, options.GEN_STEP, options.de_types)
 
-            DENN.training.write_all_results(
-                options.name, test_results, description, out_options)
+        DENN.training.write_all_results(
+            options.name, test_results, description, out_options)
 
     print("+ Completed all test {} sec.".format(time() - time_start_test))
 

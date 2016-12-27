@@ -4,6 +4,7 @@
         "dataset_file": "./datasets/mnist_200xB_5s.gz",
         "TOT_GEN": 200000,
         "GEN_STEP": 50,
+        "TYPE": "double",
         "F": 0.8,
         "NP": 20,
         "de_types": [
@@ -19,6 +20,7 @@
         "dataset_file": "./datasets/mnist_200xB_5s.gz",
         "TOT_GEN": 200000,
         "GEN_STEP": 100,
+        "TYPE": "double",
         "F": 0.8,
         "NP": 20,
         "de_types": [
@@ -34,6 +36,7 @@
         "dataset_file": "./datasets/mnist_200xB_5s.gz",
         "TOT_GEN": 200000,
         "GEN_STEP": 200,
+        "TYPE": "double",
         "F": 0.8,
         "NP": 20,
         "de_types": [
@@ -49,6 +52,7 @@
         "dataset_file": "./datasets/mnist_1000xB_5s.gz",
         "TOT_GEN": 200000,
         "GEN_STEP": 50,
+        "TYPE": "double",
         "F": 0.8,
         "NP": 20,
         "de_types": [
@@ -64,6 +68,7 @@
         "dataset_file": "./datasets/mnist_1000xB_5s.gz",
         "TOT_GEN": 200000,
         "GEN_STEP": 100,
+        "TYPE": "double",
         "F": 0.8,
         "NP": 20,
         "de_types": [
@@ -79,6 +84,7 @@
         "dataset_file": "./datasets/mnist_1000xB_5s.gz",
         "TOT_GEN": 200000,
         "GEN_STEP": 200,
+        "TYPE": "double",
         "F": 0.8,
         "NP": 20,
         "de_types": [
@@ -94,6 +100,7 @@
         "dataset_file": "./datasets/mnist_2000xB_5s.gz",
         "TOT_GEN": 200000,
         "GEN_STEP": 50,
+        "TYPE": "double",
         "F": 0.8,
         "NP": 20,
         "de_types": [
@@ -109,6 +116,7 @@
         "dataset_file": "./datasets/mnist_2000xB_5s.gz",
         "TOT_GEN": 200000,
         "GEN_STEP": 100,
+        "TYPE": "double",
         "F": 0.8,
         "NP": 20,
         "de_types": [
@@ -124,6 +132,7 @@
         "dataset_file": "./datasets/mnist_2000xB_5s.gz",
         "TOT_GEN": 200000,
         "GEN_STEP": 200,
+        "TYPE": "double",
         "F": 0.8,
         "NP": 20,
         "de_types": [
@@ -139,6 +148,7 @@
         "dataset_file": "./datasets/mnist_4000xB_5s.gz",
         "TOT_GEN": 200000,
         "GEN_STEP": 50,
+        "TYPE": "double",
         "F": 0.8,
         "NP": 20,
         "de_types": [
@@ -154,6 +164,7 @@
         "dataset_file": "./datasets/mnist_4000xB_5s.gz",
         "TOT_GEN": 200000,
         "GEN_STEP": 100,
+        "TYPE": "double",
         "F": 0.8,
         "NP": 20,
         "de_types": [
@@ -169,6 +180,7 @@
         "dataset_file": "./datasets/mnist_4000xB_5s.gz",
         "TOT_GEN": 200000,
         "GEN_STEP": 200,
+        "TYPE": "double",
         "F": 0.8,
         "NP": 20,
         "de_types": [

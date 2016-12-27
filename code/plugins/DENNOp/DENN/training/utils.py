@@ -1,4 +1,5 @@
 import tensorflow as tf
+from tensorflow.python.client import device_lib
 import numpy as np
 from copy import copy
 import json
@@ -153,6 +154,24 @@ class Header(object):
         return string
 
 
+def to_bin(data, type_):
+    """Convert a numpy array do binary.
+
+    The conversion will lose the shape, the resulting
+    array is flat.
+
+    Params:
+        data (numpy array): the array to convert
+        type_ (string): type of the elements, could be
+                        "double" or "float"
+    """
+
+    return struct.pack("{}{}".format(
+        data.size,
+        "d" if type_ == "double" else "f"
+    ), *data.flat)
+
+
 def create_dataset(dataset, loader, size, name, n_shuffle=1, batch_size=True,
                    seed=None, train_percentage=0.8, validation_percentage=0.1,
                    debug=False, type_="double"):
@@ -175,11 +194,11 @@ def create_dataset(dataset, loader, size, name, n_shuffle=1, batch_size=True,
                                                     validation set
         debug (bool, default=False): indicate if the loader enables the debug
                                      output
-        type_ (str, default="double"): indicate the type of the elements. 
+        type_ (str, default="double"): indicate the type of the elements.
                                        Values can be ["double", "float"]
 
     Notes:
-        If the loaded dataset has already a test set (line MNIST) the 
+        If the loaded dataset has already a test set (line MNIST) the
         subdivision will be the subsequent:
 
         With train_percentage = 0.8
@@ -207,6 +226,10 @@ def create_dataset(dataset, loader, size, name, n_shuffle=1, batch_size=True,
         |--------|
         |  10%   |<- test set
         +--------+
+
+        Note also that the loader load the data in float64 format, so subsequent
+        conversion are applied only after the creation of the dataset (random
+        and shuffle part), before the split part.
     """
     makedirs(BASEDATASETPATH, exist_ok=True)
 
@@ -284,6 +307,11 @@ def create_dataset(dataset, loader, size, name, n_shuffle=1, batch_size=True,
         elm_x_batch = size
         size = int(num_elms / size)
 
+    # Convert to float if necessary
+    if type_ == "float":
+        train_data = train_data.astype(np.float32)
+        train_labels = train_labels.astype(np.float32)
+
     train_data = np.array_split(train_data, size * n_shuffle)
     train_labels = np.array_split(train_labels, size * n_shuffle)
 
@@ -358,8 +386,8 @@ def create_dataset(dataset, loader, size, name, n_shuffle=1, batch_size=True,
         # + labels
         print("+++ Write test data and labels")
         gz_file.write(struct.pack("<I", len(test_data)))
-        gz_file.write(test_data.tobytes())
-        gz_file.write(test_labels.tobytes())
+        gz_file.write(to_bin(test_data, type_))
+        gz_file.write(to_bin(test_labels, type_))
 
         # print(gz_file.tell())
 
@@ -371,8 +399,8 @@ def create_dataset(dataset, loader, size, name, n_shuffle=1, batch_size=True,
         # + labels
         print("+++ Write validation data and labels")
         gz_file.write(struct.pack("<I", len(validation_data)))
-        gz_file.write(validation_data.tobytes())
-        gz_file.write(validation_labels.tobytes())
+        gz_file.write(to_bin(validation_data, type_))
+        gz_file.write(to_bin(validation_labels, type_))
 
         # print(gz_file.tell())
 
@@ -390,8 +418,8 @@ def create_dataset(dataset, loader, size, name, n_shuffle=1, batch_size=True,
                                                  1, len(train_data)), end="\r")
             gz_file.write(struct.pack("<I", index))
             gz_file.write(struct.pack("<I", len(t_data)))
-            gz_file.write(t_data.tobytes())
-            gz_file.write(train_labels[index].tobytes())
+            gz_file.write(to_bin(t_data, type_))
+            gz_file.write(to_bin(train_labels[index], type_))
 
     print("+! Dataset {} completed!".format(file_name))
 
@@ -426,7 +454,7 @@ class Dataset(object):
         self.__size_elm_label = self.stats.n_classes * self.__elm_size
 
     def __read_from(self, offset, type_):
-        """Read data from offset. 
+        """Read data from offset.
 
         Args:
             offset: num of bytes to jump
@@ -522,85 +550,102 @@ class Dataset(object):
         return Batch(data, labels)
 
 
-def gen_network(options, rand_pop):
+def get_gpu():
+    """Return a GPU device if available."""
+    for dev in device_lib.list_local_devices():
+        if dev.device_type == "GPU":
+            return dev.name
+    return "/cpu:0"
+
+
+def gen_network(options, rand_pop, type_="double"):
+
+    if type_ == "double":
+        cur_type = tf.float64
+    elif type_ == "float":
+        cur_type = tf.float32
+    else:
+        raise Exception("Not valid type_ argument: {}".format(type_))
 
     graph = tf.Graph()
     with graph.as_default():
-        levels = options.levels
-        target_ref = []
-        pop_ref = []
-        rand_pop_ref = []
-        cur_pop_VAL = tf.placeholder(tf.float64, [options.NP])
-        cur_gen_options = tf.placeholder(tf.int32, [2])
-        weights = []
+        with tf.device(get_gpu()):
+            # with tf.device("/c pu:0"):
+            levels = options.levels
+            target_ref = []
+            pop_ref = []
+            rand_pop_ref = []
+            cur_pop_VAL = tf.placeholder(cur_type, [options.NP])
+            cur_gen_options = tf.placeholder(tf.int32, [2])
+            weights = []
 
-        input_size = levels[0][0][0][0]
-        label_size = levels[-1][0][-1][0]
-        input_placeholder = tf.placeholder(tf.float64,
-                                           [None, input_size], name="inputs")
-        label_placeholder = tf.placeholder(tf.float64,
-                                           [None, label_size], name="labels")
+            input_size = levels[0][0][0][0]
+            label_size = levels[-1][0][-1][0]
+            input_placeholder = tf.placeholder(cur_type,
+                                               [None, input_size], name="inputs")
+            label_placeholder = tf.placeholder(cur_type,
+                                               [None, label_size], name="labels")
 
-        last_input = input_placeholder
+            last_input = input_placeholder
 
-        for num, cur_level in enumerate(levels, 1):
-            level, type_ = cur_level
+            for num, cur_level in enumerate(levels, 1):
+                level, type_ = cur_level
 
-            SIZE_W, SIZE_B = level
-
-            ##
-            # DE W -> NN (W, B)
-            deW_nnW = np.full(SIZE_W, options.F)
-            deW_nnB = np.full(SIZE_B, options.F)
-
-            weights.append(deW_nnW)
-            weights.append(deW_nnB)
-
-            ##
-            # Random functions
-            if rand_pop:
-                create_random_population_W = tf.random_uniform(
-                    [options.NP] + SIZE_W, dtype=tf.float64, seed=1)
-                create_random_population_B = tf.random_uniform(
-                    [options.NP] + SIZE_B, dtype=tf.float64, seed=1)
-
-                rand_pop_ref.append(create_random_population_W)
-                rand_pop_ref.append(create_random_population_B)
-
-            ##
-            # Placeholder
-            target_w = tf.placeholder(tf.float64, SIZE_W)
-            target_b = tf.placeholder(tf.float64, SIZE_B)
-
-            target_ref.append(target_w)
-            target_ref.append(target_b)
-
-            cur_pop_W = tf.placeholder(tf.float64, [options.NP] + SIZE_W)
-            cur_pop_B = tf.placeholder(tf.float64, [options.NP] + SIZE_B)
-
-            pop_ref.append(cur_pop_W)
-            pop_ref.append(cur_pop_B)
-
-            if num == len(levels):
-                ##
-                # NN TRAIN
-                y = tf.matmul(last_input, target_w) + target_b
-                cross_entropy = tf.reduce_mean(
-                    getattr(tf.nn, type_)(
-                        y, label_placeholder), name="cross_entropy")
+                SIZE_W, SIZE_B = level
 
                 ##
-                # NN TEST
-                y_test = tf.matmul(last_input, target_w) + target_b
-                correct_prediction = tf.equal(
-                    tf.argmax(y_test, 1),
-                    tf.argmax(label_placeholder, 1)
-                )
-                accuracy = tf.reduce_mean(
-                    tf.cast(correct_prediction, tf.float64), name="accuracy")
-            else:
-                last_input = getattr(tf.nn, type_)(
-                    tf.matmul(last_input, target_w) + target_b)
+                # DE W -> NN (W, B)
+                deW_nnW = np.full(SIZE_W, options.F)
+                deW_nnB = np.full(SIZE_B, options.F)
+
+                weights.append(deW_nnW)
+                weights.append(deW_nnB)
+
+                ##
+                # Random functions
+                if rand_pop:
+                    create_random_population_W = tf.random_uniform(
+                        [options.NP] + SIZE_W, dtype=cur_type, seed=1)
+                    create_random_population_B = tf.random_uniform(
+                        [options.NP] + SIZE_B, dtype=cur_type, seed=1)
+
+                    rand_pop_ref.append(create_random_population_W)
+                    rand_pop_ref.append(create_random_population_B)
+
+                ##
+                # Placeholder
+                target_w = tf.placeholder(cur_type, SIZE_W)
+                target_b = tf.placeholder(cur_type, SIZE_B)
+
+                target_ref.append(target_w)
+                target_ref.append(target_b)
+
+                cur_pop_W = tf.placeholder(cur_type, [options.NP] + SIZE_W)
+                cur_pop_B = tf.placeholder(cur_type, [options.NP] + SIZE_B)
+
+                pop_ref.append(cur_pop_W)
+                pop_ref.append(cur_pop_B)
+
+                if num == len(levels):
+                    ##
+                    # NN TRAIN
+                    y = tf.matmul(last_input, target_w) + target_b
+                    cross_entropy = tf.reduce_mean(
+                        getattr(tf.nn, type_)(
+                            y, label_placeholder), name="cross_entropy")
+
+                    ##
+                    # NN TEST
+                    y_test = tf.matmul(last_input, target_w) + target_b
+                    correct_prediction = tf.equal(
+                        tf.argmax(y_test, 1),
+                        tf.argmax(label_placeholder, 1)
+                    )
+                    accuracy = tf.reduce_mean(
+                        tf.cast(correct_prediction, cur_type), name="accuracy")
+                else:
+                    last_input = getattr(tf.nn, type_)(
+                        tf.matmul(last_input, target_w) + target_b)
 
     return ENDict([
         ('targets', target_ref),

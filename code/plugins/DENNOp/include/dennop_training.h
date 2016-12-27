@@ -165,7 +165,7 @@ namespace tensorflow
                 << "] = NDIM "
                 << best_population.shape().dims()
                 << ", TYPE: "
-                << (best_population.dtype() == tensorflow::DataType::DT_DOUBLE
+                << (best_population.dtype() == tensorflow::data_type<double>()
                    ? "double"
                    : "unknow");
                 #endif

@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <typeinfo>
 
+
 namespace tensorflow
 {
 
@@ -320,7 +321,7 @@ public:
         else
         {
             //Alloc
-            current_eval_result = Tensor(DataType::DT_DOUBLE, TensorShape({(int)NP}));
+            current_eval_result = Tensor(data_type<double>(), TensorShape({(int)NP}));
             //First eval
             for(int index = 0; index!=NP ;++index)
             {
@@ -481,7 +482,7 @@ protected:
                     D *= population[index].shape().dim_size(i);
                 }
                 // alloc
-                new_populations_list[p][index] = Tensor(DataType::DT_DOUBLE, population[index].shape());
+                new_populations_list[p][index] = Tensor(data_type<double>(), population[index].shape());
                 //ref new gen
                 auto new_generation = new_populations_list[p][index].flat_inner_dims<double>();
                 //do rand indices
@@ -590,7 +591,7 @@ protected:
                     D *= population[index].shape().dim_size(i);
                 }
                 // alloc
-                new_populations_list[p][index] = Tensor(DataType::DT_DOUBLE, population[index].shape());
+                new_populations_list[p][index] = Tensor(data_type<double>(), population[index].shape());
                 //ref new gen
                 auto new_generation = new_populations_list[p][index].flat_inner_dims<double>();
                 //do rand indices

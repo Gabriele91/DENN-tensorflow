@@ -13,6 +13,7 @@
 *
 ***/
 #include <vector>
+#include <assert.h>
 #include "tensorflow/core/framework/tensor.h"
 #include "tensorflow/core/framework/tensor_util.h"
 #include "tensorflow/core/framework/shape_inference.h"
@@ -21,7 +22,35 @@
 
 namespace tensorflow
 {
-    
+    /*
+    DT_FLOAT 	tf.float32 	32 bits floating point.
+    DT_DOUBLE 	tf.float64 	64 bits floating point.
+    DT_INT8 	tf.int8 	8 bits signed integer.
+    DT_INT16 	tf.int16 	16 bits signed integer.
+    DT_INT32 	tf.int32 	32 bits signed integer.
+    DT_INT64 	tf.int64 	64 bits signed integer.
+    DT_UINT8 	tf.uint8 	8 bits unsigned integer.
+    DT_UINT16 	tf.uint16 	16 bits unsigned integer.
+    DT_STRING 	tf.string 	Variable length byte arrays. Each element of a Tensor is a byte array.
+    DT_BOOL 	tf.bool 	Boolean.
+    DT_COMPLEX64 	tf.complex64 	Complex number made of two 32 bits floating points: real and imaginary parts.
+    DT_COMPLEX128 	tf.complex128 	Complex number made of two 64 bits floating points: real and imaginary parts.
+    DT_QINT8 	tf.qint8 	8 bits signed integer used in quantized Ops.
+    DT_QINT32 	tf.qint32 	32 bits signed integer used in quantized Ops.
+    DT_QUINT8 	tf.quint8 	8 bits unsigned integer used in quantized Ops.
+    */
+    //data type 
+    template < typename TYPE > DataType data_type() { assert(0); return DataType::DT_DOUBLE; /* fake return */ }
+    template <> DataType data_type<float>() { return DataType::DT_FLOAT; }
+    template <> DataType data_type<double>() { return DataType::DT_DOUBLE; }
+    template <> DataType data_type<int8>() { return DataType::DT_INT8; }
+    template <> DataType data_type<int16>() { return DataType::DT_INT16; }
+    template <> DataType data_type<int32>() { return DataType::DT_INT32; }
+    template <> DataType data_type<uint8>() { return DataType::DT_UINT8; }
+    template <> DataType data_type<uint16>() { return DataType::DT_UINT16; }
+    template <> DataType data_type<std::string>() { return DataType::DT_STRING; }
+    template <> DataType data_type<bool>() { return DataType::DT_BOOL; }
+
     inline bool operator ==(const tensorflow::Tensor& left,const tensorflow::Tensor& right)
     {
         //type

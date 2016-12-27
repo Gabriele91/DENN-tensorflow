@@ -12,6 +12,7 @@
 namespace tensorflow
 {
 
+template< class value_t = double > 
 class DENNOp : public OpKernel 
 {
 public:
@@ -94,10 +95,10 @@ public:
             else if (type_elm == "bin")            m_cr_type = CR_BIN;
             else if (type_elm == "exp")            m_cr_type = CR_EXP;
         }
-        // params float to double
-        m_CR      = f_CR;
-        m_f_min  = f_f_min;
-        m_f_max  = f_f_max;
+        // params float to value_t
+        m_CR     = value_t(f_CR);
+        m_f_min  = value_t(f_f_min);
+        m_f_max  = value_t(f_f_max);
         //options
         SessionOptions options;
         //session
@@ -236,7 +237,7 @@ public:
         //Get np 
         const int NP = current_populations_list[0].size();
         //Pointer to memory
-        auto ref_current_eval_result = current_eval_result.flat<double>();
+        auto ref_current_eval_result = current_eval_result.flat<value_t>();
         //loop
         for(int i=0;i!=num_gen;++i)
         {
@@ -251,7 +252,7 @@ public:
             for(int index = 0; index!=NP ;++index)
             {
                 //Evaluation
-                double new_eval = ExecuteEvaluateTrain(context, index, new_populations_list);
+                value_t new_eval = ExecuteEvaluateTrain(context, index, new_populations_list);
                 //Choice
                 if(new_eval < ref_current_eval_result(index))
                 {
@@ -321,11 +322,11 @@ public:
         else
         {
             //Alloc
-            current_eval_result = Tensor(data_type<double>(), TensorShape({(int)NP}));
+            current_eval_result = Tensor(data_type<value_t>(), TensorShape({(int)NP}));
             //First eval
             for(int index = 0; index!=NP ;++index)
             {
-                current_eval_result.flat<double>()(index) = ExecuteEvaluateTrain(context, index, current_populations_list);
+                current_eval_result.flat<value_t>()(index) = ExecuteEvaluateTrain(context, index, current_populations_list);
             }
         }
 
@@ -358,7 +359,7 @@ public:
 
 
     //execute evaluate train function (tensorflow function)   
-    virtual double ExecuteEvaluateTrain
+    virtual value_t ExecuteEvaluateTrain
     (
         OpKernelContext* context,
         const int NP_i,
@@ -372,7 +373,7 @@ public:
     }
 
     //execute evaluate function (tensorflow function)
-    virtual double ExecuteEvaluate
+    virtual value_t ExecuteEvaluate
     (
         OpKernelContext* context,
         const int NP_i,
@@ -417,7 +418,7 @@ public:
             context->CtxFailure({tensorflow::error::Code::ABORTED,"Run evaluate: "+status.ToString()});
         }
         //results
-        return f_on_values.size() ? f_on_values[0].flat<double>()(0) : 0.0;
+        return f_on_values.size() ? f_on_values[0].flat<value_t>()(0) : 0.0;
     }
 
 
@@ -428,7 +429,7 @@ protected:
      * @param t value,
      * @return t between f_min and f_max
      */
-    double f_clamp(const double t) const
+    value_t f_clamp(const value_t t) const
     {
         return std::min(std::max(t, m_f_min), m_f_max);
     }  
@@ -466,7 +467,7 @@ protected:
         for(size_t p=0; p!=cur_populations_list.size(); ++p)
         {
             //get values
-            const auto W = W_list[p].flat<double>();
+            const auto W = W_list[p].flat<value_t>();
             //for all
             for (int index = 0; index < NP; ++index)
             {
@@ -482,9 +483,9 @@ protected:
                     D *= population[index].shape().dim_size(i);
                 }
                 // alloc
-                new_populations_list[p][index] = Tensor(data_type<double>(), population[index].shape());
+                new_populations_list[p][index] = Tensor(data_type<value_t>(), population[index].shape());
                 //ref new gen
-                auto new_generation = new_populations_list[p][index].flat_inner_dims<double>();
+                auto new_generation = new_populations_list[p][index].flat_inner_dims<value_t>();
                 //do rand indices
                 threeRandIndicesDiffFrom(NP, index, randoms_i);
                 //do random
@@ -501,24 +502,24 @@ protected:
                             default:
                             case DIFF_ONE:
                             {
-                                const double a = population[randoms_i[0]].flat<double>()(elm);
-                                const double b = population[randoms_i[1]].flat<double>()(elm);
-                                const double c = population[randoms_i[2]].flat<double>()(elm);
+                                const value_t a = population[randoms_i[0]].flat<value_t>()(elm);
+                                const value_t b = population[randoms_i[1]].flat<value_t>()(elm);
+                                const value_t c = population[randoms_i[2]].flat<value_t>()(elm);
                                 new_generation(elm) = f_clamp( (a-b) * W(elm) + c );
                             }
                             break;
                             case DIFF_TWO:
                             {
-                                const double first_diff  = population[randoms_i[0]].flat<double>()(elm) - population[randoms_i[1]].flat<double>()(elm);
-                                const double second_diff = population[randoms_i[2]].flat<double>()(elm) - population[randoms_i[3]].flat<double>()(elm);
-                                new_generation(elm) = f_clamp( (first_diff + second_diff) * W(elm) + population[randoms_i[4]].flat<double>()(elm) );
+                                const value_t first_diff  = population[randoms_i[0]].flat<value_t>()(elm) - population[randoms_i[1]].flat<value_t>()(elm);
+                                const value_t second_diff = population[randoms_i[2]].flat<value_t>()(elm) - population[randoms_i[3]].flat<value_t>()(elm);
+                                new_generation(elm) = f_clamp( (first_diff + second_diff) * W(elm) + population[randoms_i[4]].flat<value_t>()(elm) );
                             }
                             break;
                         }
                     }
                     else
                     {
-                        new_generation(elm) = population[index].flat_inner_dims<double>()(elm);
+                        new_generation(elm) = population[index].flat_inner_dims<value_t>()(elm);
                         //in exp case stop to rand values
                         if(!do_random && m_cr_type == CR_EXP) do_random = false;
                     }
@@ -551,8 +552,8 @@ protected:
         // Generate vector of random indexes
         std::vector < int > randoms_i;
         //First best
-        auto   pop_eval_ref = cur_populations_eval.flat<double>();
-        double val_best     = pop_eval_ref(0);
+        auto   pop_eval_ref = cur_populations_eval.flat<value_t>();
+        value_t val_best     = pop_eval_ref(0);
         int    id_best      = 0;
         //search best
         for(int index = 1; index < NP ;++index)
@@ -575,7 +576,7 @@ protected:
         for(size_t p=0; p!=cur_populations_list.size(); ++p)
         {
             //get values
-            const auto W = W_list[p].flat<double>();
+            const auto W = W_list[p].flat<value_t>();
             //for all
             for (int index = 0; index < NP; ++index)
             {
@@ -591,9 +592,9 @@ protected:
                     D *= population[index].shape().dim_size(i);
                 }
                 // alloc
-                new_populations_list[p][index] = Tensor(data_type<double>(), population[index].shape());
+                new_populations_list[p][index] = Tensor(data_type<value_t>(), population[index].shape());
                 //ref new gen
-                auto new_generation = new_populations_list[p][index].flat_inner_dims<double>();
+                auto new_generation = new_populations_list[p][index].flat_inner_dims<value_t>();
                 //do rand indices
                 threeRandIndicesDiffFrom(NP, index, randoms_i);
                 //do random
@@ -610,24 +611,24 @@ protected:
                             default:
                             case DIFF_ONE:
                             {
-                                const double a = population[randoms_i[0]].flat<double>()(elm);
-                                const double b = population[randoms_i[1]].flat<double>()(elm);
-                                const double c = population[id_best].flat<double>()(elm);
+                                const value_t a = population[randoms_i[0]].flat<value_t>()(elm);
+                                const value_t b = population[randoms_i[1]].flat<value_t>()(elm);
+                                const value_t c = population[id_best].flat<value_t>()(elm);
                                 new_generation(elm) = f_clamp( (a-b) * W(elm) + c );
                             }
                             break;
                             case DIFF_TWO:
                             {
-                                const double first_diff  = population[randoms_i[0]].flat<double>()(elm) - population[randoms_i[1]].flat<double>()(elm);
-                                const double second_diff = population[randoms_i[2]].flat<double>()(elm) - population[randoms_i[3]].flat<double>()(elm);
-                                new_generation(elm) = f_clamp( (first_diff + second_diff) * W(elm) + population[id_best].flat<double>()(elm) );
+                                const value_t first_diff  = population[randoms_i[0]].flat<value_t>()(elm) - population[randoms_i[1]].flat<value_t>()(elm);
+                                const value_t second_diff = population[randoms_i[2]].flat<value_t>()(elm) - population[randoms_i[3]].flat<value_t>()(elm);
+                                new_generation(elm) = f_clamp( (first_diff + second_diff) * W(elm) + population[id_best].flat<value_t>()(elm) );
                             }
                             break;
                         }
                     }
                     else
                     {
-                        new_generation(elm) = population[index].flat_inner_dims<double>()(elm);
+                        new_generation(elm) = population[index].flat_inner_dims<value_t>()(elm);
                         //in exp case stop to rand values
                         if(!do_random && m_cr_type == CR_EXP) do_random = false;
                     }
@@ -700,10 +701,10 @@ protected:
     //session
     std::unique_ptr< Session > m_session;
     //clamp
-    double                     m_f_min{ -1.0 };
-    double                     m_f_max{  1.0 };
+    value_t                     m_f_min{ -1.0 };
+    value_t                     m_f_max{  1.0 };
     //update factors
-    double                     m_CR   {  0.5 };
+    value_t                     m_CR   {  0.5 };
     // population variables
     int                        m_space_size{ 1 };
     //input evaluate

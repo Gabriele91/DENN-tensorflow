@@ -33,5 +33,5 @@ REGISTER_OP("DENN")
 .Output("final_eval: double");
 
 
-REGISTER_KERNEL_BUILDER(Name("DENN").Device(DEVICE_CPU), DENNOp);
+REGISTER_KERNEL_BUILDER(Name("DENN").Device(DEVICE_CPU), DENNOp<double>);
 

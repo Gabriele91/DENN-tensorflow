@@ -6,12 +6,21 @@
 
 namespace tensorflow
 {
-    class DENNOpTraining : public DENNOp
+    template< class value_t = double > 
+    class DENNOpTraining : public DENNOp< value_t >
     {
+
+        using DENNOp_t = DENNOp< value_t >;
+        //types
+        using NameList      =  typename DENNOp_t::NameList;
+        using TensorList    =  typename DENNOp_t::TensorList;
+        using TensorInput   =  typename DENNOp_t::TensorInput;
+        using TensorInputs  =  typename DENNOp_t::TensorInputs;
+
     public:
 
         //init DENN from param
-        explicit DENNOpTraining(OpKernelConstruction *context) : DENNOp(context)
+        explicit DENNOpTraining(OpKernelConstruction *context) : DENNOp< value_t >(context)
         {
             // Get validation function
             OP_REQUIRES_OK(context, context->GetAttr("f_name_validation", &m_name_validation));
@@ -53,7 +62,7 @@ namespace tensorflow
             // W
             std::vector < Tensor >  W_list;
             // pupulation inputs
-            for(int i=0; i != m_space_size; ++i)
+            for(int i=0; i != this->m_space_size; ++i)
             {
                 W_list.push_back(context->input(start_input+i));
             }
@@ -62,24 +71,23 @@ namespace tensorflow
             // populations
             std::vector < std::vector <Tensor> >  current_populations_list;
             // populations inputs
-            for(int i=0; i != m_space_size; ++i)
+            for(int i=0; i != this->m_space_size; ++i)
             {
-                const Tensor& population = context->input(start_input+i+m_space_size);
+                const Tensor& population = context->input(start_input+i+this->m_space_size);
                 current_populations_list.push_back(splitDim0(population));
             }
             //Test sizeof populations
-            if(!TestPopulationSize(context,current_populations_list)) return;
+            if(!DENNOp_t::TestPopulationSize(context,current_populations_list)) return;
             
             ////////////////////////////////////////////////////////////////////////////
             //Temp of new gen of populations
             std::vector < std::vector <Tensor> > new_populations_list;
             //Alloc temp vector of populations
-            GenCachePopulation(current_populations_list,new_populations_list);
-            
+            DENNOp_t::GenCachePopulation(current_populations_list,new_populations_list);            
             
             ////////////////////////////////////////////////////////////////////////////
             //Alloc input 
-            AllocCacheInputs(current_populations_list);
+            DENNOp_t::AllocCacheInputs(current_populations_list);
 
             ////////////////////////////////////////////////////////////////////////////
             // START STREAM
@@ -91,7 +99,7 @@ namespace tensorflow
             // Tensor of first evaluation of all populations
             Tensor current_eval_result;
             // init evaluation
-            DoFirstEvaluationIfRequired
+            DENNOp_t::DoFirstEvaluationIfRequired
             (
                context
              , calc_first_eval
@@ -114,7 +122,7 @@ namespace tensorflow
             )
             {
                 //execute
-                RunDe
+                DENNOp_t::RunDe
                 (
                  // Input
                    context
@@ -132,9 +140,9 @@ namespace tensorflow
                     //Search best pop
                     int best_of_populations = FindBest(context,current_populations_list); 
                     //Test best pop
-                    double result_test = TestBest(context,current_populations_list, best_of_populations);
+                    value_t result_test = DENNOp_t::TestBest(context,current_populations_list, best_of_populations);
                     //output
-                    m_debug.write
+                    this->m_debug.write
                     (
                           "Stage[" 
                         + std::to_string(i_sub_gen*sub_gen) 
@@ -143,7 +151,7 @@ namespace tensorflow
                     );
                     #else 
                     //output
-                    m_debug.write( "Stage[" + std::to_string(i_sub_gen*sub_gen) + "] complete" );
+                    this->m_debug.write( "Stage[" + std::to_string(i_sub_gen*sub_gen) + "] complete" );
                     #endif
                 )
             }
@@ -151,7 +159,7 @@ namespace tensorflow
             //Search best pop
             int best_of_populations = FindBest(context,current_populations_list); 
             // Output best pop
-            for(int i=0; i != m_space_size; ++i)
+            for(int i=0; i != this->m_space_size; ++i)
             {
                 //Output ptr
                 Tensor* new_generation_tensor = nullptr;
@@ -165,8 +173,8 @@ namespace tensorflow
                 << "] = NDIM "
                 << best_population.shape().dims()
                 << ", TYPE: "
-                << (best_population.dtype() == tensorflow::data_type<double>()
-                   ? "double"
+                << (best_population.dtype() == tensorflow::data_type<value_t>()
+                   ? "value_t"
                    : "unknow");
                 #endif
                 //Alloct and send
@@ -220,13 +228,13 @@ namespace tensorflow
             //Change input 
             SetValidationDataInCacheInputs();
             //First eval
-            double val_best= ExecuteEvaluateValidation(context, 0, current_populations_list);
+            value_t val_best= ExecuteEvaluateValidation(context, 0, current_populations_list);
             int    id_best = 0;
             //search best
             for(int index = 1; index < NP ;++index)
             {
                 //eval
-                double eval_cur = ExecuteEvaluateValidation(context, index, current_populations_list);
+                value_t eval_cur = ExecuteEvaluateValidation(context, index, current_populations_list);
                 //best?
                 if(val_best < eval_cur)
                 {
@@ -243,7 +251,7 @@ namespace tensorflow
          * @param current_populations_list, list of populations
          * @param population index
          */
-        double TestBest
+        value_t TestBest
         (
             OpKernelContext *context,
             const std::vector < std::vector <Tensor> >& current_populations_list,
@@ -255,7 +263,7 @@ namespace tensorflow
 
 
         //execute evaluate validation function (tensorflow function)   
-        virtual double ExecuteEvaluateValidation
+        virtual value_t ExecuteEvaluateValidation
         (
             OpKernelContext* context,
             const int NP_i,
@@ -265,11 +273,11 @@ namespace tensorflow
             NameList function{ 
                 m_name_validation //+":0"
             };
-            return ExecuteEvaluate(context, NP_i, populations_list, function);
+            return DENNOp_t::ExecuteEvaluate(context, NP_i, populations_list, function);
         }
 
         //execute evaluate test function (tensorflow function)   
-        virtual double ExecuteEvaluateTest
+        virtual value_t ExecuteEvaluateTest
         (
             OpKernelContext* context,
             const int NP_i,
@@ -279,7 +287,7 @@ namespace tensorflow
             NameList function{
                  m_name_test //+":0" 
             };
-            return ExecuteEvaluate(context, NP_i, populations_list, function);
+            return DENNOp_t::ExecuteEvaluate(context, NP_i, populations_list, function);
         }
 
     protected:
@@ -288,7 +296,7 @@ namespace tensorflow
         */
         virtual bool SetBachInCacheInputs() const
         {
-            return SetDatasetInCacheInputs( m_bach.m_labels, m_bach.m_features);
+            return DENNOp_t::SetDatasetInCacheInputs( m_bach.m_labels, m_bach.m_features);
         }
 
         /**
@@ -296,7 +304,7 @@ namespace tensorflow
         */
         virtual bool SetValidationDataInCacheInputs() const
         {
-            return SetDatasetInCacheInputs( m_validation.m_labels, m_validation.m_features);
+            return DENNOp_t::SetDatasetInCacheInputs( m_validation.m_labels, m_validation.m_features);
         }
 
         /**
@@ -304,7 +312,7 @@ namespace tensorflow
         */
         virtual bool SetTestDataInCacheInputs() const
         { 
-            return SetDatasetInCacheInputs( m_test.m_labels, m_test.m_features);;
+            return DENNOp_t::SetDatasetInCacheInputs(m_test.m_labels, m_test.m_features);
         }
 
 

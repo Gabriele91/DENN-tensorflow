@@ -1,4 +1,5 @@
 #compile flags
+# Needed if you are using gcc5, because tf <= 0.12 use gcc4 with old ABI
 USE_OLD_ABI ?= true
 CC          ?= g++
 MKDIR_P     ?= mkdir -p
@@ -6,6 +7,7 @@ MODULE_FOLDER ?= DENN
 TOP         ?= $(shell pwd)
 PYTHON_PATH ?= $(HOME)/.virtualenvs/TensorFlow/
 USE_DEBUG   ?= false
+OFFICIAL_BINARY ?= true
 #include list
 TF_INCLUDE = $(PYTHON_PATH)/lib/python3.5/site-packages/tensorflow/include
 #Output name
@@ -23,16 +25,18 @@ LIKNER_FLAGS =
 #flags LINUX
 ifeq ($(shell uname -s),Linux)
 	#linux flags
-	C_FLAGS      += -pthread -D_FORCE_INLINES  
+	C_FLAGS      += -pthread -D_FORCE_INLINES
 	LIKNER_FLAGS += -lpthread -lm -lutil -ldl
 	LIKNER_FLAGS += -Wl,--whole-archive 
 	LIKNER_FLAGS += -L$(TOP)/tf_static/ -lprotobuf_custom
 	LIKNER_FLAGS += -L$(TOP)/tf_static/ -lprotobuf_lite_custom
-	LIKNER_FLAGS += -L$(TOP)/tf_static/ -lpng_custom
 	LIKNER_FLAGS += -L$(TOP)/tf_static/ -lc_api_custom
-	LIKNER_FLAGS += -Wl,--no-whole-archive 
-	#must to be false
-	USE_OLD_ABI=false
+	ifeq ($(OFFICIAL_BINARY),true)
+		LIKNER_FLAGS += -L$(TOP)/tf_static/ -lloader_custom # Needed only with official binary package
+	endif
+	# LIKNER_FLAGS += -L$(TOP)/tf_static/ -llib_proto_parsing_custom
+	# LIKNER_FLAGS += -L$(TOP)/tf_static/ -lpng_custom
+	LIKNER_FLAGS += -Wl,--no-whole-archive
 endif
 
 #flags macOS

@@ -570,7 +570,7 @@ def gen_network(options, rand_pop, type_="double"):
     graph = tf.Graph()
     with graph.as_default():
         with tf.device(get_gpu()):
-            # with tf.device("/c pu:0"):
+        # with tf.device("/cpu:0"):
             levels = options.levels
             target_ref = []
             pop_ref = []

@@ -34,7 +34,6 @@ ifeq ($(shell uname -s),Linux)
 	ifeq ($(OFFICIAL_BINARY),true)
 		LIKNER_FLAGS += -L$(TOP)/tf_static/ -lloader_custom # Needed only with official binary package
 	endif
-	# LIKNER_FLAGS += -L$(TOP)/tf_static/ -llib_proto_parsing_custom
 	# LIKNER_FLAGS += -L$(TOP)/tf_static/ -lpng_custom
 	LIKNER_FLAGS += -Wl,--no-whole-archive
 endif

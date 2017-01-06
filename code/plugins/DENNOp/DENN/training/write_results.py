@@ -1,5 +1,6 @@
 from matplotlib import pyplot as plt
 from . plotter import my_plot
+from . tasks import TaskEncoder
 from os import makedirs
 from os import path
 from math import pi as PI
@@ -53,7 +54,7 @@ def write_all_results(name, results, description, out_options, showDelimiter=Fal
     makedirs(path.join("benchmark_results", BASE_FOLDER), exist_ok=True)
 
     with open(path.join("benchmark_results", BASE_FOLDER, "job.json"), "w") as job_file:
-        json.dump(out_options.job, job_file, indent=2)
+        json.dump(out_options.job, job_file, cls=TaskEncoder, indent=2)
 
     figures = []
 

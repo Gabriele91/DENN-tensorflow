@@ -2,7 +2,6 @@ import DENN
 import tensorflow as tf
 
 import numpy as np
-import json
 
 from sys import argv
 from time import sleep
@@ -45,11 +44,7 @@ def main():
     # datasets
     datasets = []
 
-    with open(argv[1], 'r') as job_f:
-        jobs = json.load(job_f)
-
-    for idx in range(len(jobs)):
-        jobs[idx] = ENDict(jobs[idx].items())
+    jobs = DENN.training.open_task_list(argv[1])
 
     ##
     # Load data

@@ -33,8 +33,12 @@ def gen_folder_name(name, num_gen, num_batches, levels):
         name, num_gen, num_batches,
         "".join(
             [
-                "_L{}x{}+{}".format(w_x, w_y, b[0])
-                for ((w_x, w_y), b), type_ in levels
+                "_L{}x{}+{}".format(
+                    level.shape[0][0],
+                    level.shape[0][1],
+                    level.shape[1][0]
+                )
+                for level in levels
             ]
         )
     )

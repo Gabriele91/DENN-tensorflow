@@ -96,7 +96,8 @@ def main():
                             training=True
                         )
 
-                    print("++ Node creation {}".format(time() - time_node_creation))
+                    print(
+                        "++ Node creation {}".format(time() - time_node_creation))
                     # Soket listener
                     with DENN.OpListener() as listener:
                         # time
@@ -123,12 +124,14 @@ def main():
                             ]
                             +
                             [
-                                (cur_nn.label_placeholder, dataset.test_labels),
+                                (cur_nn.label_placeholder,
+                                 dataset.test_labels),
                                 (cur_nn.input_placeholder, dataset.test_data)
                             ]
                         ))
                         test_time = time() - time_test
-                        print("++ Test {}, result {}".format(test_time, cur_accuracy))
+                        print(
+                            "++ Test {}, result {}".format(test_time, cur_accuracy))
                         #######################################################
                         options['results'] = ENDict(
                             [

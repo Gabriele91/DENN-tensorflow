@@ -133,7 +133,7 @@ def main():
                         #######################################################
 
                         job.time = run_time + test_time
-                        job.accuracy = cur_accuracy
+                        job.accuracy = float(cur_accuracy)
                         job.best = [arr.tolist()
                                     for arr in current_result]
 

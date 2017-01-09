@@ -29,9 +29,7 @@ class DETaskList(object):
         return iter(self.tasks)
 
     def __repr__(self):
-        string = ""
-        string += "".join([str(task) for task in self.tasks])
-        return string
+        return "".join([str(task) for task in self.tasks])
 
 
 class TFFx(object):
@@ -122,11 +120,10 @@ class DETask(object):
         self.de_types = cur_task.get("de_types")
         self.CR = cur_task.get("CR")
         self.levels = [Level(obj) for obj in cur_task.get("levels")]
-
-        if cur_task.get("nn_benchmark", False):
-            self.time = None
-            self.best = None
-            self.accuracy = None
+        
+        self.time = None
+        self.best = None
+        self.accuracy = None
 
     def __repr__(self):
         string = """+++++ Task ({}) +++++
@@ -298,9 +295,11 @@ class TaskEncoder(json.JSONEncoder):
             ('levels', [level.get_dict() for level in obj.levels])
         ])
 
-        if hasattr(obj, 'time'):
+        if obj.best is not None:
             new_obj['best'] = obj.best
+        if obj.time is not None:
             new_obj['time'] = obj.time
+        if obj.accuracy is not None:
             new_obj['accuracy'] = obj.accuracy
 
         return new_obj

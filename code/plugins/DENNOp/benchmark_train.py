@@ -46,14 +46,12 @@ def main():
     results_tests = []
 
     # for all jobs first
-    for options in jobs:
+    for job in jobs:
         # start
         print("+ Start tests")
         # network
-        cur_nn = DENN.training.gen_network(
-            options,
-            True,  # rand population only if gen is the first one
-            type_=options.TYPE
+        cur_nn = job.gen_network(
+            True  # rand population only if gen is the first one
         )
         # network graph
         with cur_nn.graph.as_default():
@@ -63,7 +61,7 @@ def main():
                 # init vars
                 # We don't need this, we don't have variables at the moment
                 # sess.run(tf.global_variables_initializer())
-                for de_type in options.de_types:
+                for de_type in job.de_types:
                     ##
                     # Random initialization of the NN
                     cur_pop = sess.run(cur_nn.rand_pop)
@@ -75,8 +73,8 @@ def main():
                         denn_op = DENN.create(
                             # input params
                             # [num_gen, step_gen, eval_individual]
-                            [options.TOT_GEN, options.GEN_STEP, False],
-                            np.array([], dtype=np.float64 if options.TYPE ==
+                            [job.TOT_GEN, job.GEN_STEP, False],
+                            np.array([], dtype=np.float64 if job.TYPE ==
                                      "double" else np.float32),  # FIRST EVAL
                             cur_nn.weights,  # PASS WEIGHTS
                             cur_nn.populations,  # POPULATIONS
@@ -84,14 +82,14 @@ def main():
                             # space = 2,
                             graph=DENN.get_graph_proto(
                                 cur_nn.graph.as_graph_def()),
-                            dataset=options.dataset_file,
+                            dataset=job.dataset_file,
                             f_name_train=cur_nn.cross_entropy.name,
                             f_name_validation=cur_nn.accuracy.name,
                             f_name_test=cur_nn.accuracy.name,
                             f_inputs=[elm.name for elm in cur_nn.targets],
                             f_input_labels=cur_nn.label_placeholder.name,
                             f_input_features=cur_nn.input_placeholder.name,
-                            CR=options.CR,
+                            CR=job.CR,
                             DE=de_type,
                             training=True
                         )
@@ -113,7 +111,7 @@ def main():
                         print("++ Op time {}".format(run_time))
                         #######################################################
                         # Open dataset
-                        dataset = DENN.training.Dataset(options.dataset_file)
+                        dataset = DENN.training.Dataset(job.dataset_file)
                         # test time
                         time_test = time()
                         # test result
@@ -133,17 +131,15 @@ def main():
                         print(
                             "++ Test {}, result {}".format(test_time, cur_accuracy))
                         #######################################################
-                        options['results'] = ENDict(
-                            [
-                                ('time', run_time + test_time),
-                                ('accuracy', cur_accuracy),
-                                ('best', json.dumps([arr.tolist()
-                                                     for arr in current_result]))
-                            ]
-                        )
+
+                        job.time = run_time + test_time
+                        job.accuracy = cur_accuracy
+                        job.best = [arr.tolist()
+                                    for arr in current_result]
+
                         with open(path.join("benchmark_results", argv[1]), "w") as out_file:
-                            json.dump(jobs, out_file, indent=4)
-                        #######################################################
+                            out_file.write(DENN.training.task_dumps(job))
+                        ###################################################
         # clena graph
         tf.reset_default_graph()
 

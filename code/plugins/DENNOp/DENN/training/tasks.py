@@ -2,15 +2,20 @@ import json
 import tensorflow as tf
 from tensorflow.python.client import device_lib
 import numpy as np
+from collections import OrderedDict
 
 
-__all__ = ["open_task_list", "TaskEncoder"]
+__all__ = ["open_task_list", "task_dumps", "TaskEncoder"]
 
 
 def open_task_list(name):
     """Load as a python object a task list file."""
     with open(name, 'r') as task_list:
         return json.load(task_list, cls=TaskDecoder)
+
+
+def task_dumps(task, indent=4):
+    return json.dumps(task, cls=TaskEncoder, indent=indent)
 
 
 class DETaskList(object):
@@ -46,13 +51,15 @@ class TFFx(object):
 
     def get_dict(self):
         obj = {
-            'name': self.name,
+            'name': ".".join(self.name),
         }
 
         if self.args is not None:
             obj['args'] = self.args
         if self.kwargs is not None:
             obj['kwargs'] = self.kwargs
+
+        return obj
 
     def __repr__(self):
         return """{}({}, {})""".format(
@@ -116,6 +123,11 @@ class DETask(object):
         self.CR = cur_task.get("CR")
         self.levels = [Level(obj) for obj in cur_task.get("levels")]
 
+        if cur_task.get("nn_benchmark", False):
+            self.time = None
+            self.best = None
+            self.accuracy = None
+
     def __repr__(self):
         string = """+++++ Task ({}) +++++
 + dataset[{}] -> {}
@@ -147,7 +159,6 @@ class DETask(object):
     def get_device(self, preference):
         """Return prefer device if available."""
         for dev in device_lib.list_local_devices():
-            print(dev.name)
             if dev.device_type == preference or\
                     dev.name.find(preference) != -1:
                 return dev.name
@@ -273,18 +284,24 @@ class TaskEncoder(json.JSONEncoder):
 
     def default(self, obj):
         """JSON encoding function for the single task."""
-        new_obj = {
-            'name': obj.name,
-            'TYPE': obj.TYPE,
-            'dataset_file': obj.dataset_file,
-            'TOT_GEN': obj.TOT_GEN,
-            'GEN_STEP': obj.GEN_STEP,
-            'F': obj.F,
-            'NP': obj.NP,
-            'CR': obj.CR,
-            'de_types': obj.de_types,
-            'levels': [level.get_dict() for level in obj.levels]
-        }
+
+        new_obj = OrderedDict([
+            ('name', obj.name),
+            ('TYPE', obj.TYPE),
+            ('dataset_file', obj.dataset_file),
+            ('TOT_GEN', obj.TOT_GEN),
+            ('GEN_STEP', obj.GEN_STEP),
+            ('F', obj.F),
+            ('NP', obj.NP),
+            ('CR', obj.CR),
+            ('de_types', obj.de_types),
+            ('levels', [level.get_dict() for level in obj.levels])
+        ])
+
+        if hasattr(obj, 'time'):
+            new_obj['best'] = obj.best
+            new_obj['time'] = obj.time
+            new_obj['accuracy'] = obj.accuracy
 
         return new_obj
 

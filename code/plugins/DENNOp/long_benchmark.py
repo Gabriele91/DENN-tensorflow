@@ -46,11 +46,7 @@ def main():
     # real_jobs
     real_jobs = []
 
-    with open(argv[1], 'r') as job_f:
-        jobs = json.load(job_f)
-
-    for idx in range(len(jobs)):
-        jobs[idx] = ENDict(jobs[idx].items())
+    jobs = DENN.training.open_task_list(argv[1])
 
     ##
     # Load data
@@ -61,23 +57,21 @@ def main():
     print("+ Start jobs")
     time_start_test = time()
 
-    for dataset, options in real_jobs:
+    for dataset, job in real_jobs:
         with tf.device(DEVICE):
             time_start_job = time()
 
             prev_NN = dict(
-                list(zip(options.de_types, [
-                    None for _ in range(len(options.de_types))]))
+                list(zip(job.de_types, [
+                    None for _ in range(len(job.de_types))]))
             )
 
-            v_res = [0.0 for _ in range(options.NP)]
+            v_res = [0.0 for _ in range(job.NP)]
 
             batch_counter = 0
 
-            cur_nn = DENN.training.gen_network(
-                options,
-                True,  # rand population only if gen is the first one
-                type_=options.TYPE
+            cur_nn = job.gen_network(
+                True  # rand population only if gen is the first one
             )
 
             with cur_nn.graph.as_default():
@@ -87,7 +81,7 @@ def main():
 
                     time_node_creation = time()
 
-                    for de_type in options.de_types:
+                    for de_type in job.de_types:
 
                         ##
                         # Random initialization of the NN
@@ -114,7 +108,7 @@ def main():
                                 f_inputs=[elm.name for elm in cur_nn.targets],
                                 f_input_labels=cur_nn.label_placeholder.name,
                                 f_input_features=cur_nn.input_placeholder.name,
-                                CR=options.CR,
+                                CR=job.CR,
                                 DE=de_type,
                                 # training=True
                             )
@@ -128,10 +122,10 @@ def main():
 
                         time_start_all_gen = time()
 
-                        for gen in range(int(options.TOT_GEN / options.GEN_STEP)):
+                        for gen in range(int(job.TOT_GEN / job.GEN_STEP)):
 
                             print(
-                                "+ Start gen. [{}] with batch[{}]".format((gen + 1) * options.GEN_STEP, batch_counter))
+                                "+ Start gen. [{}] with batch[{}]".format((gen + 1) * job.GEN_STEP, batch_counter))
 
                             cur_batch = dataset[batch_counter]
                             batch_counter = (
@@ -156,7 +150,7 @@ def main():
                                 +
                                 [
                                     (cur_nn.cur_gen_options, [
-                                     options.GEN_STEP, first_time])
+                                     job.GEN_STEP, first_time])
                                 ]
                             ))
 
@@ -177,8 +171,8 @@ def main():
 
                             print(
                                 "+ DENN[{}] up to {} gen on {} completed in {:.05} sec.".format(
-                                    de_type, (gen + 1) * options.GEN_STEP,
-                                    options.name,
+                                    de_type, (gen + 1) * job.GEN_STEP,
+                                    job.name,
                                     time() - time_start_gen
                                 )
                             )
@@ -190,7 +184,7 @@ def main():
 
                         time_valutation = time()
 
-                        for idx in range(options.NP):
+                        for idx in range(job.NP):
                             cur_evaluation = sess.run(cur_nn.accuracy, feed_dict=dict(
                                 [
                                     (target, cur_pop[num][idx])
@@ -237,19 +231,15 @@ def main():
 
                         # print(best)
 
-                        options['results'] = ENDict(
-                            [
-                                ('time', tmp_time),
-                                ('accuracy', cur_accuracy),
-                                ('best', json.dumps(
-                                    [arr.tolist() for arr in best]))
-                            ]
-                        )
+                        job.time = tmp_time
+                        job.accuracy = cur_accuracy
+                        job.best = [arr.tolist()
+                                    for arr in best]
 
                         with open(path.join("benchmark_results", argv[1]), "w") as out_file:
-                            json.dump(jobs, out_file, indent=4)
+                            out_file.write(DENN.training.task_dumps(job))
 
-            print("+ Completed all test on job {} in {} sec.".format(options.name,
+            print("+ Completed all test on job {} in {} sec.".format(job.name,
                                                                      time() - time_start_job))
 
     print("+ Completed all test {} sec.".format(time() - time_start_test))

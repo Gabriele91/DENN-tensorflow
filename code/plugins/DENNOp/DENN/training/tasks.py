@@ -361,6 +361,7 @@ class TaskDecoder(json.JSONDecoder):
                 # end of comment
                 if char == "\n":
                     self.__state = 0
+                    final_string += char
             # check inline comment
             elif self.__state == 3:
                 # start inline comment
@@ -377,11 +378,14 @@ class TaskDecoder(json.JSONDecoder):
                 # end of comment
                 if char == "\n":
                     self.__state = 0
+                    final_string += char
             # Check end of multiline comment
             elif self.__state == 5:
                 # Start ending of the comment
                 if char == "*":
                     self.__state = 6
+                elif char == "\n":
+                    final_string += char
             # Check end of comment
             elif self.__state == 6:
                 # end of comment

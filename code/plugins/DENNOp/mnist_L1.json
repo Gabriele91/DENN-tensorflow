@@ -3,7 +3,7 @@
         "name": "mnist_dataset",
         "dataset_file": "./datasets/mnist_f_4000xB_5s.gz",
         "TOT_GEN": 10000,
-        "GEN_STEP": 1000,
+        "GEN_STEP": 100,
         "TYPE": "float",
         "F": 0.6,
         "NP": 20,
@@ -12,7 +12,15 @@
         ],
         "CR": 0.6,
         "levels": [
-            [[[784,10], [10]], "softmax_cross_entropy_with_logits"]
+            {
+                "shape": [[784,10], [10]],
+                "preferred_device": "GPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits"//,
+                    //"args": []
+                    //"kwargs": {}
+                }
+            }
         ]
     }
 ]

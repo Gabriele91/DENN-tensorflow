@@ -580,7 +580,10 @@ protected:
         {
             //get values
             const auto W = W_list[p].flat<value_t>();
+            //num of threads 
+            const int N_THREADS = 4;
             //for all
+            #pragma omp parallel for num_threads(N_THREADS)
             for (int index = 0; index < NP; ++index)
             {
                 //ref to population

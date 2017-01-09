@@ -25,7 +25,7 @@ LIKNER_FLAGS =
 #flags LINUX
 ifeq ($(shell uname -s),Linux)
 	#linux flags
-	C_FLAGS      += -pthread -D_FORCE_INLINES -fopenmp
+	C_FLAGS      += -pthread -D_FORCE_INLINES -fopenmp -DENABLE_PARALLEL_NEW_GEN
 	LIKNER_FLAGS += -lpthread -lm -lutil -ldl
 	LIKNER_FLAGS += -Wl,--whole-archive 
 	LIKNER_FLAGS += -L$(TOP)/tf_static/ -lprotobuf_custom

@@ -1,6 +1,21 @@
 ## TensorFlow version
 
-Since version 0.12 is not necessary compile the library from source on MacOS.
+Since version 0.12 is not necessary compile the library from source on MacOS. This is also for linux version but with an additional dependency.
+
+To build the op for the official binary package simply use `make`, otherwise use the command `make OFFICIAL_BINARY=false`.
+
+## TIPS
+
+Search for symlinks:
+
+```
+# search
+objdump -t DENN/DENNOp.so
+# filter
+objdump -t DENN/DENNOp.so | grep CheckOpMessageBuilder
+# demangling
+objdump -t DENN/DENNOp.so | grep CheckOpMessageBuilder | c++filt
+```
 
 ## Build notes
 

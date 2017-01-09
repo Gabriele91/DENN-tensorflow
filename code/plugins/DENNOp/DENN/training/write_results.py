@@ -1,5 +1,6 @@
 from matplotlib import pyplot as plt
 from . plotter import my_plot
+from . tasks import TaskEncoder
 from os import makedirs
 from os import path
 from math import pi as PI
@@ -32,8 +33,12 @@ def gen_folder_name(name, num_gen, num_batches, levels):
         name, num_gen, num_batches,
         "".join(
             [
-                "_L{}x{}+{}".format(w_x, w_y, b[0])
-                for ((w_x, w_y), b), type_ in levels
+                "_L{}x{}+{}".format(
+                    level.shape[0][0],
+                    level.shape[0][1],
+                    level.shape[1][0]
+                )
+                for level in levels
             ]
         )
     )
@@ -53,7 +58,7 @@ def write_all_results(name, results, description, out_options, showDelimiter=Fal
     makedirs(path.join("benchmark_results", BASE_FOLDER), exist_ok=True)
 
     with open(path.join("benchmark_results", BASE_FOLDER, "job.json"), "w") as job_file:
-        json.dump(out_options.job, job_file, indent=2)
+        json.dump(out_options.job, job_file, cls=TaskEncoder, indent=2)
 
     figures = []
 

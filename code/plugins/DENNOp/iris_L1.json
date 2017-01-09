@@ -11,8 +11,19 @@
             "rand/1/bin"
         ],
         "CR": 0.5,
-        "levels": [
+        /*"levels": [
             [[[4,3], [3]], "softmax_cross_entropy_with_logits"]
+        ]*/
+        "levels": [
+            {
+                "shape": [[4,3], [3]],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits"//,
+                    //"args": []
+                    //"kwargs": {}
+                }
+            }
         ]
     }
 ]

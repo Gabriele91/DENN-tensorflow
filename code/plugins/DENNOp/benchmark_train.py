@@ -3,7 +3,6 @@ import tensorflow as tf
 from tensorflow.python.client import device_lib
 
 import numpy as np
-import json
 from os import path
 from sys import argv
 from time import sleep
@@ -41,11 +40,7 @@ def main():
     # jobs
     jobs = []
 
-    with open(argv[1], 'r') as job_f:
-        jobs = json.load(job_f)
-
-    for idx in range(len(jobs)):
-        jobs[idx] = ENDict(jobs[idx].items())
+    jobs = DENN.training.open_task_list(argv[1])
 
     # test results
     results_tests = []
@@ -101,7 +96,8 @@ def main():
                             training=True
                         )
 
-                    print("++ Node creation {}".format(time() - time_node_creation))
+                    print(
+                        "++ Node creation {}".format(time() - time_node_creation))
                     # Soket listener
                     with DENN.OpListener() as listener:
                         # time
@@ -128,12 +124,14 @@ def main():
                             ]
                             +
                             [
-                                (cur_nn.label_placeholder, dataset.test_labels),
+                                (cur_nn.label_placeholder,
+                                 dataset.test_labels),
                                 (cur_nn.input_placeholder, dataset.test_data)
                             ]
                         ))
                         test_time = time() - time_test
-                        print("++ Test {}, result {}".format(test_time, cur_accuracy))
+                        print(
+                            "++ Test {}, result {}".format(test_time, cur_accuracy))
                         #######################################################
                         options['results'] = ENDict(
                             [

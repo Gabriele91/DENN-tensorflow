@@ -22,6 +22,9 @@ public:
     using TensorList    =  std::vector< tensorflow::Tensor >;
     using TensorInput   =  std::pair< std::string, tensorflow::Tensor >;
     using TensorInputs  =  std::vector< TensorInput >;
+
+    //num of threads (OpenMP)
+    const int N_THREADS = 4;
     
     //type of CR
     enum CRType
@@ -468,11 +471,13 @@ protected:
         {
             //get values
             const auto W = W_list[p].flat<value_t>();
-            //num of threads 
-            const int N_THREADS = 4;
             //for all
+        #ifdef ENABLE_PARALLEL_NEW_GEN
             #pragma omp parallel for num_threads(N_THREADS)
             for (int index = 0; index < NP; ++index)
+        #else 
+            for (int index = 0; index < NP; ++index)
+        #endif
             {
                 //ref to population
                 const std::vector< Tensor >& population = cur_populations_list[p];
@@ -580,11 +585,13 @@ protected:
         {
             //get values
             const auto W = W_list[p].flat<value_t>();
-            //num of threads 
-            const int N_THREADS = 4;
             //for all
+        #ifdef ENABLE_PARALLEL_NEW_GEN
             #pragma omp parallel for num_threads(N_THREADS)
             for (int index = 0; index < NP; ++index)
+        #else 
+            for (int index = 0; index < NP; ++index)
+        #endif
             {
                 //ref to population
                 const std::vector< Tensor >& population = cur_populations_list[p];

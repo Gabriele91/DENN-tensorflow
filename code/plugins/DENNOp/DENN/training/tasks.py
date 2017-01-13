@@ -160,7 +160,7 @@ class DETask(object):
                     dev.name.find(preference) != -1:
                 return dev.name
 
-    def gen_network(self, rand_pop=True):
+    def gen_network(self, rand_pop=True, default_graph=False):
 
         if self.TYPE == "double":
             cur_type = tf.float64
@@ -169,7 +169,11 @@ class DETask(object):
         else:
             raise Exception("Not valid type_ argument: {}".format(type_))
 
-        graph = tf.Graph()
+        if default_graph:
+            graph = tf.get_default_graph()
+        else:
+            graph = tf.Graph()
+
         with graph.as_default():
             levels = self.levels
             target_ref = []

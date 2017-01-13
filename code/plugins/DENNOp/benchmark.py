@@ -25,6 +25,9 @@ class NDict(dict):
 
 #@profile
 def main():
+
+    TEST_PARALLEL_OP = True
+
     ##
     # Select device
     DEVICE = None
@@ -91,7 +94,11 @@ def main():
 
         cur_nn = job.gen_network(
             True,  # rand population only if gen is the first one
+            True
         )
+
+        if TEST_PARALLEL_OP
+            test_networks = [job.gen_network(False, True) for _ in range(job.NP)]
 
         with cur_nn.graph.as_default():
             with tf.Session(config=session_config) as sess:
@@ -203,7 +210,38 @@ def main():
 
                         # print(evaluations)
                         print(
-                            "++ Valutation {}".format(time() - time_valutation))
+                            "++ Valutation:\t\t{}".format(time() - time_valutation))
+
+                        # ---------- TEST PARALLEL EVALUATIONS ----------
+                        if TEST_PARALLEL_OP:
+                            time_valutation = time()
+
+                            accuracy_ops = []
+                            feed_dict_ops = {}
+
+                            for idx, network in enumerate(test_networks):
+                                accuracy_ops.append(network.accuracy)
+
+                                for num, target in enumerate(network.targets):
+                                    feed_dict_ops[target] = cur_pop[num][idx]
+
+                                feed_dict_ops[
+                                    network.label_placeholder] = dataset.validation_labels
+                                feed_dict_ops[
+                                    network.input_placeholder] = dataset.validation_data
+
+                            evaluations_test = sess.run(
+                                accuracy_ops, feed_dict=feed_dict_ops)
+
+                            # print(evaluations_test)
+                            print(
+                                "++ Valutation Test:\t{} | equal to eval: {}".format(
+                                    time() - time_valutation,
+                                    np.allclose(evaluations_test, evaluations)
+                                )
+                            )
+
+                        # ---------- END TEST ----------
 
                         best_idx = np.argmin(evaluations)
 
@@ -216,7 +254,8 @@ def main():
                             ]
                             +
                             [
-                                (cur_nn.label_placeholder, dataset.test_labels),
+                                (cur_nn.label_placeholder,
+                                 dataset.test_labels),
                                 (cur_nn.input_placeholder, dataset.test_data)
                             ]
                         ))

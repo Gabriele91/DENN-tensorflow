@@ -97,7 +97,7 @@ def main():
             True
         )
 
-        if TEST_PARALLEL_OP
+        if TEST_PARALLEL_OP:
             test_networks = [job.gen_network(False, True) for _ in range(job.NP)]
 
         with cur_nn.graph.as_default():

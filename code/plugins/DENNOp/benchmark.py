@@ -27,6 +27,7 @@ class NDict(dict):
 def main():
 
     TEST_PARALLEL_OP = True
+    TEST_PARTIAL = True
 
     ##
     # Select device
@@ -98,7 +99,8 @@ def main():
         )
 
         if TEST_PARALLEL_OP:
-            test_networks = [job.gen_network(False, True) for _ in range(job.NP)]
+            test_networks = [
+                job.gen_network(False, True) for _ in range(job.NP)]
 
         with cur_nn.graph.as_default():
             with tf.Session(config=session_config) as sess:
@@ -230,8 +232,20 @@ def main():
                                 feed_dict_ops[
                                     network.input_placeholder] = dataset.validation_data
 
-                            evaluations_test = sess.run(
-                                accuracy_ops, feed_dict=feed_dict_ops)
+                            if not TEST_PARTIAL:
+                                evaluations_test = sess.run(
+                                    accuracy_ops, feed_dict=feed_dict_ops)
+                            else:
+                                handler = sess.partial_run_setup(
+                                    accuracy_ops,
+                                    [_ for _ in feed_dict_ops.keys()]
+                                )
+
+                                evaluations_test = sess.partial_run(
+                                    handler,
+                                    accuracy_ops,
+                                    feed_dict=feed_dict_ops
+                                )
 
                             # print(evaluations_test)
                             print(

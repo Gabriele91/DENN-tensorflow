@@ -55,9 +55,7 @@ objdump -t DENN/DENNOp.so | grep CheckOpMessageBuilder | c++filt
                 ],
                 "preferred_device": "CPU",
                 "fx": {
-                    "name": "nn.softmax_cross_entropy_with_logits"//,
-                    //"args": []
-                    //"kwargs": {}
+                    "name": "nn.softmax_cross_entropy_with_logits"
                 }
             }
         ]

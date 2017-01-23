@@ -23,48 +23,44 @@ objdump -t DENN/DENNOp.so | grep CheckOpMessageBuilder | c++filt
 
 ## Example benchmark test
 
-```python
-datasets_data = [
-    (
-        "../../../minimal_dataset/data/bezdekIris",
-        'load_iris_data',
-        ENDict(
-            [
-                ('name', 'iris_dataset'),
-                ('GEN_STEP', 50),
-                ('N_GEN', 8),
-                ('NP', 100),
-                ('BATCH', 40),
-                ('W', 0.3),
-                ('CR', 0.552),
-                ('levels', [
-                    # 1 lvl
-                    ([4, 3], [3])
-
-                    # 2 lvl
-                    # ([4, 8], [8]),
-                    # ([8, 3], [3])
-
-                    # 3 lvl
-                    # ([4, 8], [8]),
-                    # ([8, 8], [8]),
-                    # ([8, 3], [3])
-
-                    # 5 lvl
-                    # ([4, 8], [8]),
-                    # ([8, 8], [8]),
-                    # ([8, 8], [8]),
-                    # ([8, 8], [8]),
-                    # ([8, 3], [3])
-                ]),
-                ('de_types', [
-                    'rand/1/bin',
-                    'rand/1/exp',
-                    'rand/2/bin',
-                    'rand/2/exp'
-                ])
-            ]
-        )
-    )
+```json
+[
+    {
+        "name": "iris_dataset",
+        "dataset_file": "./datasets/iris_15-B_5s.gz",
+        "TOT_GEN": 1000,
+        "GEN_STEP": 50,
+        "TYPE": "double",
+        "F": 0.8,
+        "NP": 20,
+        "de_types": [
+            "rand/1/bin"
+        ],
+        "CR": 0.5,
+        "levels": [
+            {
+                "shape": [[4,3], [3]],
+                "init": [
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -1.0, 
+                                "maxval": 1.0
+                            }
+                        }
+                    },
+                    [0.5, 0.5, 0.5]
+                ],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits"//,
+                    //"args": []
+                    //"kwargs": {}
+                }
+            }
+        ]
+    }
 ]
 ```

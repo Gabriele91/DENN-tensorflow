@@ -14,9 +14,37 @@
         /*"levels": [
             [[[4,3], [3]], "softmax_cross_entropy_with_logits"]
         ]*/
+        //"AdaBoost": [0.5, 0.5, 0.5],
         "levels": [
             {
                 "shape": [[4,3], [3]],
+                "init": [
+                    /*[
+                        [0.5, 0.5, 0.5],
+                        [0.5, 0.5, 0.5],
+                        [0.5, 0.5, 0.5],
+                        [0.5, 0.5, 0.5]
+                    ],*/
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -1.0, 
+                                "maxval": 1.0
+                            }
+                        }
+                    },
+                    //[0.5, 0.5, 0.5]
+                    {
+                        "fx": {
+                            "name": "random_normal",
+                            "kwargs": {
+                                "seed": 1
+                            }
+                        }
+                    }
+                ],
                 "preferred_device": "CPU",
                 "fx": {
                     "name": "nn.softmax_cross_entropy_with_logits"//,

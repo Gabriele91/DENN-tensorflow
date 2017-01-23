@@ -26,8 +26,9 @@ class NDict(dict):
 #@profile
 def main():
 
-    TEST_PARALLEL_OP = True
-    TEST_PARTIAL = True
+    TEST_PARALLEL_OP = False
+    TEST_PARTIAL = False
+    TEST_ALTERNATE_DEV = False
 
     ##
     # Select device
@@ -60,6 +61,8 @@ def main():
     time_start_test = time()
 
     for dataset, job in datasets:
+
+        # print(job)
 
         time_start_dataset = time()
 
@@ -94,13 +97,18 @@ def main():
         batch_counter = 0
 
         cur_nn = job.gen_network(
-            True,  # rand population only if gen is the first one
             True
         )
 
         if TEST_PARALLEL_OP:
-            test_networks = [
-                job.gen_network(False, True) for _ in range(job.NP)]
+            test_networks = []
+            for num in range(job.NP):
+                if TEST_ALTERNATE_DEV:
+                    if num % 2 == 0:
+                        job.levels[0].preferred_device = "CPU"
+                    else:
+                        job.levels[0].preferred_device = "GPU"
+                test_networks.append(job.gen_network(True))
 
         with cur_nn.graph.as_default():
             with tf.Session(config=session_config) as sess:

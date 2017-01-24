@@ -24,6 +24,7 @@ namespace tensorflow
         //init DENN from param
         explicit DENNOpAdaBoost(OpKernelConstruction *context) : DENNOp< value_t >(context)
         {
+            OP_REQUIRES_OK(context, context->GetAttr("ada_boost_alpha", &m_Alpha));
             // Get name of function of test execution
             OP_REQUIRES_OK(context, context->GetAttr("f_input_correct_predition", &m_name_input_correct_predition));
             OP_REQUIRES_OK(context, context->GetAttr("f_correct_predition", &m_name_correct_predition));
@@ -31,7 +32,83 @@ namespace tensorflow
             OP_REQUIRES_OK(context, context->GetAttr("f_cross_entropy", &m_name_cross_entropy));
             OP_REQUIRES_OK(context, context->GetAttr("f_input_cross_entropy", &m_name_input_cross_entropy));
         }
+
+
+        //star execution from python
+        virtual void Compute(OpKernelContext *context) override
+        {        
+            // start input
+            const size_t start_input = 4;
+            // Take C [ start input + W + population ]
+            m_C = context->input(start_input + m_space_size * 2);
+            //compute DENN
+            DENNOp_t::Compute(context);
+            //TODO: OUTPUT C
+        }
+
+        /**
+        * Start differential evolution
+        * @param context
+        * @param num_gen, number of generation
+        * @param W_list, DE weights
+        * @param new_populations_list, (input) cache memory of the last population generated 
+        * @param current_populations_list, (input/output) population
+        * @param current_eval_result, (input/output) evaluation of population
+        */
+        virtual void RunDe
+        (
+            OpKernelContext *context,
+            const int num_gen,
+            const std::vector < Tensor >& W_list,
+            std::vector < std::vector <Tensor> >& new_populations_list,
+            std::vector < std::vector <Tensor> >& current_populations_list,
+            Tensor& current_eval_result
+        ) const
+        {
+            //Get np 
+            const int NP = current_populations_list[0].size();
+            //Pointer to memory
+            auto ref_current_eval_result = current_eval_result.flat<value_t>();
+            //loop
+            for(int i=0;i!=num_gen;++i)
+            {
+                //Create new population
+                switch(m_pert_vector)
+                {
+                    case PV_RANDOM: RandTrialVectorsOp(context, NP,W_list,current_populations_list,new_populations_list); break;
+                    case PV_BEST: BestTrialVectorsOp(context, NP,W_list,current_eval_result,current_populations_list,new_populations_list); break;
+                    default: return /* FAILED */;
+                }
+                //Change old population (if required)
+                for(int index = 0; index!=NP ;++index)
+                {
+                    //Evaluation
+                    value_t new_eval = ExecuteEvaluateTrain(context, index, new_populations_list);
+                    //Choice
+                    if(new_eval < ref_current_eval_result(index))
+                    {
+                        for(int p=0; p!=current_populations_list.size(); ++p)
+                        {
+                            current_populations_list[p][index] = new_populations_list[p][index];
+                        }
+                        ref_current_eval_result(index) = new_eval;
+                    }
+                }   
+                #if 0
+                SOCKET_DEBUG(
+                    m_debug.write(i);
+                )
+                #endif
+                //////////////////////////////////////////////////////////////
+                // TO DO: Update C and to 0 C_counter
+                // C(gen+1) = C(gen) + delta * (Ni / Np) 
+                // or
+                // C(gen+1) = COV(C(gen), C(gen) + delta * (Ni / Np), Alpha)
+                //////////////////////////////////////////////////////////////
+            }
+        }
  
+    
         //execute evaluate train function (tensorflow function)   
         virtual value_t ExecuteEvaluateTrain
         (
@@ -177,6 +254,7 @@ namespace tensorflow
         std::string m_name_input_cross_entropy     //name of Y*C
         std::string m_name_cross_entropy;          //name of : F(Y*C) -> cross(Y) 
         //ada boost factor 
+        Tensor m_Alpha;
         Tensor m_C;
         Tensor m_C_Counter;
 

@@ -7,7 +7,7 @@
 #include <cmath>
 #include <algorithm>
 #include <typeinfo>
-
+#define NOT(x) (!(x))
 
 namespace tensorflow
 {
@@ -64,7 +64,7 @@ public:
         // Get dataset path
         OP_REQUIRES_OK(context, context->GetAttr("f_input_features", &m_input_features));
         // Get name of eval function
-        OP_REQUIRES_OK(context, context->GetAttr("f_name_train", &m_name_train));
+        OP_REQUIRES_OK(context, context->GetAttr("f_name_execute_net", &m_name_execute_net));
         // Test size == sizeof(names)
         if( m_space_size != m_inputs_names.size() )
         {
@@ -156,7 +156,7 @@ public:
             current_populations_list.push_back(splitDim0(population));
         }
         //Test sizeof populations
-        if(!TestPopulationSize(context,current_populations_list)) return;
+        if NOT(TestPopulationSize(context,current_populations_list)) return;
 
         ////////////////////////////////////////////////////////////////////////////
         //Temp of new gen of populations
@@ -370,7 +370,7 @@ public:
     ) const
     {
         NameList function{
-             m_name_train //+":0" 
+             m_name_execute_net //+":0" 
         };
         return ExecuteEvaluate(context, NP_i, populations_list, function);
     }
@@ -387,7 +387,7 @@ public:
         //Output
         TensorList f_on_values;
         //Set input
-        if(!SetCacheInputs(populations_list, NP_i))
+        if NOT(SetCacheInputs(populations_list, NP_i))
         {
             context->CtxFailure({tensorflow::error::Code::ABORTED,"Run evaluate: error to set inputs"});
         }
@@ -416,7 +416,7 @@ public:
                                );
         
         //output error
-        if(!status.ok())
+        if NOT(status.ok())
         {
             context->CtxFailure({tensorflow::error::Code::ABORTED,"Run evaluate: "+status.ToString()});
         }
@@ -709,6 +709,18 @@ protected:
         return true;
     }
     
+    //Return X saved in cache inputs
+    const Tensor& GetFeaturesInCacheInputs() const 
+    {
+        return m_inputs_tensor_cache[m_inputs_tensor_cache.size()-2].second;
+    }
+    
+    //Return Y_ saved in cache inputs
+    const Tensor& GetLabelsInCacheInputs() const 
+    {
+        return m_inputs_tensor_cache[m_inputs_tensor_cache.size()-1].second;
+    }
+
 protected:
 
     //session
@@ -721,7 +733,7 @@ protected:
     // population variables
     int                        m_space_size{ 1 };
     //input evaluate
-    std::string                m_name_train;
+    std::string                m_name_execute_net;
     NameList                   m_inputs_names;
     mutable TensorInputs       m_inputs_tensor_cache;
     //bach inputs

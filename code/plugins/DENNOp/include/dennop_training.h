@@ -29,7 +29,7 @@ namespace tensorflow
             // Get dataset path
             OP_REQUIRES_OK(context, context->GetAttr("dataset", &m_dataset_path));
             // Try to openfile
-            if(!m_dataset.open(m_dataset_path))
+            if NOT(m_dataset.open(m_dataset_path))
             {
                 context->CtxFailure({tensorflow::error::Code::ABORTED,"Attribute error: can't open dataset' "});
             }
@@ -77,7 +77,7 @@ namespace tensorflow
                 current_populations_list.push_back(splitDim0(population));
             }
             //Test sizeof populations
-            if(!DENNOp_t::TestPopulationSize(context,current_populations_list)) return;
+            if NOT(DENNOp_t::TestPopulationSize(context,current_populations_list)) return;
             
             ////////////////////////////////////////////////////////////////////////////
             //Temp of new gen of populations
@@ -93,7 +93,7 @@ namespace tensorflow
             // START STREAM
             m_dataset.start_read_bach();
             // Load first bach
-            if(!LoadNextBach(context)) return ;//false;
+            if NOT(LoadNextBach(context)) return ;//false;
 
             ////////////////////////////////////////////////////////////////////////////
             // Tensor of first evaluation of all populations

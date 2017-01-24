@@ -13,7 +13,7 @@ REGISTER_OP("DENN")
 .Attr("f_input_labels: string = 'y'")
 .Attr("f_input_features: string = 'x'")
 .Attr("f_inputs: list(string)")
-.Attr("f_name_train: string = 'cross_entropy:0'")
+.Attr("f_name_execute_net: string = 'cross_entropy:0'")
 .Attr("f_name_validation: string = 'accuracy:0'")
 .Attr("f_name_test: string = 'accuracy:0'")
 .Attr("DE: {"

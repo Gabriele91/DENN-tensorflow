@@ -13,7 +13,7 @@ REGISTER_OP("DENN")
 .Attr("f_inputs: list(string)")
 .Attr("f_input_labels: string = 'y'")
 .Attr("f_input_features: string = 'x'")
-.Attr("f_name_train: string = 'cross_entropy:0'")
+.Attr("f_name_execute_net: string = 'cross_entropy:0'")
 .Attr("DE: {"
       "'rand/1/bin', "
       "'rand/1/exp', "

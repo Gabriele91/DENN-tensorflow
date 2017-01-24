@@ -140,7 +140,7 @@ def main():
                             # space = 2,
                             graph=DENN.get_graph_proto(
                                 cur_nn.graph.as_graph_def()),
-                            f_name_train=cur_nn.cross_entropy.name,
+                            f_name_execute_net=cur_nn.cross_entropy.name,
                             f_inputs=[elm.name for elm in cur_nn.targets],
                             f_input_labels=cur_nn.label_placeholder.name,
                             f_input_features=cur_nn.input_placeholder.name,

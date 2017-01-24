@@ -83,7 +83,7 @@ def main():
                             graph=DENN.get_graph_proto(
                                 cur_nn.graph.as_graph_def()),
                             dataset=job.dataset_file,
-                            f_name_train=cur_nn.cross_entropy.name,
+                            f_name_execute_net=cur_nn.cross_entropy.name,
                             f_name_validation=cur_nn.accuracy.name,
                             f_name_test=cur_nn.accuracy.name,
                             f_inputs=[elm.name for elm in cur_nn.targets],

@@ -172,13 +172,60 @@ def to_bin(data, type_):
     ), *data.flat)
 
 
-def create_dataset(dataset, loader, size, name, n_shuffle=1, batch_size=True,
+def check_classes(labels, extracted_classes):
+    classes = []
+
+    for elm in labels:
+        class_ = np.argmax(elm)
+        if class_ not in classes:
+            classes.append(class_)
+
+    if len(classes) != len(extracted_classes):
+        raise Exception("Some classes are not represented anymore in original set. Classes: {}".format(
+            set(extracted_classes) - set(classes)
+        ))
+
+
+def dataset_extract(source_data, source_labels, num_elems, num_x_class):
+    new_data = np.empty([num_elems, source_data.shape[-1]])
+    new_labels = np.empty([num_elems, source_labels.shape[-1]])
+
+    counter = 0
+    counter_classes = {}
+    index = 0
+
+    while counter < num_elems:
+        class_ = np.argmax(source_labels[index])
+
+        if class_ not in counter_classes:
+            counter_classes[class_] = 0
+
+        if counter_classes[class_] < num_x_class or (num_elems - counter) == 1:
+            new_data = np.vstack([new_data, source_data[index]])
+            new_labels = np.vstack([new_labels, source_labels[index]])
+            source_data = np.delete(source_data, index, 0)
+            source_labels = np.delete(source_labels, index, 0)
+
+            counter_classes[class_] += 1
+            counter += 1
+
+        index += 1
+        index %= len(source_data)
+
+    ##
+    # Check class balancing
+    check_classes(source_labels, list(counter_classes.keys()))
+
+    return source_data, source_labels, new_data, new_labels
+
+
+def create_dataset(base_path, loader, size, name, n_shuffle=1, batch_size=True,
                    seed=None, train_percentage=0.8, validation_percentage=0.1,
-                   debug=False, type_="double"):
+                   test_percentage=0.1, debug=False, type_="double"):
     """Generate a dataset useful for DENN.
 
     Params:
-        dataset (str): dataset file to convert (original)
+        base_path (str): base_path of the dataset to convert (original)
         loader (str): name of the original data loader
         size (int): num. of elements in a batch or num. of bathes.
                     Set also 'batch_size' properly
@@ -192,6 +239,8 @@ def create_dataset(dataset, loader, size, name, n_shuffle=1, batch_size=True,
                                                set
         validation_percentage (float, default=0.1): size in percentage of the
                                                     validation set
+        test_percentage (float, default=0.1): size in percentage of the
+                                              test set
         debug (bool, default=False): indicate if the loader enables the debug
                                      output
         type_ (str, default="double"): indicate the type of the elements.
@@ -233,55 +282,51 @@ def create_dataset(dataset, loader, size, name, n_shuffle=1, batch_size=True,
     """
     makedirs(BASEDATASETPATH, exist_ok=True)
 
-    print("+ Load data of {}".format(dataset))
-    data, labels = globals().get(loader)(dataset, debug)
+    assert train_percentage + validation_percentage + \
+        test_percentage == 1.0, "Wrong partitions, size [ {} | {} | {} ] != 1.0".format(
+            train_percentage, validation_percentage, test_percentage)
+
+    print("+ Load data of {}".format(base_path))
+    dataset = globals().get(loader)(base_path, debug)
 
     # print(len(data), len(labels))
 
     np.random.seed(seed)
 
-    print("++ Prepare data of {}".format(dataset))
+    print("++ Prepare data of {}".format(base_path))
 
-    if len(data) == 2 and len(labels) == 2:
-        ##
-        # Test set is already splitted
-        # Train set will split by train_percentage
-        partial_data, test_data = data
-        partial_labels, test_labels = labels
+    train_data, train_labels = dataset.train
+    train_size = len(train_data)
 
-        train_size = int(len(partial_data) * train_percentage)
-        validation_size = len(partial_data) - train_size
+    ##
+    # Initial shuffle
+    indexes = np.random.permutation(len(train_data))
+    train_data = train_data[indexes]
+    train_labels = train_labels[indexes]
+
+    if dataset.test is not None:
+        test_data, test_labels = dataset.test
         test_size = len(test_data)
-
-        indexes = np.random.permutation(len(partial_data))
-        partial_data = partial_data[indexes]
-        partial_labels = partial_labels[indexes]
-
-        train_data, validation_data = np.array_split(
-            partial_data, [train_size])
-        train_labels, validation_labels = np.array_split(
-            partial_labels, [train_size])
-
     else:
-        ##
-        # Will create all the sets
-        train_size = int(len(data) * train_percentage)
-        validation_size = int(len(data) * validation_percentage)
-        test_size = len(data) - train_size - validation_size
+        test_size = int(train_size * test_percentage)
+        sample_x_class = int(test_size / train_labels.shape[-1])
 
-        indexes = np.random.permutation(len(data))
-        data = data[indexes]
-        labels = labels[indexes]
+        train_data, train_labels, test_data, test_labels = dataset_extract(
+            train_data, train_labels, test_size, sample_x_class)
 
-        train_data, validation_data, test_data = np.split(data, [
-            train_size,
-            train_size + validation_size
-        ])
+        train_size = len(train_data)
 
-        train_labels, validation_labels, test_labels = np.split(labels, [
-            train_size,
-            train_size + validation_size
-        ])
+    if dataset.validation is not None:
+        validation_data, validation_labels = dataset.validation
+        validation_size = len(validation_data)
+    else:
+        validation_size = int(train_size * validation_percentage)
+        sample_x_class = int(validation_size / train_labels.shape[-1])
+
+        train_data, train_labels, validation_data, validation_labels = dataset_extract(
+            train_data, train_labels, validation_size, sample_x_class)
+
+        train_size = len(train_data)
 
     # print(train_size, validation_size, test_size)
     # print(train_data.shape, train_labels.shape)

@@ -3,8 +3,17 @@ import os
 import sys
 import gzip
 import struct
+from collections import namedtuple
 
 __all__ = ['load_iris_data', 'load_letter_data', 'load_mnist_data']
+
+SET = namedtuple('Set', ['train', 'validation', 'test'])
+##
+# No better way to set default namedtuple values:
+# https://mail.python.org/pipermail/python-ideas/2015-July/034637.html
+SET.__new__.__defaults__ = (None, None, None)
+
+SET_DTYPE = namedtuple('DType', ['data', 'labels'])
 
 
 def load_mnist_image(file_name):
@@ -35,35 +44,27 @@ def load_mnist_data(base_path, output=False):
         sys.stdout = open(os.devnull, 'w')
 
     print('+ Load data ...')
-    mnist_data = np.array(
-        [
+    mnist = SET(
+        SET_DTYPE(
             load_mnist_image(os.path.join(
                 base_path, 'train-images-idx3-ubyte.gz')),
+            load_mnist_label(os.path.join(
+                base_path, 'train-labels-idx1-ubyte.gz'))
+        ),
+        None,
+        SET_DTYPE(
             load_mnist_image(os.path.join(
-                base_path, 't10k-images-idx3-ubyte.gz'))
-        ]
+                base_path, 't10k-images-idx3-ubyte.gz'))),
+        load_mnist_label(os.path.join(
+            base_path, 't10k-labels-idx1-ubyte.gz'))
     )
-    label_data = np.array(
-        [
-            load_mnist_label(os.path.join(
-                base_path, 'train-labels-idx1-ubyte.gz')),
-            load_mnist_label(os.path.join(
-                base_path, 't10k-labels-idx1-ubyte.gz'))
-        ]
-    )
-
-    print('+ images: \n', mnist_data)
-    print('+ labels: \n', label_data)
-
-    print(mnist_data.shape)
-    print(label_data.shape)
 
     print('+ loading done!')
 
     if not output:
         sys.stdout = old_descriptor
 
-    return mnist_data, label_data
+    return mnist
 
 
 def load_letter_data(path, output=False):
@@ -115,7 +116,9 @@ def load_letter_data(path, output=False):
     if not output:
         sys.stdout = old_descriptor
 
-    return letter_data, label_data
+    return SET(
+        SET_DTYPE(letter_data, label_data)
+    )
 
 
 def load_iris_data(path, output=False):
@@ -168,4 +171,6 @@ def load_iris_data(path, output=False):
     if not output:
         sys.stdout = old_descriptor
 
-    return flower_data, label_data
+    return SET(
+        SET_DTYPE(flower_data, label_data)
+    )

@@ -10,9 +10,9 @@ def main():
         ("../../../minimal_dataset/data/MNIST", "load_mnist_data", 200, "mnist", 5, False, "double"),
         ("../../../minimal_dataset/data/MNIST", "load_mnist_data", 1000, "mnist", 5, False, "double"),
         ("../../../minimal_dataset/data/MNIST", "load_mnist_data", 2000, "mnist", 5, False, "double"),
-        ("../../../minimal_dataset/data/MNIST", "load_mnist_data", 4000, "mnist", 5, False, "double")
+        ("../../../minimal_dataset/data/MNIST", "load_mnist_data", 4000, "mnist", 5, False, "double"),
         # FLOAT
-        ("../../../minimal_dataset/data/MNIST", "load_mnist_data", 2000, "mnist_f", 5, False, "float")
+        ("../../../minimal_dataset/data/MNIST", "load_mnist_data", 2000, "mnist_f", 5, False, "float"),
         ("../../../minimal_dataset/data/MNIST", "load_mnist_data", 4000, "mnist_f", 5, False, "float")
     ]
 

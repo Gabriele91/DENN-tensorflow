@@ -1,3 +1,9 @@
+##
+# Only for testing
+import sys
+sys.path.append("../")
+#####
+
 import DENN
 import tensorflow as tf
 from tensorflow.python.client import device_lib

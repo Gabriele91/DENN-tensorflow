@@ -1,8 +1,8 @@
 [
     {
         "name": "letter_dataset",
-        "dataset_file": "./datasets/letter_100-B_5s.gz",
-        "TOT_GEN": 1000,
+        "dataset_file": "../datasets/letter_100-B_5s.gz",
+        "TOT_GEN": 5000,
         "GEN_STEP": 100,
         "TYPE": "double",
         "F": 0.8,
@@ -12,8 +12,7 @@
         ],
         "CR": 0.5,
         "levels": [
-            [[[16, 32], [32]], "relu"],
-            [[[32, 26], [26]], "softmax_cross_entropy_with_logits"]
+            [[[16, 26], [26]], "softmax_cross_entropy_with_logits"]
         ]
     }
 ]

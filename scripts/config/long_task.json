@@ -1,7 +1,7 @@
 [
      {
         "name": "mnist_dataset",
-        "dataset_file": "./datasets/mnist_200xB_5s.gz",
+        "dataset_file": "../datasets/mnist_200xB_5s.gz",
         "TOT_GEN": 200000,
         "GEN_STEP": 50,
         "TYPE": "double",
@@ -17,7 +17,7 @@
     },
     {
         "name": "mnist_dataset",
-        "dataset_file": "./datasets/mnist_200xB_5s.gz",
+        "dataset_file": "../datasets/mnist_200xB_5s.gz",
         "TOT_GEN": 200000,
         "GEN_STEP": 100,
         "TYPE": "double",
@@ -33,7 +33,7 @@
     },
     {
         "name": "mnist_dataset",
-        "dataset_file": "./datasets/mnist_200xB_5s.gz",
+        "dataset_file": "../datasets/mnist_200xB_5s.gz",
         "TOT_GEN": 200000,
         "GEN_STEP": 200,
         "TYPE": "double",
@@ -49,7 +49,7 @@
     },
     {
         "name": "mnist_dataset",
-        "dataset_file": "./datasets/mnist_1000xB_5s.gz",
+        "dataset_file": "../datasets/mnist_1000xB_5s.gz",
         "TOT_GEN": 200000,
         "GEN_STEP": 50,
         "TYPE": "double",
@@ -65,7 +65,7 @@
     },
     {
         "name": "mnist_dataset",
-        "dataset_file": "./datasets/mnist_1000xB_5s.gz",
+        "dataset_file": "../datasets/mnist_1000xB_5s.gz",
         "TOT_GEN": 200000,
         "GEN_STEP": 100,
         "TYPE": "double",
@@ -81,7 +81,7 @@
     },
     {
         "name": "mnist_dataset",
-        "dataset_file": "./datasets/mnist_1000xB_5s.gz",
+        "dataset_file": "../datasets/mnist_1000xB_5s.gz",
         "TOT_GEN": 200000,
         "GEN_STEP": 200,
         "TYPE": "double",
@@ -97,7 +97,7 @@
     },
     {
         "name": "mnist_dataset",
-        "dataset_file": "./datasets/mnist_2000xB_5s.gz",
+        "dataset_file": "../datasets/mnist_2000xB_5s.gz",
         "TOT_GEN": 200000,
         "GEN_STEP": 50,
         "TYPE": "double",
@@ -113,7 +113,7 @@
     },
     {
         "name": "mnist_dataset",
-        "dataset_file": "./datasets/mnist_2000xB_5s.gz",
+        "dataset_file": "../datasets/mnist_2000xB_5s.gz",
         "TOT_GEN": 200000,
         "GEN_STEP": 100,
         "TYPE": "double",
@@ -129,7 +129,7 @@
     },
     {
         "name": "mnist_dataset",
-        "dataset_file": "./datasets/mnist_2000xB_5s.gz",
+        "dataset_file": "../datasets/mnist_2000xB_5s.gz",
         "TOT_GEN": 200000,
         "GEN_STEP": 200,
         "TYPE": "double",
@@ -145,7 +145,7 @@
     },
     {
         "name": "mnist_dataset",
-        "dataset_file": "./datasets/mnist_4000xB_5s.gz",
+        "dataset_file": "../datasets/mnist_4000xB_5s.gz",
         "TOT_GEN": 200000,
         "GEN_STEP": 50,
         "TYPE": "double",
@@ -161,7 +161,7 @@
     },
     {
         "name": "mnist_dataset",
-        "dataset_file": "./datasets/mnist_4000xB_5s.gz",
+        "dataset_file": "../datasets/mnist_4000xB_5s.gz",
         "TOT_GEN": 200000,
         "GEN_STEP": 100,
         "TYPE": "double",
@@ -177,7 +177,7 @@
     },
     {
         "name": "mnist_dataset",
-        "dataset_file": "./datasets/mnist_4000xB_5s.gz",
+        "dataset_file": "../datasets/mnist_4000xB_5s.gz",
         "TOT_GEN": 200000,
         "GEN_STEP": 200,
         "TYPE": "double",

@@ -1,0 +1,25 @@
+[
+    {
+        "name": "magic_dataset",
+        "dataset_file": "../datasets/magic_d_2000xB_5s.gz",
+        "TOT_GEN": 50000,
+        "GEN_STEP": 500,
+        "TYPE": "double",
+        "F": 0.8,
+        "NP": 100,
+        "de_types": [
+            "rand/1/bin"
+        ],
+        "CR": 0.5,
+        "levels": [
+            {   
+                // With no duration
+                "shape": [[10,2], [2]],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits"
+                }
+            }
+        ]
+    }
+]

@@ -12,6 +12,7 @@ import numpy as np
 from sys import argv
 from time import sleep
 from time import time
+from tqdm import tqdm
 
 #from memory_profiler import profile
 
@@ -45,7 +46,7 @@ def main():
         intra_op_parallelism_threads=NUM_THREADS,
         inter_op_parallelism_threads=NUM_THREADS,
         # log_device_placement=True
-        log_device_placement=True
+        log_device_placement=False
     )
 
     ##
@@ -163,10 +164,11 @@ def main():
 
                     first_time = True
 
-                    for gen in range(int(job.TOT_GEN / job.GEN_STEP)):
+                    print("+ Start evolution")
+                    for gen in tqdm(range(int(job.TOT_GEN / job.GEN_STEP))):
 
-                        print(
-                            "+ Start gen. [{}] with batch[{}]".format((gen + 1) * job.GEN_STEP, batch_counter))
+                        # print(
+                        #     "+ Start gen. [{}] with batch[{}]".format((gen + 1) * job.GEN_STEP, batch_counter))
 
                         cur_batch = dataset[batch_counter]
                         batch_counter = (
@@ -195,7 +197,7 @@ def main():
                             ]
                         ))
 
-                        print("++ Op time {}".format(time() - time_start_gen))
+                        # print("++ Op time {}".format(time() - time_start_gen))
 
                         # get output
                         cur_pop = results.final_populations
@@ -226,8 +228,8 @@ def main():
                             evaluations.append(cur_evaluation)
 
                         # print(evaluations)
-                        print(
-                            "++ Valutation:\t\t{}".format(time() - time_valutation))
+                        # print(
+                        #     "++ Valutation:\t\t{}".format(time() - time_valutation))
 
                         # ---------- TEST PARALLEL EVALUATIONS ----------
                         if TEST_PARALLEL_OP:
@@ -263,12 +265,12 @@ def main():
                                 )
 
                             # print(evaluations_test)
-                            print(
-                                "++ Valutation Test:\t{} | equal to eval: {}".format(
-                                    time() - time_valutation,
-                                    np.allclose(evaluations_test, evaluations)
-                                )
-                            )
+                            # print(
+                            #     "++ Valutation Test:\t{} | equal to eval: {}".format(
+                            #         time() - time_valutation,
+                            #         np.allclose(evaluations_test, evaluations)
+                            #     )
+                            # )
 
                         # ---------- END TEST ----------
 
@@ -291,22 +293,48 @@ def main():
 
                         test_results[de_type].values.append(cur_accuracy)
 
-                        print("++ Test {}".format(time() - time_test))
+                        # print("++ Test {}".format(time() - time_test))
 
-                        print(
-                            "+ DENN[{}] up to {} gen on {} completed in {:.05} sec.".format(
-                                de_type, (gen + 1) * job.GEN_STEP,
-                                job.name,
-                                time() - time_start_gen
-                            )
-                        )
-
-                        prev_NN[de_type] = cur_pop
-                        del cur_pop
+                        # print(
+                        #     "+ DENN[{}] up to {} gen on {} completed in {:.05} sec.".format(
+                        #         de_type, (gen + 1) * job.GEN_STEP,
+                        #         job.name,
+                        #         time() - time_start_gen
+                        #     )
+                        # )
 
                         first_time = False
 
-                        # print(best)
+                        prev_NN[de_type] = cur_pop
+
+                    best = [
+                        cur_pop[num][best_idx]
+                        for num, target in enumerate(cur_nn.targets)
+                    ]
+
+                    job.time = time() - time_start_gen
+                    job.accuracy = float(cur_accuracy)
+                    job.best = [arr.tolist()
+                                for arr in best]
+
+                    result = sess.run(cur_nn.y, feed_dict=dict(
+                        [
+                            (target, best[num])
+                            for num, target in enumerate(cur_nn.targets)
+                        ]
+                        +
+                        [
+                            (cur_nn.label_placeholder,
+                             dataset.test_labels),
+                            (cur_nn.input_placeholder, dataset.test_data)
+                        ]
+                    ))
+
+                    job.confusionM = DENN.training.calc_confusin_M(dataset.test_labels, result)
+                    
+
+
+                        
 
         print("+ Completed all test on dataset {} in {} sec.".format(job.name,
                                                                      time() - time_start_dataset))

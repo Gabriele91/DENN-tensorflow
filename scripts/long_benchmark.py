@@ -238,7 +238,7 @@ def main():
                         # print(best)
 
                         job.time = tmp_time
-                        job.accuracy = cur_accuracy
+                        job.accuracy = float(cur_accuracy)
                         job.best = [arr.tolist()
                                     for arr in best]
 

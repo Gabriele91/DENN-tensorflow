@@ -5,9 +5,23 @@ import gzip
 import binascii
 from collections import namedtuple
 
-__all__ = ['Dataset']
+__all__ = ['Dataset', 'calc_confusin_M']
 
 Batch = namedtuple('Batch', ['data', 'labels'])
+
+
+def calc_confusin_M(labels, cur_y):
+    size = labels.shape[-1]
+
+    labels = [np.argmax(row) for row in labels]
+    cur_y = [np.argmax(row) for row in cur_y]
+
+    matrix = np.full((size, size), 0)
+
+    for idx, class_ in enumerate(labels):
+        matrix[class_][cur_y[idx]] += 1
+
+    return matrix.astype(int).tolist()
 
 
 class ENDict(dict):

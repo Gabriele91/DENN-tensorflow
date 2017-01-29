@@ -40,7 +40,7 @@ class TFFx(object):
 
     def __init__(self, obj):
         """Prepare the function name and the base arguments.
-    
+
         TensorFlow function will be called with the base
         arguments when the object is created plus the arguments
         during the calling.
@@ -69,7 +69,7 @@ class TFFx(object):
 
     def to_dict(self):
         """Returns the object as a dictionary.
-    
+
         {
             'name': ...,
             'args': ...,
@@ -100,7 +100,7 @@ class Level(object):
 
     def __init__(self, cur_lvl):
         """Parse level informations and store them.
-    
+
         Params:
             cur_lvl (dict): the current level options
         """
@@ -110,7 +110,7 @@ class Level(object):
         self.init = cur_lvl.get("init", [])
         ##
         # init parse
-        if len(self.init) != len(self.shape):
+        if len(self.init) > 0 and len(self.init) != len(self.shape):
             raise Exception("Init and shape have different number of elements")
         for idx, init_fn in enumerate(self.init):
             if type(init_fn) is dict:
@@ -160,7 +160,7 @@ class Level(object):
 
     def to_dict(self):
         """Returns the object as a dictionary.
-    
+
         {
             'shape': ...,
             'fx': ...,
@@ -182,7 +182,7 @@ class DETask(object):
 
     def __init__(self, cur_task):
         """Parse task options.
-        
+
         Params:
             cur_task (dict): options of the current task
         """
@@ -224,6 +224,7 @@ class DETask(object):
         self.time = None
         self.best = None
         self.accuracy = None
+        self.confusionM = None
 
     def __repr__(self):
         """A string representation of the object TFFx"""
@@ -254,7 +255,7 @@ class DETask(object):
 
     def gen_F(self, shape):
         """Returns a numpy array full of F values with the given shape.
-        
+
         Params:
             shape (list)
         """
@@ -262,7 +263,7 @@ class DETask(object):
 
     def get_device(self, preference):
         """Returns prefer device if available.
-        
+
         Params:
             preference (string)
         """
@@ -287,7 +288,7 @@ class DETask(object):
 
     def gen_network(self, default_graph=False):
         """Generate the network for a DENN op.
-        
+
         Params:
             default_graph (default=False): specify if you want to work with 
                                            the default graph
@@ -410,7 +411,7 @@ class DETask(object):
                                     ada_boost_ref,
                                     cur_level.fx(
                                         y, label_placeholder), name="cross_entropy")
-                                )
+                            )
                         else:
                             cross_entropy = tf.reduce_mean(
                                 cur_level.fx(
@@ -453,7 +454,7 @@ class Network(object):
 
     def __init__(self, list_):
         """Insert all attributes of the network.
-        
+
         List of attributes:
             - targets
             - populations
@@ -508,6 +509,8 @@ class TaskEncoder(json.JSONEncoder):
             new_obj['time'] = obj.time
         if obj.accuracy is not None:
             new_obj['accuracy'] = obj.accuracy
+        if obj.confusionM is not None:
+            new_obj['confusionM'] = obj.confusionM
 
         return new_obj
 

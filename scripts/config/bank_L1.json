@@ -1,0 +1,44 @@
+[
+    {
+        "name": "bank_dataset",
+        "dataset_file": "../datasets/bank_d_no_duration_2000xB_5s.gz",
+        // "dataset_file": "../datasets/bank_f_no_duration_2000xB_5s.gz",
+        // "dataset_file": "../datasets/bank_f_2000xB_5s.gz",
+        "TOT_GEN": 10000,
+        "GEN_STEP": 500,
+        "TYPE": "double",
+        // "TYPE": "float",
+        "F": 0.8,
+        "NP": 20,
+        "de_types": [
+            "rand/1/bin"
+        ],
+        "CR": 0.5,
+        "levels": [
+            {   
+                // With no duration
+                "shape": [[19,2], [2]],
+                "preferred_device": "GPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits"
+                }
+            }
+            // {   
+            //     // With no duration
+            //     "shape": [[19,40], [40]],
+            //     "preferred_device": "CPU",
+            //     "fx": {
+            //         "name": "nn.relu"
+            //     }
+            // },
+            // {   
+            //     // With no duration
+            //     "shape": [[40,2], [2]],
+            //     "preferred_device": "CPU",
+            //     "fx": {
+            //         "name": "nn.softmax_cross_entropy_with_logits"
+            //     }
+            // }
+        ]
+    }
+]

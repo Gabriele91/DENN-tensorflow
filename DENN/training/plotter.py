@@ -1,5 +1,36 @@
 from matplotlib import pyplot as plt
 from matplotlib.ticker import FuncFormatter
+import numpy as np
+
+
+def my_confusion_matrix(fig, matrix):
+    # print(matrix)
+    plt.clf()
+    norm_conf = []
+    for i in matrix:
+        a = 0
+        tmp_arr = []
+        a = sum(i, 0)
+        for j in i:
+            tmp_arr.append(float(j)/float(a))
+        norm_conf.append(tmp_arr)
+
+    norm_conf = np.flipud(np.array(norm_conf))
+    res = plt.imshow(norm_conf, cmap=plt.cm.jet,
+                     interpolation='nearest')
+
+    width, height = matrix.shape
+
+    for x in range(width):
+        for y in range(height):
+            plt.annotate(str(matrix[x][y]), xy=(y, x),
+                         horizontalalignment='center',
+                         verticalalignment='center')
+
+    cb = fig.colorbar(res)
+
+    plt.xticks(range(width), [str(num) for num in range(width)])
+    plt.yticks(range(height), [str(num) for num in range(height)])
 
 
 def my_filter(string, rules):

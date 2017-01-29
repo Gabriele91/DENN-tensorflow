@@ -1,16 +1,32 @@
 from matplotlib import pyplot as plt
 from . plotter import my_plot
+from . plotter import my_confusion_matrix
 from . tasks import TaskEncoder
 from os import makedirs
 from os import path
 from math import pi as PI
 import colorsys
 import json
+import numpy as np
 
 __all__ = ['write_all_results', 'expand_results']
 
 
 def expand_results(results, gen_step, de_types):
+    """Duplicate the value of the accuracy for the entire range of time.
+
+    From:
+        |
+        |      x
+        | x         x
+        |________________
+
+    To:
+        |
+        |      xxxxxx
+        | xxxxxx    xxxxx
+        |________________
+    """
     for de_type in de_types:
         tmp = []
         for res in results[de_type].values:
@@ -136,3 +152,10 @@ def write_all_results(name, results, description, out_options, showDelimiter=Fal
                     plt.axvline(delimiter, color='k')
 
             plt.savefig(figure['filename'], dpi=400, bbox_inches='tight')
+
+    if out_options.job.confusionM is not None:
+        fig = plt.figure()
+        fig.suptitle(figure['title'], fontsize=14, fontweight='bold')
+        my_confusion_matrix(fig, np.array(out_options.job.confusionM))
+        plt.savefig(
+            figure['filename']+"_confusion_M", dpi=400, bbox_inches='tight')

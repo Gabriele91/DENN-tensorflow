@@ -9,7 +9,7 @@
         "TYPE": "double",
         // "TYPE": "float",
         "F": 0.8,
-        "NP": 20,
+        "NP": 100,
         "de_types": [
             "rand/1/bin"
         ],
@@ -18,7 +18,7 @@
             {   
                 // With no duration
                 "shape": [[19,2], [2]],
-                "preferred_device": "GPU",
+                "preferred_device": "CPU",
                 "fx": {
                     "name": "nn.softmax_cross_entropy_with_logits"
                 }

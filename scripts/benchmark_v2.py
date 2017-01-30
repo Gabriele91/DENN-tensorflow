@@ -40,11 +40,12 @@ def main():
     ##
     # Select device
     DEVICE = None
-    NUM_THREADS = 4
+    NUM_INTRA_THREADS = 4
+    NUM_INTER_THREADS = 2
 
     session_config = tf.ConfigProto(
-        intra_op_parallelism_threads=NUM_THREADS,
-        inter_op_parallelism_threads=NUM_THREADS,
+        intra_op_parallelism_threads=NUM_INTRA_THREADS,
+        inter_op_parallelism_threads=NUM_INTER_THREADS,
         # log_device_placement=True
         log_device_placement=False
     )

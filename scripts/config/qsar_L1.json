@@ -1,6 +1,6 @@
 [
     {
-        "name": "bank_dataset",
+        "name": "qsar_dataset",
         "dataset_file": "../datasets/qsar_d_100xB_5s.gz",
         "TOT_GEN": 10000,
         "GEN_STEP": 500,

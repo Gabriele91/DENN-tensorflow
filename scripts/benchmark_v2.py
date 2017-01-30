@@ -41,7 +41,7 @@ def main():
     # Select device
     DEVICE = None
     NUM_INTRA_THREADS = 4
-    NUM_INTER_THREADS = 2
+    NUM_INTER_THREADS = 4
 
     session_config = tf.ConfigProto(
         intra_op_parallelism_threads=NUM_INTRA_THREADS,

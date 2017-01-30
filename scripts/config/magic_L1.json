@@ -2,7 +2,7 @@
     {
         "name": "magic_dataset",
         "dataset_file": "../datasets/magic_d_2000xB_5s.gz",
-        "TOT_GEN": 50000,
+        "TOT_GEN": 200000,
         "GEN_STEP": 500,
         "TYPE": "double",
         "F": 0.8,

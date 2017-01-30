@@ -4,7 +4,7 @@
         "dataset_file": "../datasets/bank_d_no_duration_2000xB_5s.gz",
         // "dataset_file": "../datasets/bank_f_no_duration_2000xB_5s.gz",
         // "dataset_file": "../datasets/bank_f_2000xB_5s.gz",
-        "TOT_GEN": 10000,
+        "TOT_GEN": 200000,
         "GEN_STEP": 500,
         "TYPE": "double",
         // "TYPE": "float",

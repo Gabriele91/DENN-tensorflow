@@ -185,7 +185,7 @@ class Dataset(object):
 
         with gzip.GzipFile(self.__file_name, mode='rb') as gz_file:
             self.stats = Header(
-                "<5if3L",
+                "<5if3I",
                 [
                     "n_batch",
                     "n_features",
@@ -281,23 +281,33 @@ class Dataset(object):
                 num_batch = struct.unpack("<I", gz_file.read(4))[0]
                 num_elms = struct.unpack("<I", gz_file.read(4))[0]
 
+                # print('Read item ->', num_batch, num_elms)
+
                 if num_batch == index:
                     break
                 else:
                     gz_file.seek(
                         num_elms * self.__size_elm_data +
                         num_elms * self.__size_elm_label, SEEK_CUR)
-
+            
+            # print('Read item ->', num_elms, self.__size_elm_data)
             data = np.frombuffer(
                 gz_file.read(num_elms * self.__size_elm_data),
                 dtype=self.__dtype
             )
+            # print('Read item ->', data.shape)
             data = data.reshape([num_elms, self.stats.n_features])
-
+            # print('Read item ->', data.shape)
+            
             labels = np.frombuffer(
                 gz_file.read(num_elms * self.__size_elm_label),
                 dtype=self.__dtype
             )
+            # print('Read item ->', labels.shape)
             labels = labels.reshape([num_elms, self.stats.n_classes])
+            # print('Read item ->', labels.shape)
+
+            # print(data[0])
+            # print(labels[0])
 
         return Batch(data, labels)

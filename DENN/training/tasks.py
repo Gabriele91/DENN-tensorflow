@@ -388,14 +388,14 @@ class DETask(object):
 
                     ##
                     # Placeholder
-                    target_w = tf.placeholder(cur_type, SIZE_W)
-                    target_b = tf.placeholder(cur_type, SIZE_B)
+                    target_w = tf.placeholder(cur_type, SIZE_W, name="target_W")
+                    target_b = tf.placeholder(cur_type, SIZE_B, name="target_B")
 
                     target_ref.append(target_w)
                     target_ref.append(target_b)
 
-                    cur_pop_W = tf.placeholder(cur_type, [self.NP] + SIZE_W)
-                    cur_pop_B = tf.placeholder(cur_type, [self.NP] + SIZE_B)
+                    cur_pop_W = tf.placeholder(cur_type, [self.NP] + SIZE_W, name="cur_pop_W")
+                    cur_pop_B = tf.placeholder(cur_type, [self.NP] + SIZE_B, name="cur_pop_B")
 
                     pop_ref.append(cur_pop_W)
                     pop_ref.append(cur_pop_B)

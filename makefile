@@ -28,11 +28,11 @@ ifeq ($(shell uname -s),Linux)
 	C_FLAGS      += -pthread -D_FORCE_INLINES -fopenmp -DENABLE_PARALLEL_NEW_GEN
 	LIKNER_FLAGS += -lpthread -lm -lutil -ldl
 	LIKNER_FLAGS += -Wl,--whole-archive 
-	LIKNER_FLAGS += -L$(TOP)/tf_static/ -lprotobuf_custom
-	LIKNER_FLAGS += -L$(TOP)/tf_static/ -lprotobuf_lite_custom
-	LIKNER_FLAGS += -L$(TOP)/tf_static/ -lc_api_custom
+	LIKNER_FLAGS += -L$(TOP)/tf_static/linux/ -lprotobuf.pic
+	LIKNER_FLAGS += -L$(TOP)/tf_static/linux/ -lprotobuf_lite.pic
+	LIKNER_FLAGS += -L$(TOP)/tf_static/linux/ -lc_api.pic
 	ifeq ($(OFFICIAL_BINARY),true)
-		LIKNER_FLAGS += -L$(TOP)/tf_static/ -lloader_custom # Needed only with official binary package
+		LIKNER_FLAGS += -L$(TOP)/tf_static/linux/ -lloader.pic # Needed only with official binary package
 	endif
 	# LIKNER_FLAGS += -L$(TOP)/tf_static/ -lpng_custom
 	LIKNER_FLAGS += -Wl,--no-whole-archive
@@ -41,8 +41,10 @@ endif
 #flags macOS
 ifeq ($(shell uname -s),Darwin)
 	#flags add protobuf
-	LIKNER_FLAGS += -lprotobuf 
+	# LIKNER_FLAGS += -lprotobuf 
 	#disable dynamic lookup
+	LIKNER_FLAGS += -L$(TOP)/tf_static/macOS/ -lprotobuf.pic
+	LIKNER_FLAGS += -L$(TOP)/tf_static/macOS/ -lprotobuf_lite.pic
 	C_FLAGS += -undefined dynamic_lookup
 endif
 

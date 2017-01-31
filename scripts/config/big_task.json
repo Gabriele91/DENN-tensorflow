@@ -1,0 +1,161 @@
+[
+    {
+        "name": "bank_dataset_1bin_2000d",
+        "dataset_file": "../datasets/bank_d_no_duration_2000xB_5s.gz",
+        "TOT_GEN": 200000,
+        "GEN_STEP": 1000,
+        "TYPE": "double",
+        "CR": 0.5,
+        "F": 0.8,
+        "NP": 100,
+        "de_types": [
+            "rand/1/bin"
+        ],
+        "levels": [
+            {   
+                // With no duration
+                "shape": [[19,2], [2]],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits"
+                }
+            }
+        ]
+    },
+    {
+        "name": "bank_dataset_2bin_2000d",
+        "dataset_file": "../datasets/bank_d_no_duration_2000xB_5s.gz",
+        "TOT_GEN": 200000,
+        "GEN_STEP": 1000,
+        "TYPE": "double",
+        "CR": 0.5,
+        "F": 0.8,
+        "NP": 100,
+        "de_types": [
+            "rand/2/bin"
+        ],
+        "levels": [
+            {   
+                // With no duration
+                "shape": [[19,2], [2]],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits"
+                }
+            }
+        ]
+    },
+    {
+        "name": "qsar_dataset_1bin_100d",
+        "dataset_file": "../datasets/qsar_d_100xB_5s.gz",
+        "TOT_GEN": 200000,
+        "GEN_STEP": 1000,
+        "TYPE": "double",
+        "F": 0.8,
+        "NP": 100,
+        "de_types": [
+            "rand/1/bin"
+        ],
+        "CR": 0.5,
+        "levels": [
+            {   
+                "shape": [[41,2], [2]],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits"
+                }
+            }
+        ]
+    },
+    {
+        "name": "qsar_dataset_2bin_100d",
+        "dataset_file": "../datasets/qsar_d_100xB_5s.gz",
+        "TOT_GEN": 200000,
+        "GEN_STEP": 1000,
+        "TYPE": "double",
+        "F": 0.8,
+        "NP": 100,
+        "de_types": [
+            "rand/2/bin"
+        ],
+        "CR": 0.5,
+        "levels": [
+            {   
+                "shape": [[41,2], [2]],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits"
+                }
+            }
+        ]
+    },
+    {
+        "name": "magic_dataset_1bin_2000d",
+        "dataset_file": "../datasets/magic_d_2000xB_5s.gz",
+        "TOT_GEN": 200000,
+        "GEN_STEP": 1000,
+        "TYPE": "double",
+        "F": 0.8,
+        "NP": 100,
+        "de_types": [
+            "rand/1/bin"
+        ],
+        "CR": 0.5,
+        "levels": [
+            {   
+                // With no duration
+                "shape": [[10,2], [2]],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits"
+                }
+            }
+        ]
+    },
+    {
+        "name": "magic_dataset_2bin_2000d",
+        "dataset_file": "../datasets/magic_d_2000xB_5s.gz",
+        "TOT_GEN": 200000,
+        "GEN_STEP": 1000,
+        "TYPE": "double",
+        "F": 0.8,
+        "NP": 100,
+        "de_types": [
+            "rand/2/bin"
+        ],
+        "CR": 0.5,
+        "levels": [
+            {   
+                // With no duration
+                "shape": [[10,2], [2]],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits"
+                }
+            }
+        ]
+    },
+    {
+        "name": "bank_dataset_4000d",
+        "dataset_file": "../datasets/bank_d_no_duration_5000xB_5s.gz",
+        "TOT_GEN": 200000,
+        "GEN_STEP": 1000,
+        "TYPE": "double",
+        "CR": 0.5,
+        "F": 0.8,
+        "NP": 100,
+        "de_types": [
+            "rand/1/bin"
+        ],
+        "levels": [
+            {   
+                // With no duration
+                "shape": [[19,2], [2]],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits"
+                }
+            }
+        ]
+    }
+]

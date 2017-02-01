@@ -139,9 +139,8 @@ def main():
                         #######################################################
 
                         job.time = run_time + test_time
-                        job.accuracy = float(cur_accuracy)
-                        job.best = [arr.tolist()
-                                    for arr in current_result]
+                        job.accuracy = cur_accuracy
+                        job.best = current_result
 
                         with open(path.join("benchmark_results", argv[1]), "w") as out_file:
                             out_file.write(DENN.training.task_dumps(job))

@@ -314,9 +314,8 @@ def main():
                     ]
 
                     job.time = time() - time_start_dataset
-                    job.accuracy = float(cur_accuracy)
-                    job.best = [arr.tolist()
-                                for arr in best]
+                    job.accuracy = cur_accuracy
+                    job.best = best
 
                     result = sess.run(cur_nn.y, feed_dict=dict(
                         [

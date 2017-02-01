@@ -5,9 +5,12 @@ import gzip
 import binascii
 from collections import namedtuple
 
-__all__ = ['Dataset', 'calc_confusin_M']
+__all__ = ['Dataset', 'calc_confusin_M', 'calc_TF',
+           'precision_recall_acc', 'f1_score',
+           'calc_bin_stats']
 
 Batch = namedtuple('Batch', ['data', 'labels'])
+BinClassify = namedtuple('BinClassify', ['TP', 'FP', 'FN', 'TN'])
 
 
 def calc_confusin_M(labels, cur_y):
@@ -16,12 +19,56 @@ def calc_confusin_M(labels, cur_y):
     labels = [np.argmax(row) for row in labels]
     cur_y = [np.argmax(row) for row in cur_y]
 
-    matrix = np.full((size, size), 0)
+    matrix = np.full((size, size), 0, dtype=np.int32)
 
     for idx, class_ in enumerate(labels):
         matrix[class_][cur_y[idx]] += 1
 
-    return matrix.astype(int).tolist()
+    return matrix.astype(int)
+
+
+def calc_TF(confusion_m, class_):
+    TP = confusion_m[class_][class_]
+    FP = np.sum(confusion_m[class_]) - TP
+    FN = np.sum(confusion_m[:, class_]) - TP
+    TN = np.sum(confusion_m.diagonal()) - TP
+
+    return BinClassify(TP, FP, FN, TN)
+
+
+def precision_recall_acc(bc):
+    precision = bc.TP / (bc.TP + bc.FP)
+    recall = bc.TP / (bc.TP + bc.FN)
+
+    acc = (bc.TP + bc.TN) / np.sum(bc)
+
+    return precision, recall, acc
+
+
+def f1_score(binclassify):
+    precision, recall, acc = precision_recall_acc(binclassify)
+
+    return 2. * (precision * recall) / (precision + recall)
+
+
+def calc_bin_stats(confusion_m):
+    tmp_0 = calc_TF(confusion_m, 0)
+    tmp_1 = calc_TF(confusion_m, 1)
+    p_0, r_0, acc_0 = precision_recall_acc(tmp_0)
+    p_1, r_1, acc_1 = precision_recall_acc(tmp_1)
+    f1_0 = f1_score(tmp_0)
+    f1_1 = f1_score(tmp_1)
+
+    return {
+        'p_0': p_0,
+        'r_0': r_0,
+        'acc_0': acc_0,
+        'p_1': p_1,
+        'r_1': r_1,
+        'acc_1': acc_1,
+        'f1_0': f1_0,
+        'f1_1': f1_1
+    }
 
 
 class ENDict(dict):
@@ -289,7 +336,7 @@ class Dataset(object):
                     gz_file.seek(
                         num_elms * self.__size_elm_data +
                         num_elms * self.__size_elm_label, SEEK_CUR)
-            
+
             # print('Read item ->', num_elms, self.__size_elm_data)
             data = np.frombuffer(
                 gz_file.read(num_elms * self.__size_elm_data),
@@ -298,7 +345,7 @@ class Dataset(object):
             # print('Read item ->', data.shape)
             data = data.reshape([num_elms, self.stats.n_features])
             # print('Read item ->', data.shape)
-            
+
             labels = np.frombuffer(
                 gz_file.read(num_elms * self.__size_elm_label),
                 dtype=self.__dtype

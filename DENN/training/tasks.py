@@ -225,6 +225,7 @@ class DETask(object):
         self.best = None
         self.accuracy = None
         self.confusionM = None
+        self.stats = None
 
     def __repr__(self):
         """A string representation of the object TFFx"""
@@ -514,6 +515,8 @@ class TaskEncoder(json.JSONEncoder):
             new_obj['accuracy'] = obj.accuracy
         if obj.confusionM is not None:
             new_obj['confusionM'] = obj.confusionM
+        if obj.stats is not None:
+            new_obj['stats'] = obj.stats
 
         return new_obj
 

@@ -136,13 +136,36 @@ def main():
                         test_time = time() - time_test
                         print(
                             "++ Test {}, result {}".format(test_time, cur_accuracy))
+
+                        result = sess.run(cur_nn.y, feed_dict=dict(
+                            [
+                                (target, current_result[num])
+                                for num, target in enumerate(cur_nn.targets)
+                            ]
+                            +
+                            [
+                                (cur_nn.label_placeholder,
+                                 dataset.test_labels),
+                                (cur_nn.input_placeholder, dataset.test_data)
+                            ]
+                        ))
+
                         #######################################################
+                        job.confusionM = DENN.training.calc_confusin_M(
+                            dataset.test_labels, result)
+
+                        job.stats = []
+
+                        for class_ in range(3):
+                            elm_tf = DENN.training.calc_TF(job.confusionM, class_)
+                            job.stats.append(DENN.training.precision_recall_acc(elm_tf) )
 
                         job.time = run_time + test_time
                         job.accuracy = cur_accuracy
                         job.best = current_result
 
-                        with open(path.join("benchmark_results", argv[1]), "w") as out_file:
+                        out_file = argv[1].split("/")[-1]
+                        with open(path.join("benchmark_results", out_file), "w") as out_file:
                             out_file.write(DENN.training.task_dumps(job))
                         ###################################################
         # clena graph

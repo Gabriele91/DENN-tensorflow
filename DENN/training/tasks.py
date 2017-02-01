@@ -490,6 +490,9 @@ class TaskEncoder(json.JSONEncoder):
             obj: the current object to serialize
         """
 
+        if type(obj) == np.ndarray:
+            return obj.tolist()
+
         new_obj = OrderedDict([
             ('name', obj.name),
             ('TYPE', obj.TYPE),

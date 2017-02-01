@@ -313,7 +313,7 @@ def main():
                         for num, target in enumerate(cur_nn.targets)
                     ]
 
-                    job.time = time() - time_start_gen
+                    job.time = time() - time_start_dataset
                     job.accuracy = float(cur_accuracy)
                     job.best = [arr.tolist()
                                 for arr in best]

@@ -1,0 +1,46 @@
+[
+    {
+        "name": "qsar_dataset",
+        "dataset_file": "../datasets/qsar_d_100xB_5s.gz",
+        "TOT_GEN": 200000,
+        "GEN_STEP": 500,
+        "TYPE": "double",
+        "F": 0.8,
+        "NP": 100,
+        "de_types": [
+            "rand/2/exp"
+        ],
+        "CR": 0.75,
+        "levels": [
+            {   
+                "shape": [[41,2], [2]],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits"
+                }
+            }
+        ]
+    },
+    {
+        "name": "qsar_dataset",
+        "dataset_file": "../datasets/qsar_d_100xB_5s.gz",
+        "TOT_GEN": 200000,
+        "GEN_STEP": 500,
+        "TYPE": "double",
+        "F": 0.8,
+        "NP": 100,
+        "de_types": [
+            "best/2/bin"
+        ],
+        "CR": 0.5,
+        "levels": [
+            {   
+                "shape": [[41,2], [2]],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits"
+                }
+            }
+        ]
+    }
+]

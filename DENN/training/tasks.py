@@ -493,6 +493,10 @@ class TaskEncoder(json.JSONEncoder):
 
         if type(obj) == np.ndarray:
             return obj.tolist()
+        elif type(obj) in [np.int32, np.int64]:
+            return int(obj)
+        elif type(obj) in [np.float32, np.float64]:
+            return float(obj)
 
         new_obj = OrderedDict([
             ('name', obj.name),

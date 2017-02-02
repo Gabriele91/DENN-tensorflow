@@ -8,6 +8,7 @@ from math import pi as PI
 import colorsys
 import json
 import numpy as np
+from time import time
 
 __all__ = ['write_all_results', 'expand_results']
 
@@ -60,15 +61,25 @@ def gen_folder_name(name, num_gen, num_batches, levels):
     )
 
 
-def write_all_results(name, results, description, out_options, showDelimiter=False):
+def gen_folder_name_by_time(name):
+    return "{}_{}".format(
+        name,
+        int(time())
+    )
+
+
+def write_all_results(name, results, description, out_options, showDelimiter=False, folderByTime=True):
     color_delta = 1.0 / len(results)
     colors = [
         norm_rgb_2_hex(colorsys.hsv_to_rgb(idx * color_delta, 1, 1))
         for idx in range(len(results))
     ]
 
-    BASE_FOLDER = gen_folder_name(
-        name, out_options.job.TOT_GEN, out_options.num_batches, out_options.job.levels)
+    if folderByTime:
+        BASE_FOLDER = gen_folder_name_by_time(name)
+    else:
+        BASE_FOLDER = gen_folder_name(
+            name, out_options.job.TOT_GEN, out_options.num_batches, out_options.job.levels)
 
     makedirs("./benchmark_results", exist_ok=True)
     makedirs(path.join("benchmark_results", BASE_FOLDER), exist_ok=True)
@@ -158,4 +169,4 @@ def write_all_results(name, results, description, out_options, showDelimiter=Fal
         fig.suptitle(figure['title'], fontsize=14, fontweight='bold')
         my_confusion_matrix(fig, np.array(out_options.job.confusionM))
         plt.savefig(
-            figure['filename']+"_confusion_M", dpi=400, bbox_inches='tight')
+            figure['filename'] + "_confusion_M", dpi=400, bbox_inches='tight')

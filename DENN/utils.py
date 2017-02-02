@@ -41,7 +41,7 @@ class OpListener(object):
 
 class DebugListener(Process):
 
-    def __init__(self, host, port, msg_header):
+    def __init__(self, host, port, msg_header, trap=True):
         super(DebugListener, self).__init__()
         # print("+ Connect to Op: host->[{}] port->[{}]".format(host, port))
         self._sock = None
@@ -51,6 +51,10 @@ class DebugListener(Process):
         self.host = host
         self.port = port
         self.msg_header = msg_header
+
+        self.trap = trap
+        self._int_evt = Event()
+        self._int_evt.clear()
 
         # struct type correspondance
         self.__msg_types = {
@@ -67,6 +71,9 @@ class DebugListener(Process):
             'string': 3,
             'close': 4
         }
+
+    def interrupt(self):
+        self._int_evt.set()
 
     def create_socket(self):
         self.close_connection()
@@ -105,24 +112,36 @@ class DebugListener(Process):
             return
         # or connected
         self._connected = True
-        print("++ DebugListener: connected", end='\r')
-        print("++ DebugListener: start main loop")
-        print(CURSOR_UP_ONE + ERASE_LINE, end='\r')
+        # print("++ DebugListener: connected", end='\r')
+        # print("++ DebugListener: start main loop")
+        # print(CURSOR_UP_ONE + ERASE_LINE, end='\r')
 
-        while not self._exit.is_set() and self._connected:
-            # read
-            readables, writables, specials = select([self._sock], [], [], 0.1)
-            # print("Available:", readables, writables)
-            for readable in readables:
-                data = readable.recv(4)
-                if data:
-                    # get type
-                    type_ = struct.unpack("<i", data)[0]
-                    # return
-                    if type_ in self.__msg_types:
-                        msg = self.read_msg(readable, self.__msg_types[type_])
-                        print(
-                            "++ [{}]-> {}".format(self.msg_header, msg), end='\r')
+        while not self._exit.is_set() and self._connected and not self._int_evt.is_set():
+            try:
+                # read
+                readables, writables, specials = select(
+                    [self._sock], [], [], 0.1)
+                # print("Available:", readables, writables)
+                for readable in readables:
+                    data = readable.recv(4)
+                    if data:
+                        # get type
+                        type_ = struct.unpack("<i", data)[0]
+                        # return
+                        if type_ in self.__msg_types:
+                            msg = self.read_msg(
+                                readable, self.__msg_types[type_])
+                            print(
+                                "++ [{}]-> {}".format(self.msg_header, msg))  # , end='\r')
+            except KeyboardInterrupt:
+                print("\r+ INTERRUPTED!!!")
+                if self.trap:
+                    print(
+                        "+ Close message status: {}".format("OK!" if self.send_close_message() else "ERROR!"))
+        # else:
+        #     print("\r+ INTERRUPTED!!!")
+        #     if self.trap:
+
         # close connection (anyway)
         self.close_connection()
 
@@ -148,8 +167,10 @@ class DebugListener(Process):
 
     def send_close_message(self):
         try:
-            return self._sock.send(struct.pack('<i', self.__str_to_msg_type['close'])) == None
+            print("+ Send close message...")
+            return self._sock.sendall(struct.pack('<i', self.__str_to_msg_type['close'])) == None
         except Exception as err:
+            print(err)
             return False
 
     @staticmethod

@@ -549,14 +549,14 @@ namespace debug
                 //message temp data
                 message_raw data; 
                 //type size
-                const msg_type_size = sizeof(unsigned int);
+                const size_t msg_type_size = sizeof(unsigned int);
                 //alloc type
                 data.resize(msg_type_size);
                 //try to recv 
                 int ret = ::recv(m_client.m_socket, (void*)data.data(), msg_type_size, 0);
                 //read type
                 if(ret > 0)
-                {
+                {   
                     //get type
                     unsigned int type = *((unsigned int*)(data.data()));
                     //read by type 
@@ -586,7 +586,7 @@ namespace debug
                             //get len 
                             data.resize(msg_type_size+size_len);  
                             ::recv(m_client.m_socket, (void*)(data.data()+msg_type_size), size_len, 0);
-                            int str_len = *((int*)(data.data()+offset_len));
+                            unsigned int str_len = *((unsigned int*)(data.data()+msg_type_size));
                             //read str 
                             data.resize(msg_type_size+size_len+str_len);  
                             ::recv(m_client.m_socket, (void*)(data.data()+msg_type_size+size_len), str_len, 0);
@@ -598,7 +598,7 @@ namespace debug
                             //close
                             ::shutdown(m_client.m_socket, SHUT_RDWR);
                             ::close(m_client.m_socket);
-                            m_client = socket_info();                              //add msg into the list
+                            m_client = socket_info();
                             //add msg into the list
                             m_recv_msg.push(data);
                         break;

@@ -33,6 +33,13 @@
     #define SOCKET_DEBUG(x)
 #endif
 
+#ifdef  _DEBUG
+    #include <iostream>
+    #define MSG_DEBUG( _x_ ) std::cout<< _x_ <<std::endl;
+#else
+    #define MSG_DEBUG( _x_ )  
+#endif
+
 //LOADER UTILS
 #if defined( _MSC_VER )
     #define ASPACKED( __Declaration__ ) __pragma( pack(push, 1) ) __Declaration__ __pragma( pack(pop) )

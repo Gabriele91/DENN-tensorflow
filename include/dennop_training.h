@@ -136,23 +136,39 @@ namespace tensorflow
                 );
 
                 SOCKET_DEBUG(
-                    #if 0
-                    //Search best pop
-                    int best_of_populations = FindBest(context,current_populations_list); 
-                    //Test best pop
-                    value_t result_test = DENNOp_t::TestBest(context,current_populations_list, best_of_populations);
-                    //output
-                    this->m_debug.write
-                    (
-                          "Stage[" 
-                        + std::to_string(i_sub_gen*sub_gen) 
-                        + "] complete, Test: " 
-                        + std::to_string(result_test)
-                    );
-                    #else 
+
                     //output
                     this->m_debug.write( "Stage[" + std::to_string(i_sub_gen*sub_gen) + "] complete" );
-                    #endif
+                    //process message
+                    while(this->m_debug.get_n_recv_mgs())
+                    {
+                        MSG_DEBUG("+++ Read message")
+                        //get message
+                        auto msg = this->m_debug.pop_recv_msg();
+                        //get type 
+                        unsigned int type = *((unsigned int*)msg.data());
+                        MSG_DEBUG("+++ Message type: " << type)
+                        /*
+                            msg types
+                            {
+                                MSG_INT,
+                                MSG_FLOAT,
+                                MSG_DOUBLE,
+                                MSG_STRING,
+                                MSG_CLOSE_CONNECTION
+                            };
+                        */
+                        switch(type)
+                        {
+                            //exit case
+                            case debug::socket_messages_server::MSG_CLOSE_CONNECTION:
+                                i_sub_gen = n_sub_gen-1;
+                            break;
+                            //not used cases
+                            default:
+                            break;
+                        }
+                    }
                 )
             }
             ////////////////////////////////////////////////////////////////////////////

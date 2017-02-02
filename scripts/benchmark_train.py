@@ -1,6 +1,7 @@
 ##
 # Only for testing
 import sys
+import signal
 sys.path.append("../")
 #####
 
@@ -14,12 +15,15 @@ from sys import argv
 from time import sleep
 from time import time
 
-import signal
-import sys
-
 #from memory_profiler import profile
 
 # sleep(6)
+
+##
+# Ref:
+# https://docs.python.org/3/library/signal.html#signal.siginterrupt
+# False is needed to recover the execution
+signal.siginterrupt(signal.SIGINT, False)
 
 
 class ENDict(dict):
@@ -39,6 +43,8 @@ def main():
     # Select device
     DEVICE = None
     NUM_THREADS = 4
+
+    print("START", argv)
 
     session_config = tf.ConfigProto(
         intra_op_parallelism_threads=NUM_THREADS,
@@ -107,6 +113,12 @@ def main():
                         "++ Node creation {}".format(time() - time_node_creation))
                     # Soket listener
                     with DENN.OpListener() as listener:
+                        ##
+                        # Handle SIGINT
+                        def my_handler(signal, frame):
+                            listener.interrupt()
+                        signal.signal(signal.SIGINT, my_handler)
+
                         # time
                         time_start_gen = time()
                         # session run
@@ -116,6 +128,7 @@ def main():
                                 for num, pop_ref in enumerate(cur_nn.populations)
                             ]
                         ))
+
                         run_time = time() - time_start_gen
                         print("++ Op time {}".format(run_time))
                         #######################################################
@@ -160,8 +173,10 @@ def main():
                         job.stats = []
 
                         for class_ in range(3):
-                            elm_tf = DENN.training.calc_TF(job.confusionM, class_)
-                            job.stats.append(DENN.training.precision_recall_acc(elm_tf) )
+                            elm_tf = DENN.training.calc_TF(
+                                job.confusionM, class_)
+                            job.stats.append(
+                                DENN.training.precision_recall_acc(elm_tf))
 
                         job.time = run_time + test_time
                         job.accuracy = cur_accuracy
@@ -173,7 +188,6 @@ def main():
                         ###################################################
         # clena graph
         tf.reset_default_graph()
-
 
 if __name__ == '__main__':
     main()

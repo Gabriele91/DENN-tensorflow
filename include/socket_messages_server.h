@@ -269,6 +269,20 @@ namespace debug
             m_send_msg.push(msg);
         }
 
+        size_t get_n_recv_mgs() const
+        {
+            return m_recv_msg.size();
+        }
+
+        //message temp data
+        message_raw pop_recv_msg()
+        {
+            message_raw data;
+            m_recv_msg.safe_copy(data,0);
+            m_recv_msg.remove_first();
+            return data;
+        }
+
     protected:
 
         //close connection
@@ -534,10 +548,12 @@ namespace debug
             {
                 //message temp data
                 message_raw data; 
+                //type size
+                const msg_type_size = sizeof(unsigned int);
                 //alloc type
-                data.resize(sizeof(unsigned int));
+                data.resize(msg_type_size);
                 //try to recv 
-                int ret = ::recv(m_client.m_socket, (void*)data.data(), sizeof(unsigned int), 0);
+                int ret = ::recv(m_client.m_socket, (void*)data.data(), msg_type_size, 0);
                 //read type
                 if(ret > 0)
                 {
@@ -547,35 +563,33 @@ namespace debug
                     switch(type)
                     {
                         case MSG_INT:
-                            data.resize(data.size()+sizeof(int));   
-                            ::recv(m_client.m_socket, (void*)(data.data()+sizeof(unsigned int)), sizeof(int), 0);
+                            data.resize(msg_type_size+sizeof(int));   
+                            ::recv(m_client.m_socket, (void*)(data.data()+msg_type_size), sizeof(int), 0);
                             //add msg into the list
                             m_recv_msg.push(data);
                         break;
                         case MSG_FLOAT:
                             data.resize(data.size()+sizeof(float));   
-                            ::recv(m_client.m_socket, (void*)(data.data()+sizeof(unsigned int)), sizeof(float), 0);
+                            ::recv(m_client.m_socket, (void*)(data.data()+msg_type_size), sizeof(float), 0);
                             //add msg into the list
                             m_recv_msg.push(data);
                         break;
                         case MSG_DOUBLE:
                             data.resize(data.size()+sizeof(double));   
-                            ::recv(m_client.m_socket, (void*)(data.data()+sizeof(unsigned int)), sizeof(double), 0);
+                            ::recv(m_client.m_socket, (void*)(data.data()+msg_type_size), sizeof(double), 0);
                             //add msg into the list
                             m_recv_msg.push(data);
                         break;
                         case MSG_STRING:
                         {
-                            const size_t size_len   = sizeof(int);
-                            const size_t offset_len = sizeof(unsigned int);
-                            const size_t offset_str = offset_len + size_len;
+                            const size_t size_len   = sizeof(unsigned int);
                             //get len 
-                            data.resize(data.size()+size_len);  
-                            ::recv(m_client.m_socket, (void*)(data.data()+size_len), size_len, 0);
+                            data.resize(msg_type_size+size_len);  
+                            ::recv(m_client.m_socket, (void*)(data.data()+msg_type_size), size_len, 0);
                             int str_len = *((int*)(data.data()+offset_len));
                             //read str 
-                            data.resize(data.size()+offset_str+str_len);  
-                            ::recv(m_client.m_socket, (void*)(data.data()+offset_str), str_len, 0);
+                            data.resize(msg_type_size+size_len+str_len);  
+                            ::recv(m_client.m_socket, (void*)(data.data()+msg_type_size+size_len), str_len, 0);
                             //add msg into the list
                             m_recv_msg.push(data);
                         }
@@ -584,7 +598,9 @@ namespace debug
                             //close
                             ::shutdown(m_client.m_socket, SHUT_RDWR);
                             ::close(m_client.m_socket);
-                            m_client = socket_info();
+                            m_client = socket_info();                              //add msg into the list
+                            //add msg into the list
+                            m_recv_msg.push(data);
                         break;
                         default: break;
                     }

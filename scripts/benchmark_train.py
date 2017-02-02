@@ -14,6 +14,9 @@ from sys import argv
 from time import sleep
 from time import time
 
+import signal
+import sys
+
 #from memory_profiler import profile
 
 # sleep(6)

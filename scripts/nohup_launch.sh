@@ -1,5 +1,7 @@
 #!/bin/bash
 
+mkdir -p logs
+
 RED='\033[1;31m'
 PURPLE='\033[1;35m'
 GREEN='\033[0;32m'

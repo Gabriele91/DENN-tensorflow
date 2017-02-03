@@ -222,10 +222,10 @@ class DETask(object):
             )
 
         self.time = None
-        self.best = None
+        self.best = {}
         self.accuracy = None
-        self.confusionM = None
-        self.stats = None
+        self.confusionM = {}
+        self.stats = {}
 
     def __repr__(self):
         """A string representation of the object TFFx"""
@@ -511,15 +511,15 @@ class TaskEncoder(json.JSONEncoder):
             ('levels', [level.to_dict() for level in obj.levels])
         ])
 
-        if obj.best is not None:
+        if len(obj.best) > 0:
             new_obj['best'] = obj.best
         if obj.time is not None:
             new_obj['time'] = obj.time
         if obj.accuracy is not None:
             new_obj['accuracy'] = obj.accuracy
-        if obj.confusionM is not None:
+        if len(obj.confusionM) > 0:
             new_obj['confusionM'] = obj.confusionM
-        if obj.stats is not None:
+        if len(obj.stats) > 0:
             new_obj['stats'] = obj.stats
 
         return new_obj

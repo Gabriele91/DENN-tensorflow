@@ -167,20 +167,20 @@ def main():
                         ))
 
                         #######################################################
-                        job.confusionM = DENN.training.calc_confusin_M(
+                        job.confusionM[de_type] = DENN.training.calc_confusin_M(
                             dataset.test_labels, result)
 
-                        job.stats = []
-
-                        for class_ in range(3):
+                        for class_ in range(job.confusionM[de_type][0].shape[0]):
                             elm_tf = DENN.training.calc_TF(
-                                job.confusionM, class_)
-                            job.stats.append(
+                                job.confusionM[de_type], class_)
+                            if de_type not in job.stats:
+                                job.stats[de_type] = []
+                            job.stats[de_type].append(
                                 DENN.training.precision_recall_acc(elm_tf))
 
                         job.time = run_time + test_time
                         job.accuracy = cur_accuracy
-                        job.best = current_result
+                        job.best[de_type] = current_result
 
                         out_file = argv[1].split("/")[-1]
                         with open(path.join("benchmark_results", out_file), "w") as out_file:

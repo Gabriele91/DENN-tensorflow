@@ -164,9 +164,21 @@ def write_all_results(name, results, description, out_options, showDelimiter=Fal
 
             plt.savefig(figure['filename'], dpi=400, bbox_inches='tight')
 
-    if out_options.job.confusionM is not None:
-        fig = plt.figure()
-        fig.suptitle(figure['title'], fontsize=14, fontweight='bold')
-        my_confusion_matrix(fig, np.array(out_options.job.confusionM))
-        plt.savefig(
-            figure['filename'] + "_confusion_M", dpi=400, bbox_inches='tight')
+    if len(out_options.job.confusionM) > 0:
+        for method, matrix in out_options.job.confusionM.items():
+            fig.suptitle("CM {}".format(method),
+                         fontsize=14, fontweight='bold')
+            file_name = "{}_{}".format(
+                path.join("benchmark_results", BASE_FOLDER,
+                          method.replace("/", "_")),
+                "CM"
+            )
+            print("+ Generating {} [confusion matrix] -> {}".format(
+                method, file_name)
+            )
+            my_confusion_matrix(fig, np.array(matrix))
+            plt.savefig(
+                file_name,
+                dpi=400,
+                bbox_inches='tight'
+            )

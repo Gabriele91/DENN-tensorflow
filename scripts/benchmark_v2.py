@@ -315,7 +315,7 @@ def main():
 
                     job.time = time() - time_start_dataset
                     job.accuracy = cur_accuracy
-                    job.best = best
+                    job.best[de_type] = best
 
                     result = sess.run(cur_nn.y, feed_dict=dict(
                         [
@@ -325,14 +325,20 @@ def main():
                         +
                         [
                             (cur_nn.label_placeholder,
-                             dataset.test_labels),
+                                dataset.test_labels),
                             (cur_nn.input_placeholder, dataset.test_data)
                         ]
                     ))
 
-                    job.confusionM = DENN.training.calc_confusin_M(dataset.test_labels, result)
-                    
+                    job.confusionM[de_type] = DENN.training.calc_confusin_M(dataset.test_labels, result)
 
+                    for class_ in range(job.confusionM[de_type][0].shape[0]):
+                        elm_tf = DENN.training.calc_TF(
+                            job.confusionM[de_type], class_)
+                        if de_type not in job.stats:
+                            job.stats[de_type] = []
+                        job.stats[de_type].append(
+                            DENN.training.precision_recall_acc(elm_tf))
 
                         
 

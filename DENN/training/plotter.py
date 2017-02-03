@@ -15,7 +15,6 @@ def my_confusion_matrix(fig, matrix):
             tmp_arr.append(float(j)/float(a))
         norm_conf.append(tmp_arr)
 
-    norm_conf = np.flipud(np.array(norm_conf))
     res = plt.imshow(norm_conf, cmap=plt.cm.jet,
                      interpolation='nearest')
 

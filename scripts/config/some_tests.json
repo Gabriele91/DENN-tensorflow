@@ -1,0 +1,216 @@
+[
+    {
+        "name": "qsar_dataset",
+        "dataset_file": "../datasets/qsar_d_100xB_5s.gz",
+        "TOT_GEN": 20,
+        "GEN_STEP": 10,
+        "TYPE": "double",
+        "F": 0.8,
+        "NP": 100,
+        "de_types": [
+            "rand/1/bin"
+        ],
+        "CR": 0.5,
+        "levels": [
+            {   
+                "shape": [[41,2], [2]],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits"
+                },
+                "init": [
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -1.0, 
+                                "maxval": 1.0
+                            }
+                        }
+                    },
+                    {
+                        "fx": {
+                            "name": "random_normal",
+                            "kwargs": {
+                                "seed": 1
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "name": "magic_dataset",
+        "dataset_file": "../datasets/magic_d_2000xB_5s.gz",
+        "TOT_GEN": 20,
+        "GEN_STEP": 10,
+        "TYPE": "double",
+        "F": 0.8,
+        "NP": 100,
+        "de_types": [
+            "rand/1/bin"
+        ],
+        "CR": 0.5,
+        "levels": [
+            {   
+                // With no duration
+                "shape": [[10,2], [2]],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits"
+                },
+                "init": [
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -1.0, 
+                                "maxval": 1.0
+                            }
+                        }
+                    },
+                    {
+                        "fx": {
+                            "name": "random_normal",
+                            "kwargs": {
+                                "seed": 1
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "name": "mnist_dataset_test_0_16",
+        "dataset_file": "../datasets/mnist_f_4000xB_5s.gz",
+        "TOT_GEN": 20,
+        "GEN_STEP": 10,
+        "TYPE": "float",
+        "F": 0.5,
+        "NP": 16,
+        "de_types": [
+            "rand/1/bin"
+        ],
+        "CR": 0.8,
+        "levels": [
+            {   
+                // With no duration
+                "shape": [[784, 10], [10]],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits"
+                },
+                "init": [
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -1.0, 
+                                "maxval": 1.0
+                            }
+                        }
+                    },
+                    {
+                        "fx": {
+                            "name": "random_normal",
+                            "kwargs": {
+                                "seed": 1
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "name": "mnist_dataset_test_1_32",
+        "dataset_file": "../datasets/mnist_f_4000xB_5s.gz",
+        "TOT_GEN": 20,
+        "GEN_STEP": 10,
+        "TYPE": "float",
+        "F": 0.5,
+        "NP": 32,
+        "de_types": [
+            "rand/1/bin"
+        ],
+        "CR": 0.8,
+        "levels": [
+            {   
+                // With no duration
+                "shape": [[784, 10], [10]],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits"
+                },
+                "init": [
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -1.0, 
+                                "maxval": 1.0
+                            }
+                        }
+                    },
+                    {
+                        "fx": {
+                            "name": "random_normal",
+                            "kwargs": {
+                                "seed": 1
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "name": "mnist_dataset_test_2_64",
+        "dataset_file": "../datasets/mnist_f_4000xB_5s.gz",
+        "TOT_GEN": 20,
+        "GEN_STEP": 10,
+        "TYPE": "float",
+        "F": 0.5,
+        "NP": 64,
+        "de_types": [
+            "rand/1/bin"
+        ],
+        "CR": 0.8,
+        "levels": [
+            {   
+                // With no duration
+                "shape": [[784, 10], [10]],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits"
+                },
+                "init": [
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -1.0, 
+                                "maxval": 1.0
+                            }
+                        }
+                    },
+                    {
+                        "fx": {
+                            "name": "random_normal",
+                            "kwargs": {
+                                "seed": 1
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+]

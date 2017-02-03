@@ -431,3 +431,6 @@ __pycache__/
 
 ## Tensorboard logs
 **/logs/*.*
+
+## Scripts log
+scripts/logs/

@@ -76,6 +76,7 @@ def main():
                 # init vars
                 # We don't need this, we don't have variables at the moment
                 # sess.run(tf.global_variables_initializer())
+                start_job = time()
                 for de_type in job.de_types:
                     ##
                     # Random initialization of the NN
@@ -178,11 +179,14 @@ def main():
                             job.stats[de_type].append(
                                 DENN.training.precision_recall_acc(elm_tf))
 
-                        job.time = run_time + test_time
-                        job.accuracy = cur_accuracy
+                        job.times[de_type] = run_time + test_time
+                        job.accuracy[de_type] = cur_accuracy
                         job.best[de_type] = current_result
 
+                        ##
+                        # Save for any DE (Safe)
                         out_file = argv[1].split("/")[-1]
+                        job.time = time() - start_job
                         with open(path.join("benchmark_results", out_file), "w") as out_file:
                             out_file.write(DENN.training.task_dumps(job))
                         ###################################################

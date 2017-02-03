@@ -222,8 +222,9 @@ class DETask(object):
             )
 
         self.time = None
+        self.times = {}
         self.best = {}
-        self.accuracy = None
+        self.accuracy = {}
         self.confusionM = {}
         self.stats = {}
 
@@ -513,9 +514,11 @@ class TaskEncoder(json.JSONEncoder):
 
         if len(obj.best) > 0:
             new_obj['best'] = obj.best
+        if len(obj.times) > 0:
+            new_obj['times'] = obj.times
         if obj.time is not None:
             new_obj['time'] = obj.time
-        if obj.accuracy is not None:
+        if len(obj.accuracy) is not None:
             new_obj['accuracy'] = obj.accuracy
         if len(obj.confusionM) > 0:
             new_obj['confusionM'] = obj.confusionM

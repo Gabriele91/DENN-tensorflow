@@ -313,8 +313,8 @@ def main():
                         for num, target in enumerate(cur_nn.targets)
                     ]
 
-                    job.time = time() - time_start_dataset
-                    job.accuracy = cur_accuracy
+                    job.times[de_type] = time() - time_start_gen
+                    job.accuracy[de_type] = cur_accuracy
                     job.best[de_type] = best
 
                     result = sess.run(cur_nn.y, feed_dict=dict(
@@ -351,6 +351,8 @@ def main():
             job.F,
             job.CR
         )
+
+        job.time = time() - time_start_test
 
         DENN.training.expand_results(
             test_results, job.GEN_STEP, job.de_types)

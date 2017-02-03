@@ -2,7 +2,7 @@
     {
         "name": "iris_dataset",
         "dataset_file": "../datasets/iris_15-B_5s.gz",
-        "TOT_GEN": 100000,
+        "TOT_GEN": 10000,
         "GEN_STEP": 100,
         "TYPE": "double",
         "F": 0.8,
@@ -10,6 +10,8 @@
         "de_types": [
             "rand/1/bin"
         ],
+        "NUM_INTRA_THREADS": 2,
+        "NUM_INTER_THREADS": 2,
         "CR": 0.5,
         /*"levels": [
             [[[4,3], [3]], "softmax_cross_entropy_with_logits"]

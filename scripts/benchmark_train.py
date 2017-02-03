@@ -39,17 +39,7 @@ class NDict(dict):
 
 #@profile
 def main():
-    ##
-    # Select device
-    DEVICE = None
-    NUM_THREADS = 4
-
-    print("START", argv)
-
-    session_config = tf.ConfigProto(
-        intra_op_parallelism_threads=NUM_THREADS,
-        inter_op_parallelism_threads=NUM_THREADS
-    )
+    print("+ START ARGV", argv)
 
     ##
     # jobs
@@ -70,6 +60,14 @@ def main():
         )
         # network graph
         with cur_nn.graph.as_default():
+
+            session_config = tf.ConfigProto(
+                intra_op_parallelism_threads=job.num_intra_threads,
+                inter_op_parallelism_threads=job.num_inter_threads,
+                # log_device_placement=True
+                log_device_placement=False
+            )
+
             # start session
             with tf.Session(config=session_config) as sess:
                 ##

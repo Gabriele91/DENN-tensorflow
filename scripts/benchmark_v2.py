@@ -38,19 +38,6 @@ def main():
     TEST_ALTERNATE_DEV = False
 
     ##
-    # Select device
-    DEVICE = None
-    NUM_INTRA_THREADS = 4
-    NUM_INTER_THREADS = 4
-
-    session_config = tf.ConfigProto(
-        intra_op_parallelism_threads=NUM_INTRA_THREADS,
-        inter_op_parallelism_threads=NUM_INTER_THREADS,
-        # log_device_placement=True
-        log_device_placement=False
-    )
-
-    ##
     # jobs
     jobs = []
 
@@ -120,6 +107,14 @@ def main():
                 test_networks.append(job.gen_network(True))
 
         with cur_nn.graph.as_default():
+
+            session_config = tf.ConfigProto(
+                intra_op_parallelism_threads=job.num_intra_threads,
+                inter_op_parallelism_threads=job.num_inter_threads,
+                # log_device_placement=True
+                log_device_placement=False
+            )
+
             with tf.Session(config=session_config) as sess:
 
                 denn_operators = {}

@@ -1,0 +1,217 @@
+[
+    {
+        "name": "bank_dataset_0",
+        "dataset_file": "../datasets/bank_d_no_duration_0_4000xB_5s.gz",
+        "TOT_GEN": 200000,
+        "GEN_STEP": 1000,
+        "TYPE": "double",
+        "F": 0.8,
+        "NP": 100,
+        "de_types": [
+            "rand/1/bin"
+        ],
+        "CR": 0.5,
+        "levels": [
+            {   
+                // With no duration
+                "shape": [[19,2], [2]],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits"
+                },
+                "init": [
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -1.0, 
+                                "maxval": 1.0
+                            }
+                        }
+                    },
+                    {
+                        "fx": {
+                            "name": "random_normal",
+                            "kwargs": {
+                                "seed": 1
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "name": "bank_dataset_1",
+        "dataset_file": "../datasets/bank_d_no_duration_1_4000xB_5s.gz",
+        "TOT_GEN": 200000,
+        "GEN_STEP": 1000,
+        "TYPE": "double",
+        "F": 0.8,
+        "NP": 100,
+        "de_types": [
+            "rand/1/bin"
+        ],
+        "CR": 0.5,
+        "levels": [
+            {   
+                // With no duration
+                "shape": [[19,2], [2]],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits"
+                },
+                "init": [
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -1.0, 
+                                "maxval": 1.0
+                            }
+                        }
+                    },
+                    {
+                        "fx": {
+                            "name": "random_normal",
+                            "kwargs": {
+                                "seed": 1
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "name": "bank_dataset_2",
+        "dataset_file": "../datasets/bank_d_no_duration_2_4000xB_5s.gz",
+        "TOT_GEN": 200000,
+        "GEN_STEP": 1000,
+        "TYPE": "double",
+        "F": 0.8,
+        "NP": 100,
+        "de_types": [
+            "rand/1/bin"
+        ],
+        "CR": 0.5,
+        "levels": [
+            {   
+                // With no duration
+                "shape": [[19,2], [2]],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits"
+                },
+                "init": [
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -1.0, 
+                                "maxval": 1.0
+                            }
+                        }
+                    },
+                    {
+                        "fx": {
+                            "name": "random_normal",
+                            "kwargs": {
+                                "seed": 1
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "name": "bank_dataset_3",
+        "dataset_file": "../datasets/bank_d_no_duration_3_4000xB_5s.gz",
+        "TOT_GEN": 200000,
+        "GEN_STEP": 1000,
+        "TYPE": "double",
+        "F": 0.8,
+        "NP": 100,
+        "de_types": [
+            "rand/1/bin"
+        ],
+        "CR": 0.5,
+        "levels": [
+            {   
+                // With no duration
+                "shape": [[19,2], [2]],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits"
+                },
+                "init": [
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -1.0, 
+                                "maxval": 1.0
+                            }
+                        }
+                    },
+                    {
+                        "fx": {
+                            "name": "random_normal",
+                            "kwargs": {
+                                "seed": 1
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "name": "bank_dataset_4",
+        "dataset_file": "../datasets/bank_d_no_duration_4_4000xB_5s.gz",
+        "TOT_GEN": 200000,
+        "GEN_STEP": 1000,
+        "TYPE": "double",
+        "F": 0.8,
+        "NP": 100,
+        "de_types": [
+            "rand/1/bin"
+        ],
+        "CR": 0.5,
+        "levels": [
+            {   
+                // With no duration
+                "shape": [[19,2], [2]],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits"
+                },
+                "init": [
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -1.0, 
+                                "maxval": 1.0
+                            }
+                        }
+                    },
+                    {
+                        "fx": {
+                            "name": "random_normal",
+                            "kwargs": {
+                                "seed": 1
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+]

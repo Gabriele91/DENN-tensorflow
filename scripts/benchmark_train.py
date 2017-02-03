@@ -183,7 +183,7 @@ def main():
 
                         ##
                         # Save for any DE (Safe)
-                        out_file = argv[1].split("/")[-1]
+                        out_file = "{}.json".format(job.name)
                         job.time = time() - start_job
                         with open(path.join("benchmark_results", out_file), "w") as out_file:
                             out_file.write(DENN.training.task_dumps(job))

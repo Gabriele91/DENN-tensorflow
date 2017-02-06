@@ -49,6 +49,56 @@
         ]
     },
     {
+        "name": "bank_dataset_0",
+        "dataset_file": "../datasets/bank_d_no_duration_0_4000xB_5s.gz",
+        "TOT_GEN": 50000,
+        "GEN_STEP": 250,
+        "TYPE": "double",
+        "F": 0.8,
+        "NP": 100,
+        "de_types": [
+            "rand/1/bin",
+            "rand/2/bin",
+            "rand/1/exp",
+            "rand/2/exp",
+            "best/1/bin",
+            "best/2/bin",
+            "best/1/exp",
+            "best/2/exp"
+        ],
+        "CR": 0.5,
+        "levels": [
+            {   
+                // With no duration
+                "shape": [[19,2], [2]],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits"
+                },
+                "init": [
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -1.0, 
+                                "maxval": 1.0
+                            }
+                        }
+                    },
+                    {
+                        "fx": {
+                            "name": "random_normal",
+                            "kwargs": {
+                                "seed": 1
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    {
         "name": "magic_dataset",
         "dataset_file": "../datasets/magic_d_2000xB_5s.gz",
         "TOT_GEN": 50000,

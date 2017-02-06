@@ -427,6 +427,7 @@ class DETask(object):
                             name="nn_execution"
                         )
 
+                        ada_label_diff = None
                         if self.ada_boost is not None:
                             ada_label_diff = tf.equal(
                                 tf.argmax(y_placeholder, 1),

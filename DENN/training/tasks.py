@@ -217,11 +217,7 @@ class DETask(object):
         ##
         # AdaBoost
         self.ada_boost = cur_task.get("AdaBoost", None)
-        if self.ada_boost is not None:
-            self.ada_boost = np.array(
-                self.ada_boost,
-                dtype=np.float64 if self.TYPE == "double" else np.float32
-            )
+        self.__ada_boost_cache = {}
 
         self.time = None
         self.times = {}
@@ -229,6 +225,13 @@ class DETask(object):
         self.accuracy = {}
         self.confusionM = {}
         self.stats = {}
+
+    def get_adaboost_C(self, idx, batch):
+        if idx not in self.__ada_boost_cache:
+            self.__ada_boost_cache[idx] = np.full(
+                [len(batch.data)], self.ada_boost['C']
+            )
+        return self.__ada_boost_cache[idx]
 
     def __repr__(self):
         """A string representation of the object TFFx"""
@@ -324,21 +327,25 @@ class DETask(object):
             cur_pop_VAL = tf.placeholder(cur_type, [self.NP])
             cur_gen_options = tf.placeholder(tf.int32, [2])
 
-            if self.ada_boost is not None:
-                ada_boost_ref = tf.placeholder(
-                    tf.float64 if self.TYPE == "double" else tf.float32
-                )
-            else:
-                ada_boost_ref = None
-
             weights = []
 
             input_size = levels[0].in_size
             label_size = levels[-1].out_size
             input_placeholder = tf.placeholder(cur_type,
-                                               [None, input_size], name="inputs")
+                                               [None, input_size],
+                                               name="inputs"
+                                               )
             label_placeholder = tf.placeholder(cur_type,
-                                               [None, label_size], name="labels")
+                                               [None, label_size],
+                                               name="labels"
+                                               )
+            if self.ada_boost is not None:
+                y_placeholder = tf.placeholder(cur_type,
+                                               [None, label_size],
+                                               name="y_placeholder"
+                                               )
+            else:
+                y_placeholder = None
 
             last_input = input_placeholder
 
@@ -396,14 +403,18 @@ class DETask(object):
 
                     ##
                     # Placeholder
-                    target_w = tf.placeholder(cur_type, SIZE_W, name="target_W")
-                    target_b = tf.placeholder(cur_type, SIZE_B, name="target_B")
+                    target_w = tf.placeholder(
+                        cur_type, SIZE_W, name="target_W")
+                    target_b = tf.placeholder(
+                        cur_type, SIZE_B, name="target_B")
 
                     target_ref.append(target_w)
                     target_ref.append(target_b)
 
-                    cur_pop_W = tf.placeholder(cur_type, [self.NP] + SIZE_W, name="cur_pop_W")
-                    cur_pop_B = tf.placeholder(cur_type, [self.NP] + SIZE_B, name="cur_pop_B")
+                    cur_pop_W = tf.placeholder(
+                        cur_type, [self.NP] + SIZE_W, name="cur_pop_W")
+                    cur_pop_B = tf.placeholder(
+                        cur_type, [self.NP] + SIZE_B, name="cur_pop_B")
 
                     pop_ref.append(cur_pop_W)
                     pop_ref.append(cur_pop_B)
@@ -411,19 +422,30 @@ class DETask(object):
                     if num == len(levels):
                         ##
                         # NN TRAIN
-                        y = tf.matmul(last_input, target_w) + target_b
+                        y = tf.add(
+                            tf.matmul(last_input, target_w), target_b,
+                            name="nn_execution"
+                        )
 
                         if self.ada_boost is not None:
+                            ada_label_diff = tf.equal(
+                                tf.argmax(y_placeholder, 1),
+                                tf.argmax(label_placeholder, 1),
+                                name="ada_label_diff"
+                            )
                             cross_entropy = tf.reduce_mean(
-                                tf.multiply(
-                                    ada_boost_ref,
-                                    cur_level.fx(
-                                        y, label_placeholder), name="cross_entropy")
+                                cur_level.fx(
+                                    y_placeholder, label_placeholder
+                                ),
+                                name="cross_entropy"
                             )
                         else:
                             cross_entropy = tf.reduce_mean(
                                 cur_level.fx(
-                                    y, label_placeholder), name="cross_entropy")
+                                    y, label_placeholder
+                                ),
+                                name="cross_entropy"
+                            )
 
                         ##
                         # NN TEST
@@ -444,7 +466,7 @@ class DETask(object):
             ('rand_pop', rand_pop_ref),
             ('weights', weights),
             ('evaluated', cur_pop_VAL),
-            ('y', y),
+            ('nn_exec', y),
             ('y_test', y_test),
             ('cross_entropy', cross_entropy),
             ('accuracy', accuracy),
@@ -452,7 +474,8 @@ class DETask(object):
             ('input_placeholder', input_placeholder),
             ('label_placeholder', label_placeholder),
             ('cur_gen_options', cur_gen_options),
-            ('ada_boost_vector', ada_boost_ref)
+            ('ada_label_diff', ada_label_diff),
+            ('y_placeholder', y_placeholder)
         ])
 
 
@@ -477,7 +500,7 @@ class Network(object):
             - input_placeholder
             - label_placeholder
             - cur_gen_options
-            - ada_boost_vector (could be None)
+            - ada_boost_C (could be None)
         """
 
         for name, value in list_:

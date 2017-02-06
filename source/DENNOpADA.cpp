@@ -1,9 +1,9 @@
 #include <config.h>
-#include <dennop.h>
+#include <dennop_ada_boost.h>
 
 using namespace tensorflow;
 
-REGISTER_OP("DENN_ADA")
+REGISTER_OP("DENN")
 .Attr("T: {float, double}")
 .Attr("space: int")
 .Attr("graph: string")
@@ -17,8 +17,8 @@ REGISTER_OP("DENN_ADA")
 .Attr("f_input_features: string = 'x'")
 .Attr("f_name_execute_net: string = 'cross_entropy:0'")
 //EXECUTE COMPARATION Y and Y_
-.Attr("f_input_correct_predition: string = 'cross_entropy:0'")
-.Attr("f_correct_predition: string = 'cross_entropy:0'")
+.Attr("f_input_correct_predition: string = 'x'")
+.Attr("f_correct_predition: string = 'ada_label_diff:0'")
 //EXECUTE CROSS ENTROPY
 .Attr("f_input_cross_entropy: string = 'cross_entropy:0'")
 .Attr("f_cross_entropy: string = 'cross_entropy:0'")
@@ -43,6 +43,6 @@ REGISTER_OP("DENN_ADA")
 .Output("final_populations: space * T")
 .Output("final_eval: T");
 
-REGISTER_KERNEL_BUILDER(Name("DENN").Device(DEVICE_CPU).TypeConstraint<float>("T"), DENNOp<float>);
-REGISTER_KERNEL_BUILDER(Name("DENN").Device(DEVICE_CPU).TypeConstraint<double>("T"), DENNOp<double>);
+REGISTER_KERNEL_BUILDER(Name("DENN").Device(DEVICE_CPU).TypeConstraint<float>("T"), DENNOpAdaBoost<float>);
+REGISTER_KERNEL_BUILDER(Name("DENN").Device(DEVICE_CPU).TypeConstraint<double>("T"), DENNOpAdaBoost<double>);
 

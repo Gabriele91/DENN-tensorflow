@@ -468,6 +468,7 @@ class DETask(object):
             ('weights', weights),
             ('evaluated', cur_pop_VAL),
             ('nn_exec', y),
+            ('y', y),
             ('y_test', y_test),
             ('cross_entropy', cross_entropy),
             ('accuracy', accuracy),

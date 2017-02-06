@@ -233,6 +233,9 @@ class DETask(object):
             )
         return self.__ada_boost_cache[idx]
 
+    def set_adaboost_C(self, idx, C):
+        self.__ada_boost_cache[idx] = C
+
     def __repr__(self):
         """A string representation of the object TFFx"""
         string = """+++++ Task ({}) +++++
@@ -344,8 +347,13 @@ class DETask(object):
                                                [None, label_size],
                                                name="y_placeholder"
                                                )
+                ada_C_placeholder = tf.placeholder(cur_type,
+                                               [None],
+                                               name="C"
+                                               )
             else:
                 y_placeholder = None
+                ada_C_placeholder = None
 
             last_input = input_placeholder
 
@@ -477,6 +485,7 @@ class DETask(object):
             ('label_placeholder', label_placeholder),
             ('cur_gen_options', cur_gen_options),
             ('ada_label_diff', ada_label_diff),
+            ('ada_C_placeholder', ada_C_placeholder),
             ('y_placeholder', y_placeholder)
         ])
 

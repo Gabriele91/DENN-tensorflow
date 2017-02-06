@@ -140,6 +140,7 @@ def main():
                             cur_nn.evaluated,  # FIRST EVAL
                             cur_nn.weights,  # PASS WEIGHTS
                             cur_nn.populations,  # POPULATIONS
+                            cur_nn.ada_C_placeholder,
                             # attributes
                             # space = 2,
                             graph=DENN.get_graph_proto(
@@ -200,6 +201,10 @@ def main():
                                 (cur_nn.cur_gen_options, [
                                  job.GEN_STEP, first_time])
                             ]
+                            +
+                            [
+                                (cur_nn.ada_C_placeholder, ada_boost_C)
+                            ]
                         ))
 
                         # print("++ Op time {}".format(time() - time_start_gen))
@@ -207,6 +212,9 @@ def main():
                         # get output
                         cur_pop = results.final_populations
                         v_res = results.final_eval
+                        job.set_adaboost_C(
+                            batch_counter, results.final_C
+                        )
 
                         # print(len(cur_pop))
                         # print(cur_pop[0].shape)

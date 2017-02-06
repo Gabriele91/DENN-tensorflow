@@ -42,6 +42,7 @@ REGISTER_OP("DENN")
 .Input("C: T")
 .Output("final_populations: space * T")
 .Output("final_eval: T");
+.Output("final_C: T");
 
 REGISTER_KERNEL_BUILDER(Name("DENN").Device(DEVICE_CPU).TypeConstraint<float>("T"), DENNOpAdaBoost<float>);
 REGISTER_KERNEL_BUILDER(Name("DENN").Device(DEVICE_CPU).TypeConstraint<double>("T"), DENNOpAdaBoost<double>);

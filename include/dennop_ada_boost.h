@@ -41,9 +41,14 @@ namespace tensorflow
             const size_t start_input = 4;
             // Take C [ start input + W + population ]
             m_C = context->input(start_input + m_space_size * 2);
+            // Alloc C Counter
+            m_C_counter = Tensor(m_C.shape(), data_type<int>());
             //compute DENN
             DENNOp_t::Compute(context);
-            //TODO: OUTPUT C
+            //return C
+            Tensor* new_generation_tensor = nullptr;
+            OP_REQUIRES_OK(context, context->allocate_output(m_space_size+1, m_C.shape(), &new_generation_tensor));
+            (*new_generation_tensor) = m_C;
         }
 
         /**
@@ -96,15 +101,21 @@ namespace tensorflow
                 }   
                 #if 0
                 SOCKET_DEBUG(
-                    m_debug.write(i);
+                             m_debug.write(i);
                 )
                 #endif
                 //////////////////////////////////////////////////////////////
                 // TO DO: Update C and to 0 C_counter
-                // C(gen+1) = C(gen) + delta * (Ni / Np) 
-                // or
-                // C(gen+1) = COV(C(gen), C(gen) + delta * (Ni / Np), Alpha)
+                // C(gen+1) = (1-alpha) * C(gen) + alpha * (Ni / Np)
                 //////////////////////////////////////////////////////////////
+                //get values
+                auto& raw_C         = m_C.flat<float>();
+                auto& raw_C_counter = m_C_counter.flat<float>();
+                //
+                for(size_t i = 0; i!=m_C.shape().dim_size(0); ++i)
+                {
+                    raw_C[i] = (value_t(1.0)-m_Alpha) * raw_C[i] + m_Alpha * (value_t(raw_C_counter[i]) / NP);
+                }
             }
         }
  
@@ -192,16 +203,16 @@ namespace tensorflow
                 }
             }
             
-            //compute N_i of C(gen+1) = C(gen) + delta * (Ni / Np) 
+            //compute N_i of C(gen+1) = (1-alpha) * C(gen) + alpha * (Ni / Np)
             {
                 //
                 auto& y_correct     = output_correct_values[0];
                 auto& raw_y_correct = y_correct.flat<bool>();
-                auto& raw_n         = m_C_Counter.flat<int>();
+                auto& raw_C_counter = m_C_Counter.flat<int>();
                 //
-                for(size_t i = 0; i != y_correct.shape().dim_size(i); ++i)
+                for(size_t i = 0; i != y_correct.shape().dim_size(0); ++i)
                 {
-                    if NOT(raw_y_correct[i]) ++raw_n[i];
+                    if NOT(raw_y_correct[i]) ++raw_C_counter[i];
                 }
             }
 
@@ -213,7 +224,10 @@ namespace tensorflow
                 auto& raw_c = m_C.flat<value_t>();
                 auto& raw_y_= GetLabelsInCacheInputs().flat<value_t>();
                 //for all values
-                for(size_t i = 0; i != y.shape().dim_size(i); ++i) raw_y(i) *= raw_c(i);
+                for(size_t i = 0; i != y.shape().dim_size(0); ++i)
+                {
+                    raw_y(i) *= raw_c(i);
+                }
             }
 
             //compure cross (Y*C)
@@ -254,8 +268,8 @@ namespace tensorflow
         std::string m_name_input_cross_entropy     //name of Y*C
         std::string m_name_cross_entropy;          //name of : F(Y*C) -> cross(Y) 
         //ada boost factor 
-        Tensor m_Alpha;
-        Tensor m_C;
-        Tensor m_C_Counter;
+        value_t m_Alpha;
+        Tensor  m_C;
+        Tensor  m_C_Counter;
 
     }

@@ -58,6 +58,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		CED3149B1E488AF60057FEE8 /* dennop_ada_boost.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = dennop_ada_boost.h; sourceTree = "<group>"; };
+		CED3149C1E488F960057FEE8 /* DENNOpADA.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DENNOpADA.cpp; sourceTree = "<group>"; };
 		CEF1F3151DDBB126005FE9C7 /* benchmark.py */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.script.python; path = benchmark.py; sourceTree = "<group>"; };
 		E0344DDE1DDB2E30009F7A70 /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		E067D9711DE248410032CC68 /* iris_L1.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = iris_L1.json; sourceTree = "<group>"; };
@@ -218,6 +220,7 @@
 		E0E1CCD41DA6927F009C4D35 /* source */ = {
 			isa = PBXGroup;
 			children = (
+				CED3149C1E488F960057FEE8 /* DENNOpADA.cpp */,
 				E06C06361DF624C900960CBA /* DENNOpTraining.cpp */,
 				E0E1CCD51DA6927F009C4D35 /* DENNOp.cpp */,
 			);
@@ -229,8 +232,9 @@
 			children = (
 				E06C062F1DF624C100960CBA /* config.h */,
 				E06C06301DF624C100960CBA /* dataset_loader.h */,
-				E06C06311DF624C100960CBA /* dennop_training.h */,
 				E06C06321DF624C100960CBA /* dennop.h */,
+				E06C06311DF624C100960CBA /* dennop_training.h */,
+				CED3149B1E488AF60057FEE8 /* dennop_ada_boost.h */,
 				E06C06331DF624C100960CBA /* io_wrapper.h */,
 				E06C06341DF624C100960CBA /* random_indices_util.h */,
 				E06C06351DF624C100960CBA /* tensorflow_util.h */,

@@ -312,7 +312,7 @@ def main():
                                                                      time() - time_start_dataset))
         print("+ Save results for {}".format(job.name))
 
-        description = "NP: {}  W: {}  CR: {}".format(
+        description = "NP: {}  F: {}  CR: {}".format(
             job.NP,
             job.F,
             job.CR

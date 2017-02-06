@@ -235,7 +235,7 @@ public:
         std::vector < std::vector <Tensor> >& new_populations_list,
         std::vector < std::vector <Tensor> >& current_populations_list,
         Tensor& current_eval_result
-    ) const
+    )
     {
         //Get np 
         const int NP = current_populations_list[0].size();

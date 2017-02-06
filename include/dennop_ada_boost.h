@@ -24,7 +24,11 @@ namespace tensorflow
         //init DENN from param
         explicit DENNOpAdaBoost(OpKernelConstruction *context) : DENNOp< value_t >(context)
         {
-            OP_REQUIRES_OK(context, context->GetAttr("ada_boost_alpha", &m_Alpha));
+            //get alpha in float
+            float alpha = 0.5f;
+            OP_REQUIRES_OK(context, context->GetAttr("ada_boost_alpha", &alpha));
+            //cast alpha to value_t alpha 
+            m_alpha = value_t(alpha);
             // Get name of function of test execution
             OP_REQUIRES_OK(context, context->GetAttr("f_input_correct_predition", &m_name_input_correct_predition));
             OP_REQUIRES_OK(context, context->GetAttr("f_correct_predition", &m_name_correct_predition));
@@ -40,14 +44,14 @@ namespace tensorflow
             // start input
             const size_t start_input = 4;
             // Take C [ start input + W + population ]
-            m_C = context->input(start_input + m_space_size * 2);
+            m_C = context->input(start_input + this->m_space_size * 2);
             // Alloc C Counter
-            m_C_counter = Tensor(m_C.shape(), data_type<int>());
+            m_C_counter = Tensor(data_type<int>(), m_C.shape());
             //compute DENN
             DENNOp_t::Compute(context);
             //return C
             Tensor* new_generation_tensor = nullptr;
-            OP_REQUIRES_OK(context, context->allocate_output(m_space_size+1, m_C.shape(), &new_generation_tensor));
+            OP_REQUIRES_OK(context, context->allocate_output(this->m_space_size+1, m_C.shape(), &new_generation_tensor));
             (*new_generation_tensor) = m_C;
         }
 
@@ -68,7 +72,7 @@ namespace tensorflow
             std::vector < std::vector <Tensor> >& new_populations_list,
             std::vector < std::vector <Tensor> >& current_populations_list,
             Tensor& current_eval_result
-        ) const
+        )
         {
             //Get np 
             const int NP = current_populations_list[0].size();
@@ -78,17 +82,17 @@ namespace tensorflow
             for(int i=0;i!=num_gen;++i)
             {
                 //Create new population
-                switch(m_pert_vector)
+                switch(this->m_pert_vector)
                 {
-                    case PV_RANDOM: RandTrialVectorsOp(context, NP,W_list,current_populations_list,new_populations_list); break;
-                    case PV_BEST: BestTrialVectorsOp(context, NP,W_list,current_eval_result,current_populations_list,new_populations_list); break;
+                    case DENNOp_t::PV_RANDOM: this->RandTrialVectorsOp(context, NP,W_list,current_populations_list,new_populations_list); break;
+                    case DENNOp_t::PV_BEST: this->BestTrialVectorsOp(context, NP,W_list,current_eval_result,current_populations_list,new_populations_list); break;
                     default: return /* FAILED */;
                 }
                 //Change old population (if required)
                 for(int index = 0; index!=NP ;++index)
                 {
                     //Evaluation
-                    value_t new_eval = ExecuteEvaluateTrain(context, index, new_populations_list);
+                    value_t new_eval = ExecuteEvaluateTrainAda(context, index, new_populations_list);
                     //Choice
                     if(new_eval < ref_current_eval_result(index))
                     {
@@ -109,30 +113,30 @@ namespace tensorflow
                 // C(gen+1) = (1-alpha) * C(gen) + alpha * (Ni / Np)
                 //////////////////////////////////////////////////////////////
                 //get values
-                auto& raw_C         = m_C.flat<float>();
-                auto& raw_C_counter = m_C_counter.flat<float>();
+                auto raw_C         = m_C.flat<float>();
+                auto raw_C_counter = m_C_counter.flat<float>();
                 //
                 for(size_t i = 0; i!=m_C.shape().dim_size(0); ++i)
                 {
-                    raw_C[i] = (value_t(1.0)-m_Alpha) * raw_C[i] + m_Alpha * (value_t(raw_C_counter[i]) / NP);
+                    raw_C(i) = (value_t(1.0)-m_alpha) * raw_C(i) + m_alpha * (value_t(raw_C_counter(i)) / NP);
                 }
             }
         }
  
     
         //execute evaluate train function (tensorflow function)   
-        virtual value_t ExecuteEvaluateTrain
+        virtual value_t ExecuteEvaluateTrainAda
         (
             OpKernelContext* context,
             const int NP_i,
             const std::vector < std::vector<Tensor> >& populations_list
-        ) const
+        ) 
         {
             NameList function
             {
-                  m_name_execute_net
-                , m_name_correct_predition
-                , m_name_cross_entropy    
+                  this->m_name_execute_net
+                , this->m_name_correct_predition
+                , this->m_name_cross_entropy    
             };
             return ExecuteEvaluateAdaBoost(context, NP_i, populations_list, function);
         }
@@ -144,15 +148,15 @@ namespace tensorflow
             const int NP_i,
             const std::vector < std::vector<Tensor> >& populations_list,
             const NameList& functions_list
-        ) const
+        )
         {
             //Output
             TensorList 
-              output_y, 
+              output_y
             , output_correct_values
             , cross_value;
             //Set input
-            if NOT(SetCacheInputs(populations_list, NP_i))
+            if NOT(this->SetCacheInputs(populations_list, NP_i))
             {
                 context->CtxFailure({tensorflow::error::Code::ABORTED,"Run evaluate: error to set inputs"});
             }
@@ -160,8 +164,8 @@ namespace tensorflow
             //execute network
             {
                 auto
-                status= m_session->Run(//input
-                                        m_inputs_tensor_cache,
+                status= this->m_session->Run(//input
+                                        this->m_inputs_tensor_cache,
                                         //function
                                         NameList{
                                             functions_list[0] //m_name_execute_net
@@ -181,11 +185,11 @@ namespace tensorflow
             //execute m_name_correct_predition
             {
                 auto
-                status= m_session->Run(//input
-                                        TensorInput
+                status= this->m_session->Run(//input
+                                        TensorInputs
                                         {
-                                            { m_input_labels, output_y },                 // y
-                                            { m_input_labels, GetLabelsInCacheInputs() }  // y_
+                                            { this->m_input_labels, output_y[0] },                    // y
+                                            { this->m_input_labels, this->GetLabelsInCacheInputs() }  // y_
                                         },
                                         //function
                                         NameList{
@@ -206,25 +210,25 @@ namespace tensorflow
             //compute N_i of C(gen+1) = (1-alpha) * C(gen) + alpha * (Ni / Np)
             {
                 //
-                auto& y_correct     = output_correct_values[0];
-                auto& raw_y_correct = y_correct.flat<bool>();
-                auto& raw_C_counter = m_C_Counter.flat<int>();
+                const Tensor& y_correct = output_correct_values[0];
+                auto raw_y_correct = y_correct.flat<bool>();
+                auto raw_C_counter = m_C_counter.flat<int>();
                 //
                 for(size_t i = 0; i != y_correct.shape().dim_size(0); ++i)
                 {
-                    if NOT(raw_y_correct[i]) ++raw_C_counter[i];
+                    if NOT(raw_y_correct(i)) ++raw_C_counter(i);
                 }
             }
 
             //Compute Y*C
             {
                 //get Y
-                auto& y     = output_y[0];
-                auto& raw_y = y.flat<value_t>();
-                auto& raw_c = m_C.flat<value_t>();
-                auto& raw_y_= GetLabelsInCacheInputs().flat<value_t>();
+                auto& curr_y = output_y[0];
+                auto raw_y  = curr_y.template flat<value_t>();
+                auto raw_c  = m_C.template flat<value_t>();
+                auto raw_y_ = this->GetLabelsInCacheInputs().template flat<value_t>();
                 //for all values
-                for(size_t i = 0; i != y.shape().dim_size(0); ++i)
+                for(size_t i = 0; i != curr_y.shape().dim_size(0); ++i)
                 {
                     raw_y(i) *= raw_c(i);
                 }
@@ -233,10 +237,10 @@ namespace tensorflow
             //compure cross (Y*C)
             {   
                 auto
-                status= m_session->Run( //input
-                                        TensorInput
+                status= this->m_session->Run( //input
+                                        TensorInputs
                                         {
-                                            { m_name_input_cross_entropy ,  y  }
+                                            { this->m_name_input_cross_entropy ,  output_y[0]  }
                                         },
                                         //function
                                         NameList{
@@ -256,7 +260,7 @@ namespace tensorflow
             }
          
             //results
-            return cross_value.size() ? cross_value[0].flat<value_t>()(0) : 0.0;
+            return cross_value.size() ? cross_value[0].template flat<value_t>()(0) : 0.0;
         }
 
     protected:
@@ -265,11 +269,12 @@ namespace tensorflow
         std::string m_name_input_correct_predition; //name of : Y
         std::string m_name_correct_predition;       //F(Y,Y_) -> C_ : where Y_ is labels and C_ is a vector of booleans
 
-        std::string m_name_input_cross_entropy     //name of Y*C
+        std::string m_name_input_cross_entropy;    //name of Y*C
         std::string m_name_cross_entropy;          //name of : F(Y*C) -> cross(Y) 
         //ada boost factor 
-        value_t m_Alpha;
+        value_t m_alpha;
         Tensor  m_C;
-        Tensor  m_C_Counter;
+        Tensor  m_C_counter;
 
-    }
+    };
+}

@@ -160,6 +160,8 @@ def main():
 
                     first_time = True
 
+                    start_evolution = time()
+
                     print("+ Start evolution")
                     for gen in tqdm(range(int(job.TOT_GEN / job.GEN_STEP))):
 
@@ -308,7 +310,7 @@ def main():
                         for num, target in enumerate(cur_nn.targets)
                     ]
 
-                    job.times[de_type] = time() - time_start_gen
+                    job.times[de_type] = time() - start_evolution
                     job.accuracy[de_type] = cur_accuracy
                     job.best[de_type] = best
 

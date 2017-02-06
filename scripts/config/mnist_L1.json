@@ -19,7 +19,27 @@
                     "name": "nn.softmax_cross_entropy_with_logits"//,
                     //"args": []
                     //"kwargs": {}
-                }
+                },
+                "init": [
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -1.0, 
+                                "maxval": 1.0
+                            }
+                        }
+                    },
+                    {
+                        "fx": {
+                            "name": "random_normal",
+                            "kwargs": {
+                                "seed": 1
+                            }
+                        }
+                    }
+                ]
             }
         ]
     }

@@ -132,7 +132,9 @@ class DebugListener(Process):
                             msg = self.read_msg(
                                 readable, self.__msg_types[type_])
                             print(
-                                "++ [{}]-> {}".format(self.msg_header, msg))  # , end='\r')
+                                "++ [{}]-> {}".format(self.msg_header, msg), 
+                                end='\r'
+                            )
             except KeyboardInterrupt:
                 print("\r+ INTERRUPTED!!!")
                 if self.trap:

@@ -149,9 +149,8 @@ def main():
                             f_input_labels=cur_nn.label_placeholder.name,
                             f_input_features=cur_nn.input_placeholder.name,
                             CR=job.CR,
-                            DE=de_type,
-                            # training=True
-                        )
+                            DE=de_type
+                        ).standard
 
                 print(
                     "++ Node creation {}".format(time() - time_node_creation))

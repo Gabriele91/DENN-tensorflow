@@ -4,22 +4,37 @@ from os import path
 __all__ = ['create']
 
 
-def create(*args, **kwargs):
-    """Create a DENN object"""
-    training = kwargs.get("training", False)
+class create(object):
+    """Create a DENN object."""
 
-    module = None
+    def __init__(self, *args, **kwargs):
+        self.__args = args
+        self.__kwargs = kwargs
+        self.__module = None
 
-    if not training:
+    def __call__(self, *args, **kwargs):
         module = tf.load_op_library(path.join(
             path.dirname(__file__), 'DENNOp.so')
         )
-    else:
-        module = tf.load_op_library(path.join(
+        return module.denn(*args, **kwargs)
+    
+    @property
+    def standard(self):
+        self.__module = tf.load_op_library(path.join(
+            path.dirname(__file__), 'DENNOp.so')
+        )
+        return self.__module.denn(*self.__args, **self.__kwargs)
+    
+    @property
+    def train(self):
+        self.__module = tf.load_op_library(path.join(
             path.dirname(__file__), 'DENNOp_training.so')
         )
-
-    if 'training' in kwargs:
-        del kwargs['training']
-
-    return module.denn(*args, **kwargs)
+        return self.__module.denn(*self.__args, **self.__kwargs)
+    
+    @property
+    def ada(self):
+        self.__module = tf.load_op_library(path.join(
+            path.dirname(__file__), 'DENNOp_ada.so')
+        )
+        return self.__module.denn(*self.__args, **self.__kwargs)

@@ -113,8 +113,8 @@ namespace tensorflow
                 // C(gen+1) = (1-alpha) * C(gen) + alpha * (Ni / Np)
                 //////////////////////////////////////////////////////////////
                 //get values
-                auto raw_C         = m_C.flat<float>();
-                auto raw_C_counter = m_C_counter.flat<float>();
+                auto raw_C         = m_C.flat<value_t>();
+                auto raw_C_counter = m_C_counter.flat<int>();
                 //
                 for(size_t i = 0; i!=m_C.shape().dim_size(0); ++i)
                 {

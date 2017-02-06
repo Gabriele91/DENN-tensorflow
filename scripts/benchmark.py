@@ -322,6 +322,8 @@ def main():
 
         DENN.training.write_all_results(
             job.name, test_results, description, out_options)
+        
+        tf.reset_default_graph()
 
     print("+ Completed all test {} sec.".format(time() - time_start_test))
 

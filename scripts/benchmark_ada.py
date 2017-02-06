@@ -155,7 +155,7 @@ def main():
                             f_input_cross_entropy=cur_nn.y_placeholder.name,
                             CR=job.CR,
                             DE=de_type
-                        ).standard
+                        ).ada
 
                 print(
                     "++ Node creation {}".format(time() - time_node_creation))
@@ -213,7 +213,7 @@ def main():
                         cur_pop = results.final_populations
                         v_res = results.final_eval
                         job.set_adaboost_C(
-                            batch_counter, results.final_C
+                            batch_counter, results.final_c
                         )
 
                         # print(len(cur_pop))

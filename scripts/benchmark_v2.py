@@ -363,7 +363,7 @@ def main():
         job.time = time() - time_start_test
 
         DENN.training.expand_results(
-            test_results, job.GEN_STEP, job.de_types)
+            test_results, int(job.GEN_STEP / job.GEN_SAMPLES), job.de_types)
 
         DENN.training.write_all_results(
             job.name, test_results, description, out_options)

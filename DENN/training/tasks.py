@@ -188,6 +188,7 @@ class Clamp(object):
             'max': self.max
         }
 
+
 class AdaBoost(object):
 
     def __init__(self, ada_boost):
@@ -243,7 +244,8 @@ class DETask(object):
 
         ##
         # AdaBoost
-        self.ada_boost = AdaBoost(cur_task.get("AdaBoost", None))
+        tmp = cur_task.get("AdaBoost", None)
+        self.ada_boost = AdaBoost(tmp) if tmp is not None else tmp
         self.__ada_boost_cache = {}
 
         self.time = None
@@ -583,7 +585,8 @@ class TaskEncoder(json.JSONEncoder):
             ('de_types', obj.de_types),
             ('NUM_INTRA_THREADS', obj.num_intra_threads),
             ('NUM_INTER_THREADS', obj.num_inter_threads),
-            ('AdaBoost', obj.ada_boost.to_dict()),
+            ('AdaBoost', obj.ada_boost.to_dict()
+             if obj.ada_boost is not None else None),
             ('clamp', obj.clamp.to_dict()),
             ('levels', [level.to_dict() for level in obj.levels])
         ])

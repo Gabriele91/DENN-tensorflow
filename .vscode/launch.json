@@ -7,19 +7,19 @@
             "request": "launch",
             "program": "${config.python.pythonPath}",
             "args": [
-                "${workspaceRoot}/scripts/benchmark_train.py",
+                "${workspaceRoot}/scripts/benchmark_ada.py",
                 "${file}"
             ],
-            "stopAtEntry": true,
+            //"stopAtEntry": true,
             "cwd": "${workspaceRoot}/scripts/",
             "environment": [],
             // "externalConsole": true,
-            "additionalSOLibSearchPath": "${workspaceRoot}/DENN",
+            // "additionalSOLibSearchPath": "${workspaceRoot}/DENN;${workspaceRoot}/DENN/obj",
             "logging": {
-                "moduleLoad": true,
-                "trace": true,
-                "engineLogging" : true,
-                "traceResponse" : true
+                "moduleLoad": true
+                //,  "trace": true
+                //, "engineLogging" : true
+                //, "traceResponse" : true
             },
             "linux": {
                 "MIMode": "gdb",

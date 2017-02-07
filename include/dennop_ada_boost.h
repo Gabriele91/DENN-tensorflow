@@ -164,7 +164,8 @@ namespace tensorflow
             //execute network
             {
                 auto
-                status= this->m_session->Run(//input
+                status= this->m_session->Run
+                                    (   //input
                                         this->m_inputs_tensor_cache,
                                         //function
                                         NameList{
@@ -188,8 +189,8 @@ namespace tensorflow
                 status= this->m_session->Run(//input
                                         TensorInputs
                                         {
-                                            { this->m_input_labels, output_y[0] },                    // y
-                                            { this->m_input_labels, this->GetLabelsInCacheInputs() }  // y_
+                                            { this->m_name_input_correct_predition, output_y[0] }, // y
+                                            { this->m_input_labels,                 m_labels    }  // y_
                                         },
                                         //function
                                         NameList{
@@ -224,13 +225,13 @@ namespace tensorflow
             {
                 //get Y
                 auto& curr_y = output_y[0];
-                auto raw_y  = curr_y.template flat<value_t>();
+                auto raw_y  = curr_y.template flat_inner_dims<value_t>();
                 auto raw_c  = m_C.template flat<value_t>();
-                auto raw_y_ = this->GetLabelsInCacheInputs().template flat<value_t>();
                 //for all values
                 for(size_t i = 0; i != curr_y.shape().dim_size(0); ++i)
+                for(size_t j = 0; j != curr_y.shape().dim_size(1); ++j)
                 {
-                    raw_y(i) *= raw_c(i);
+                    raw_y(i,j) *= raw_c(i);
                 }
             }
 
@@ -240,7 +241,8 @@ namespace tensorflow
                 status= this->m_session->Run( //input
                                         TensorInputs
                                         {
-                                            { this->m_name_input_cross_entropy ,  output_y[0]  }
+                                            { this->m_name_input_cross_entropy ,  output_y[0]  },  // y * c
+                                            { this->m_input_labels,               m_labels     }   // y_
                                         },
                                         //function
                                         NameList{
@@ -263,6 +265,65 @@ namespace tensorflow
             return cross_value.size() ? cross_value[0].template flat<value_t>()(0) : 0.0;
         }
 
+        /**
+        * Alloc m_inputs_tensor_cache
+        * @param populations_list, (input) populations
+        */
+        virtual bool AllocCacheInputs(const std::vector < std::vector<Tensor> >& populations_list) const 
+        {
+            //resize
+            this->m_inputs_tensor_cache.resize(populations_list.size()+1);
+            //add all names
+            for(size_t p=0; p!=populations_list.size(); ++p)
+            {
+                this->m_inputs_tensor_cache[p].first = this->m_inputs_names[p];
+            }
+            this->m_inputs_tensor_cache[this->m_inputs_tensor_cache.size()-1].first = this->m_input_features;
+            return true;
+        }
+
+        /**
+        * Set tensors of pupulation in m_inputs_tensor_cache
+        * @param populations_list, (input) populations
+        * @param NP_i, (input) population index
+        */
+        virtual bool SetCacheInputs
+        (
+            const std::vector < std::vector<Tensor> >& populations_list,
+            const int NP_i
+        ) const
+        {
+            //test size
+            if(this->m_inputs_tensor_cache.size() != (populations_list.size()+1)) return false;
+            //add all Tensor
+            for(size_t p=0; p!=populations_list.size(); ++p)
+            {
+                this->m_inputs_tensor_cache[p].second = populations_list[p][NP_i];
+            }
+            return true;
+        }
+        
+        /**
+        * Set dataset in m_inputs_tensor_cache
+        * @param labels, tensor of labels
+        * @param features, tensor of features
+        */
+        virtual bool SetDatasetInCacheInputs
+        (
+            const Tensor& labels, 
+            const Tensor& features
+        ) const
+        {
+            //test size
+            if(this->m_inputs_tensor_cache.size() < 2) return false;
+            //add dataset in input
+            this->m_inputs_tensor_cache[this->m_inputs_tensor_cache.size()-1].second  = features;
+            //add ref to tensor
+            m_labels = labels;
+            //ok
+            return true;
+        }
+
     protected:
 
         //names of functions
@@ -275,6 +336,8 @@ namespace tensorflow
         value_t m_alpha;
         Tensor  m_C;
         Tensor  m_C_counter;
+        //:D
+        mutable Tensor m_labels;
 
     };
 }

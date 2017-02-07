@@ -10,8 +10,26 @@ import json
 import numpy as np
 from time import time
 
-__all__ = ['write_all_results', 'expand_results']
+__all__ = ['write_all_results', 'expand_results', 'export_results']
 
+OUT_DIR = "./benchmark_results"
+
+def export_results(results, gen_step, name, out_options, folderByTime=True):
+    if folderByTime:
+        BASE_FOLDER = gen_folder_name_by_time(name)
+    else:
+        BASE_FOLDER = gen_folder_name(
+            name, out_options.job.TOT_GEN, out_options.num_batches, out_options.job.levels)
+    
+    makedirs(OUT_DIR, exist_ok=True)
+    makedirs(path.join(OUT_DIR, BASE_FOLDER), exist_ok=True)
+    
+    with open(path.join(OUT_DIR, BASE_FOLDER, "test_results.json"), "w") as res_file:
+        json.dump({
+            'gen_step': gen_step,
+            'results': results
+        }, res_file, indent=2)
+    
 
 def expand_results(results, gen_step, de_types):
     """Duplicate the value of the accuracy for the entire range of time.
@@ -81,10 +99,10 @@ def write_all_results(name, results, description, out_options, showDelimiter=Fal
         BASE_FOLDER = gen_folder_name(
             name, out_options.job.TOT_GEN, out_options.num_batches, out_options.job.levels)
 
-    makedirs("./benchmark_results", exist_ok=True)
-    makedirs(path.join("benchmark_results", BASE_FOLDER), exist_ok=True)
+    makedirs(OUT_DIR, exist_ok=True)
+    makedirs(path.join(OUT_DIR, BASE_FOLDER), exist_ok=True)
 
-    with open(path.join("benchmark_results", BASE_FOLDER, "job.json"), "w") as job_file:
+    with open(path.join(OUT_DIR, BASE_FOLDER, "job.json"), "w") as job_file:
         json.dump(out_options.job, job_file, cls=TaskEncoder, indent=2)
 
     figures = []
@@ -106,7 +124,7 @@ def write_all_results(name, results, description, out_options, showDelimiter=Fal
             'title': name,
             'type': "plot",
             'axis': (0, len(all_data[0]['values'][0]), 0.0, 1.0),
-            'filename': path.join("benchmark_results", BASE_FOLDER, name),
+            'filename': path.join(OUT_DIR, BASE_FOLDER, name),
             'plot': {
                 'x_label': "generation",
                 'y_label': "accuracy",
@@ -128,7 +146,7 @@ def write_all_results(name, results, description, out_options, showDelimiter=Fal
                 'title': method_name,
                 'type': "plot",
                 'axis': (0, len(result.values), 0.0, 1.0),
-                'filename': path.join("benchmark_results", BASE_FOLDER,
+                'filename': path.join(OUT_DIR, BASE_FOLDER,
                                       "{}_{}".format(name, method_name.replace("/", "_"))),
                 'plot': {
                     'x_label': "generation",
@@ -169,7 +187,7 @@ def write_all_results(name, results, description, out_options, showDelimiter=Fal
             fig.suptitle("CM {}".format(method),
                          fontsize=14, fontweight='bold')
             file_name = "{}_{}".format(
-                path.join("benchmark_results", BASE_FOLDER,
+                path.join(OUT_DIR, BASE_FOLDER,
                           method.replace("/", "_")),
                 "CM"
             )

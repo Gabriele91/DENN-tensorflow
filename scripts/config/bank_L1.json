@@ -1,17 +1,17 @@
 [
     {
         "name": "bank_dataset",
-        "dataset_file": "../datasets/bank_d_no_duration_2000xB_5s.gz",
+        "dataset_file": "../datasets/bank_d_no_duration_4000xB_5s.gz",
         // "dataset_file": "../datasets/bank_f_no_duration_2000xB_5s.gz",
         // "dataset_file": "../datasets/bank_f_2000xB_5s.gz",
-        "TOT_GEN": 200000,
-        "GEN_STEP": 500,
+        "TOT_GEN": 20000,
+        "GEN_STEP": 100,
         "TYPE": "double",
         // "TYPE": "float",
         "F": 0.8,
-        "NP": 100,
+        "NP": 50,
         "de_types": [
-            "rand/1/bin"
+            "best/1/bin"
         ],
         "CR": 0.5,
         "levels": [
@@ -21,7 +21,27 @@
                 "preferred_device": "CPU",
                 "fx": {
                     "name": "nn.softmax_cross_entropy_with_logits"
-                }
+                },
+                "init": [
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -1.0, 
+                                "maxval": 1.0
+                            }
+                        }
+                    },
+                    {
+                        "fx": {
+                            "name": "random_normal",
+                            "kwargs": {
+                                "seed": 1
+                            }
+                        }
+                    }
+                ]
             }
             // {   
             //     // With no duration

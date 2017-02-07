@@ -185,6 +185,11 @@ def main():
                             batch_counter + 1) % dataset.num_batches
 
                         for sample in range(job.GEN_SAMPLES):
+                            ##
+                            # Last iteration of odd division
+                            if sample == job.GEN_SAMPLES -1:
+                                gen += (job.GEN_STEP % job.GEN_SAMPLES)
+
                             # print(
                             #     "+ Start gen. [{}] with batch[{}]".format((gen + 1) * job.GEN_STEP, batch_counter))
                             time_start_gen = time()

@@ -176,6 +176,12 @@ def main():
                             batch_counter + 1) % dataset.num_batches
 
                         for sample in range(job.GEN_SAMPLES):
+
+                            ##
+                            # Last iteration of odd division
+                            if sample == job.GEN_SAMPLES - 1:
+                                gen += (job.GEN_STEP % job.GEN_SAMPLES)
+
                             # print(
                             #     "+ Start gen. [{}] with batch[{}]".format((gen + 1) * job.GEN_STEP, batch_counter))
 
@@ -198,7 +204,7 @@ def main():
                                 +
                                 [
                                     (cur_nn.cur_gen_options, [
-                                    job.GEN_STEP, first_time])
+                                        job.GEN_STEP, first_time])
                                 ]
                             ))
 
@@ -247,7 +253,8 @@ def main():
                                     accuracy_ops.append(network.accuracy)
 
                                     for num, target in enumerate(network.targets):
-                                        feed_dict_ops[target] = cur_pop[num][idx]
+                                        feed_dict_ops[
+                                            target] = cur_pop[num][idx]
 
                                     feed_dict_ops[
                                         network.label_placeholder] = dataset.validation_labels
@@ -291,7 +298,7 @@ def main():
                                 +
                                 [
                                     (cur_nn.label_placeholder,
-                                    dataset.test_labels),
+                                     dataset.test_labels),
                                     (cur_nn.input_placeholder, dataset.test_data)
                                 ]
                             ))
@@ -336,7 +343,8 @@ def main():
                         ]
                     ))
 
-                    job.confusionM[de_type] = DENN.training.calc_confusin_M(dataset.test_labels, result)
+                    job.confusionM[de_type] = DENN.training.calc_confusin_M(
+                        dataset.test_labels, result)
 
                     for class_ in range(job.confusionM[de_type][0].shape[0]):
                         elm_tf = DENN.training.calc_TF(
@@ -345,10 +353,8 @@ def main():
                             job.stats[de_type] = []
                         job.stats[de_type].append(
                             DENN.training.precision_recall_acc(elm_tf))
-                    
-                    pbar.close()
 
-                        
+                    pbar.close()
 
         print("+ Completed all test on dataset {} in {} sec.".format(job.name,
                                                                      time() - time_start_dataset))
@@ -367,7 +373,7 @@ def main():
 
         DENN.training.write_all_results(
             job.name, test_results, description, out_options)
-        
+
         tf.reset_default_graph()
 
     print("+ Completed all test {} sec.".format(time() - time_start_test))

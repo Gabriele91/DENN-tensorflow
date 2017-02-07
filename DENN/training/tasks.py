@@ -258,7 +258,7 @@ class DETask(object):
     def get_adaboost_C(self, idx, batch):
         if idx not in self.__ada_boost_cache:
             self.__ada_boost_cache[idx] = np.full(
-                [len(batch.data)], self.ada_boost.C, dtype=batch.dtype
+                [len(batch.data)], self.ada_boost.C, dtype=batch.data.dtype
             )
         return self.__ada_boost_cache[idx]
 

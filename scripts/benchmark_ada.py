@@ -153,6 +153,7 @@ def main():
                             f_correct_predition=cur_nn.ada_label_diff.name,
                             f_cross_entropy=cur_nn.cross_entropy.name,
                             f_input_cross_entropy=cur_nn.y_placeholder.name,
+                            ada_boost_alpha=job.ada_boost.alpha,
                             CR=job.CR,
                             DE=de_type,
                             f_min=job.clamp.min,
@@ -184,6 +185,8 @@ def main():
 
                         time_start_gen = time()
 
+                        # print(ada_boost_C)
+
                         results = sess.run(denn_op, feed_dict=dict(
                             [
                                 (pop_ref, prev_NN[de_type][num])
@@ -214,6 +217,7 @@ def main():
                         # get output
                         cur_pop = results.final_populations
                         v_res = results.final_eval
+                        # print(results.final_c)
                         job.set_adaboost_C(
                             batch_counter, results.final_c
                         )

@@ -69,6 +69,20 @@ namespace tensorflow
         return std::memcmp(left_data.data(), right_data.data(),  left_data.size()) == 0;
     }
     
+    template < class T > 
+    inline void fill(const Tensor& tensor, const T& v)
+    {
+        //get data
+        StringPiece to_data = tensor.tensor_data();
+        //get ptr 
+        char* ptr_data = (char*)to_data.data();
+        //for all values
+        for(size_t i=0; i < to_data.size(); i+=sizeof(T))
+        {
+            std::memcpy(ptr_data+i,&v,sizeof(T));
+        }
+    }
+ 
     inline std::vector<Tensor> splitDim0(const Tensor& tensor)
     {
         //output

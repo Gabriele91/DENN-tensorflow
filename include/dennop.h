@@ -303,14 +303,14 @@ public:
      * @param population_first_eval, (input) last evaluation of population
      * @param current_eval_result, (output) new evaluation of population
      */
-    void DoFirstEvaluationIfRequired
+    virtual void DoFirstEvaluationIfRequired
     (
          OpKernelContext *context,
          const bool force_to_eval,
          const std::vector < std::vector <Tensor> >& current_populations_list,
          const Tensor& population_first_eval,
          Tensor& current_eval_result
-    ) const
+    )
     {
         //Get np 
         const int NP = current_populations_list[0].size();

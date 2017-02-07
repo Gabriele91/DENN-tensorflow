@@ -47,6 +47,8 @@ namespace tensorflow
             m_C = context->input(start_input + this->m_space_size * 2);
             // Alloc C Counter
             m_C_counter = Tensor(data_type<int>(), m_C.shape());
+            //fill value
+            fill<int>(m_C_counter,0);
             //compute DENN
             DENNOp_t::Compute(context);
             //return C
@@ -118,12 +120,55 @@ namespace tensorflow
                 //
                 for(size_t i = 0; i!=m_C.shape().dim_size(0); ++i)
                 {
-                    raw_C(i) = (value_t(1.0)-m_alpha) * raw_C(i) + m_alpha * (value_t(raw_C_counter(i)) / NP);
+                    value_t  op0 = (value_t(1.0)-m_alpha) * raw_C(i);
+                    value_t  op1 = m_alpha * (value_t(raw_C_counter(i)) / NP);
+                    raw_C(i) = op0 + op1;
                 }
+                //fill value
+                fill<int>(m_C_counter,0);
             }
         }
  
-    
+        /**
+        * Do evaluation if required 
+        * @param force_to_eval, if true, eval all populations in anyway
+        * @param current_populations_list, (input) populations
+        * @param population_first_eval, (input) last evaluation of population
+        * @param current_eval_result, (output) new evaluation of population
+        */
+        virtual void DoFirstEvaluationIfRequired
+        (
+            OpKernelContext *context,
+            const bool force_to_eval,
+            const std::vector < std::vector <Tensor> >& current_populations_list,
+            const Tensor& population_first_eval,
+            Tensor& current_eval_result
+        )
+        {
+            //Get np 
+            const int NP = current_populations_list[0].size();
+            //Population already evaluated?
+            if(  !(force_to_eval)
+            && population_first_eval.shape().dims() == 1
+            && population_first_eval.shape().dim_size(0) == NP)
+            {
+                //copy eval
+                current_eval_result = population_first_eval;
+            }
+            //else execute evaluation
+            else
+            {
+                //Alloc
+                current_eval_result = Tensor(data_type<value_t>(), TensorShape({(int)NP}));
+                //First eval
+                for(int index = 0; index!=NP ;++index)
+                {
+                    current_eval_result.flat<value_t>()(index) = ExecuteEvaluateTrainAda(context, index, current_populations_list);
+                }
+            }
+
+        }
+
         //execute evaluate train function (tensorflow function)   
         virtual value_t ExecuteEvaluateTrainAda
         (
@@ -180,10 +225,12 @@ namespace tensorflow
                 if NOT(status.ok())
                 {
                     context->CtxFailure({tensorflow::error::Code::ABORTED,"Run execute network: "+status.ToString()});
+                    return value_t(-1);
                 }
             }
 
             //execute m_name_correct_predition
+            //if(0)
             {
                 auto
                 status= this->m_session->Run(//input
@@ -205,10 +252,12 @@ namespace tensorflow
                 if NOT(status.ok())
                 {
                     context->CtxFailure({tensorflow::error::Code::ABORTED,"Run correct predition: "+status.ToString()});
+                    return value_t(-1);
                 }
             }
             
             //compute N_i of C(gen+1) = (1-alpha) * C(gen) + alpha * (Ni / Np)
+            //if(0)
             {
                 //
                 const Tensor& y_correct = output_correct_values[0];
@@ -222,6 +271,7 @@ namespace tensorflow
             }
 
             //Compute Y*C
+            //if(0)
             {
                 //get Y
                 auto& curr_y = output_y[0];
@@ -258,12 +308,15 @@ namespace tensorflow
                 if NOT(status.ok())
                 {
                     context->CtxFailure({tensorflow::error::Code::ABORTED,"Run cross eval: "+status.ToString()});
+                    return value_t(-1);
                 }
             }
-         
+            //get cross validation
+            value_t cross_res = cross_value.size() ? cross_value[0].template flat<value_t>()(0) : -1.0;
             //results
-            return cross_value.size() ? cross_value[0].template flat<value_t>()(0) : 0.0;
+            return cross_res;
         }
+
 
         /**
         * Alloc m_inputs_tensor_cache

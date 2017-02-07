@@ -188,6 +188,18 @@ class Clamp(object):
             'max': self.max
         }
 
+class AdaBoost(object):
+
+    def __init__(self, ada_boost):
+        self.alpha = ada_boost['alpha'] if ada_boost is not None else .5
+        self.C = ada_boost['C'] if ada_boost is not None else 1.
+
+    def to_dict(self):
+        return {
+            'alpha': self.alpha,
+            'C': self.C
+        }
+
 
 class DETask(object):
 
@@ -231,7 +243,7 @@ class DETask(object):
 
         ##
         # AdaBoost
-        self.ada_boost = cur_task.get("AdaBoost", None)
+        self.ada_boost = AdaBoost(cur_task.get("AdaBoost", None))
         self.__ada_boost_cache = {}
 
         self.time = None
@@ -244,7 +256,7 @@ class DETask(object):
     def get_adaboost_C(self, idx, batch):
         if idx not in self.__ada_boost_cache:
             self.__ada_boost_cache[idx] = np.full(
-                [len(batch.data)], self.ada_boost['C']
+                [len(batch.data)], self.ada_boost.C
             )
         return self.__ada_boost_cache[idx]
 
@@ -280,7 +292,7 @@ class DETask(object):
             self.de_types,
             self.num_intra_threads,
             self.num_inter_threads,
-            self.ada_boost,
+            self.ada_boost.to_dict(),
             self.clamp,
             "\n".join([str(level) for level in self.levels])
         )
@@ -571,7 +583,7 @@ class TaskEncoder(json.JSONEncoder):
             ('de_types', obj.de_types),
             ('NUM_INTRA_THREADS', obj.num_intra_threads),
             ('NUM_INTER_THREADS', obj.num_inter_threads),
-            ('AdaBoost', obj.ada_boost),
+            ('AdaBoost', obj.ada_boost.to_dict()),
             ('clamp', obj.clamp.to_dict()),
             ('levels', [level.to_dict() for level in obj.levels])
         ])

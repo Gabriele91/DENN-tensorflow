@@ -4,12 +4,13 @@
         "dataset_file": "../datasets/bank_d_no_duration_4000xB_5s.gz",
         // "dataset_file": "../datasets/bank_f_no_duration_2000xB_5s.gz",
         // "dataset_file": "../datasets/bank_f_2000xB_5s.gz",
-        "TOT_GEN": 20000,
-        "GEN_STEP": 100,
+        "TOT_GEN": 5000,
+        "GEN_STEP": 250,
+        "GEN_SAMPLES": 25,
         "TYPE": "double",
         // "TYPE": "float",
         "F": 0.8,
-        "NP": 50,
+        "NP": 20,
         "de_types": [
             "best/1/bin"
         ],
@@ -35,9 +36,11 @@
                     },
                     {
                         "fx": {
-                            "name": "random_normal",
+                            "name": "random_uniform",
                             "kwargs": {
-                                "seed": 1
+                                "seed": 1,
+                                "minval": -1.0, 
+                                "maxval": 1.0
                             }
                         }
                     }

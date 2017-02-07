@@ -18,10 +18,10 @@
             "min": -100.0,
             "max": 100.0
         },
-        /*"AdaBoost": {
-            "alpha": 0.5,
+        "AdaBoost": {
+            "alpha": 0.02,
             "C": 1.0
-        },*/
+        },
         "levels": [
             {
                 "shape": [[4,3], [3]],

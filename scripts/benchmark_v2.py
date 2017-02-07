@@ -164,147 +164,155 @@ def main():
                     start_evolution = time()
 
                     print("+ Start evolution")
-                    for gen in tqdm(range(int(job.TOT_GEN / job.GEN_STEP))):
 
-                        # print(
-                        #     "+ Start gen. [{}] with batch[{}]".format((gen + 1) * job.GEN_STEP, batch_counter))
+                    pbar = tqdm(total=job.TOT_GEN)
+
+                    for cur_gen in range(int(job.TOT_GEN / job.GEN_STEP)):
+
+                        gen = int(job.GEN_STEP / job.GEN_SAMPLES)
 
                         cur_batch = dataset[batch_counter]
                         batch_counter = (
                             batch_counter + 1) % dataset.num_batches
 
-                        time_start_gen = time()
+                        for sample in range(job.GEN_SAMPLES):
+                            # print(
+                            #     "+ Start gen. [{}] with batch[{}]".format((gen + 1) * job.GEN_STEP, batch_counter))
 
-                        results = sess.run(denn_op, feed_dict=dict(
-                            [
-                                (pop_ref, prev_NN[de_type][num])
-                                for num, pop_ref in enumerate(cur_nn.populations)
-                            ]
-                            +
-                            [
-                                (cur_nn.label_placeholder, cur_batch.labels),
-                                (cur_nn.input_placeholder, cur_batch.data)
-                            ]
-                            +
-                            [
-                                (cur_nn.evaluated, v_res)
-                            ]
-                            +
-                            [
-                                (cur_nn.cur_gen_options, [
-                                 job.GEN_STEP, first_time])
-                            ]
-                        ))
+                            time_start_gen = time()
 
-                        # print("++ Op time {}".format(time() - time_start_gen))
-
-                        # get output
-                        cur_pop = results.final_populations
-                        v_res = results.final_eval
-
-                        # print(len(cur_pop))
-                        # print(cur_pop[0].shape)
-                        # print(cur_pop[1].shape)
-
-                        evaluations = []
-
-                        time_valutation = time()
-
-                        for idx in range(job.NP):
-                            cur_evaluation = sess.run(cur_nn.accuracy, feed_dict=dict(
+                            results = sess.run(denn_op, feed_dict=dict(
                                 [
-                                    (target, cur_pop[num][idx])
+                                    (pop_ref, prev_NN[de_type][num])
+                                    for num, pop_ref in enumerate(cur_nn.populations)
+                                ]
+                                +
+                                [
+                                    (cur_nn.label_placeholder, cur_batch.labels),
+                                    (cur_nn.input_placeholder, cur_batch.data)
+                                ]
+                                +
+                                [
+                                    (cur_nn.evaluated, v_res)
+                                ]
+                                +
+                                [
+                                    (cur_nn.cur_gen_options, [
+                                    job.GEN_STEP, first_time])
+                                ]
+                            ))
+
+                            # print("++ Op time {}".format(time() - time_start_gen))
+
+                            # get output
+                            cur_pop = results.final_populations
+                            v_res = results.final_eval
+
+                            # print(len(cur_pop))
+                            # print(cur_pop[0].shape)
+                            # print(cur_pop[1].shape)
+
+                            evaluations = []
+
+                            time_valutation = time()
+
+                            for idx in range(job.NP):
+                                cur_evaluation = sess.run(cur_nn.accuracy, feed_dict=dict(
+                                    [
+                                        (target, cur_pop[num][idx])
+                                        for num, target in enumerate(cur_nn.targets)
+                                    ]
+                                    +
+                                    [
+                                        (cur_nn.label_placeholder,
+                                            dataset.validation_labels),
+                                        (cur_nn.input_placeholder,
+                                            dataset.validation_data)
+                                    ]
+                                ))
+                                evaluations.append(cur_evaluation)
+
+                            # print(evaluations)
+                            # print(
+                            #     "++ Valutation:\t\t{}".format(time() - time_valutation))
+
+                            # ---------- TEST PARALLEL EVALUATIONS ----------
+                            if TEST_PARALLEL_OP:
+                                time_valutation = time()
+
+                                accuracy_ops = []
+                                feed_dict_ops = {}
+
+                                for idx, network in enumerate(test_networks):
+                                    accuracy_ops.append(network.accuracy)
+
+                                    for num, target in enumerate(network.targets):
+                                        feed_dict_ops[target] = cur_pop[num][idx]
+
+                                    feed_dict_ops[
+                                        network.label_placeholder] = dataset.validation_labels
+                                    feed_dict_ops[
+                                        network.input_placeholder] = dataset.validation_data
+
+                                if not TEST_PARTIAL:
+                                    evaluations_test = sess.run(
+                                        accuracy_ops, feed_dict=feed_dict_ops)
+                                else:
+                                    handler = sess.partial_run_setup(
+                                        accuracy_ops,
+                                        [_ for _ in feed_dict_ops.keys()]
+                                    )
+
+                                    evaluations_test = sess.partial_run(
+                                        handler,
+                                        accuracy_ops,
+                                        feed_dict=feed_dict_ops
+                                    )
+
+                                # print(evaluations_test)
+                                # print(
+                                #     "++ Valutation Test:\t{} | equal to eval: {}".format(
+                                #         time() - time_valutation,
+                                #         np.allclose(evaluations_test, evaluations)
+                                #     )
+                                # )
+
+                            # ---------- END TEST ----------
+
+                            best_idx = np.argmin(evaluations)
+
+                            time_test = time()
+
+                            cur_accuracy = sess.run(cur_nn.accuracy, feed_dict=dict(
+                                [
+                                    (target, cur_pop[num][best_idx])
                                     for num, target in enumerate(cur_nn.targets)
                                 ]
                                 +
                                 [
                                     (cur_nn.label_placeholder,
-                                        dataset.validation_labels),
-                                    (cur_nn.input_placeholder,
-                                        dataset.validation_data)
+                                    dataset.test_labels),
+                                    (cur_nn.input_placeholder, dataset.test_data)
                                 ]
                             ))
-                            evaluations.append(cur_evaluation)
 
-                        # print(evaluations)
-                        # print(
-                        #     "++ Valutation:\t\t{}".format(time() - time_valutation))
+                            test_results[de_type].values.append(cur_accuracy)
 
-                        # ---------- TEST PARALLEL EVALUATIONS ----------
-                        if TEST_PARALLEL_OP:
-                            time_valutation = time()
+                            # print("++ Test {}".format(time() - time_test))
 
-                            accuracy_ops = []
-                            feed_dict_ops = {}
-
-                            for idx, network in enumerate(test_networks):
-                                accuracy_ops.append(network.accuracy)
-
-                                for num, target in enumerate(network.targets):
-                                    feed_dict_ops[target] = cur_pop[num][idx]
-
-                                feed_dict_ops[
-                                    network.label_placeholder] = dataset.validation_labels
-                                feed_dict_ops[
-                                    network.input_placeholder] = dataset.validation_data
-
-                            if not TEST_PARTIAL:
-                                evaluations_test = sess.run(
-                                    accuracy_ops, feed_dict=feed_dict_ops)
-                            else:
-                                handler = sess.partial_run_setup(
-                                    accuracy_ops,
-                                    [_ for _ in feed_dict_ops.keys()]
-                                )
-
-                                evaluations_test = sess.partial_run(
-                                    handler,
-                                    accuracy_ops,
-                                    feed_dict=feed_dict_ops
-                                )
-
-                            # print(evaluations_test)
                             # print(
-                            #     "++ Valutation Test:\t{} | equal to eval: {}".format(
-                            #         time() - time_valutation,
-                            #         np.allclose(evaluations_test, evaluations)
+                            #     "+ DENN[{}] up to {} gen on {} completed in {:.05} sec.".format(
+                            #         de_type, (gen + 1) * job.GEN_STEP,
+                            #         job.name,
+                            #         time() - time_start_gen
                             #     )
                             # )
 
-                        # ---------- END TEST ----------
+                            first_time = False
 
-                        best_idx = np.argmin(evaluations)
+                            prev_NN[de_type] = cur_pop
 
-                        time_test = time()
-
-                        cur_accuracy = sess.run(cur_nn.accuracy, feed_dict=dict(
-                            [
-                                (target, cur_pop[num][best_idx])
-                                for num, target in enumerate(cur_nn.targets)
-                            ]
-                            +
-                            [
-                                (cur_nn.label_placeholder,
-                                 dataset.test_labels),
-                                (cur_nn.input_placeholder, dataset.test_data)
-                            ]
-                        ))
-
-                        test_results[de_type].values.append(cur_accuracy)
-
-                        # print("++ Test {}".format(time() - time_test))
-
-                        # print(
-                        #     "+ DENN[{}] up to {} gen on {} completed in {:.05} sec.".format(
-                        #         de_type, (gen + 1) * job.GEN_STEP,
-                        #         job.name,
-                        #         time() - time_start_gen
-                        #     )
-                        # )
-
-                        first_time = False
-
-                        prev_NN[de_type] = cur_pop
+                            pbar.update(gen)
 
                     best = [
                         cur_pop[num][best_idx]
@@ -337,6 +345,8 @@ def main():
                             job.stats[de_type] = []
                         job.stats[de_type].append(
                             DENN.training.precision_recall_acc(elm_tf))
+                    
+                    pbar.close()
 
                         
 

@@ -211,6 +211,7 @@ class DETask(object):
         self.dataset_file = cur_task.get("dataset_file")
         self.TOT_GEN = cur_task.get("TOT_GEN")
         self.GEN_STEP = cur_task.get("GEN_STEP")
+        self.GEN_SAMPLES = cur_task.get("GEN_SAMPLES", 1)
         ##
         # TYPE check
         assert cur_task.get("TYPE") in [
@@ -253,9 +254,10 @@ class DETask(object):
     def __repr__(self):
         """A string representation of the object TFFx"""
         string = """+++++ Task ({}) +++++
-+ dataset[{}] -> {}
-+ tot. gen.   -> {}
-+ get. step.  -> {}
++ dataset[{}]  -> {}
++ tot. gen.    -> {}
++ gen. step.   -> {}
++ gen. samples -> {}
 + F  -> {}
 + NP -> {}
 + CR -> {}
@@ -271,6 +273,7 @@ class DETask(object):
             self.dataset_file,
             self.TOT_GEN,
             self.GEN_STEP,
+            self.GEN_SAMPLES,
             self.F,
             self.NP,
             self.CR,
@@ -561,6 +564,7 @@ class TaskEncoder(json.JSONEncoder):
             ('dataset_file', obj.dataset_file),
             ('TOT_GEN', obj.TOT_GEN),
             ('GEN_STEP', obj.GEN_STEP),
+            ('GEN_SAMPLES', obj.GEN_SAMPLES),
             ('F', obj.F),
             ('NP', obj.NP),
             ('CR', obj.CR),

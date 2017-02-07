@@ -12,6 +12,10 @@
             "min": -30.0,
             "max": 30.0
         },
+        "AdaBoost": {
+            "alpha": 0.0,
+            "C": 1.0
+        },
         "de_types": [
             "rand/1/bin",
             "rand/2/bin",
@@ -60,6 +64,10 @@
         "clamp": {
             "min": -30.0,
             "max": 30.0
+        },
+        "AdaBoost": {
+            "alpha": 0.0,
+            "C": 1.0
         },
         "de_types": [
             "rand/1/bin",
@@ -110,6 +118,10 @@
         "clamp": {
             "min": -30.0,
             "max": 30.0
+        },
+        "AdaBoost": {
+            "alpha": 0.0,
+            "C": 1.0
         },
         "de_types": [
             "rand/1/bin",

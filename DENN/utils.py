@@ -8,6 +8,7 @@ import time
 import os
 import errno
 import fcntl
+from tqdm import tqdm
 from select import select
 
 __all__ = ['get_graph_proto', 'get_best_vector', 'OpListener']
@@ -19,8 +20,8 @@ ERASE_LINE = '\x1b[2K'
 
 class OpListener(object):
 
-    def __init__(self, host='127.0.0.1', port=8484, msg_header="msg"):
-        self.db_listener = DebugListener(host, port, msg_header)
+    def __init__(self, host='127.0.0.1', port=8484, msg_header="msg", tot_steps=None):
+        self.db_listener = DebugListener(host, port, msg_header, tot_steps)
 
     def __enter__(self):
         self.db_listener.start()
@@ -41,12 +42,13 @@ class OpListener(object):
 
 class DebugListener(Process):
 
-    def __init__(self, host, port, msg_header, trap=True):
+    def __init__(self, host, port, msg_header, tot_steps, trap=True):
         super(DebugListener, self).__init__()
         # print("+ Connect to Op: host->[{}] port->[{}]".format(host, port))
         self._sock = None
         self._connected = False
         self._exit = Event()
+        self._tot_steps = tot_steps
 
         self.host = host
         self.port = port
@@ -116,6 +118,10 @@ class DebugListener(Process):
         # print("++ DebugListener: start main loop")
         # print(CURSOR_UP_ONE + ERASE_LINE, end='\r')
 
+        pbar = None
+        if self._tot_steps is not None:
+            pbar = tqdm(total=self._tot_steps)
+        
         while not self._exit.is_set() and self._connected and not self._int_evt.is_set():
             try:
                 # read
@@ -131,15 +137,24 @@ class DebugListener(Process):
                         if type_ in self.__msg_types:
                             msg = self.read_msg(
                                 readable, self.__msg_types[type_])
-                            print(
-                                "++ [{}]-> {}".format(self.msg_header, msg), 
-                                end='\r'
-                            )
+                            #print("\n", msg, "\n")
+                            if self._tot_steps is None:
+                                print(
+                                    "++ [{}]-> {}".format(self.msg_header, msg), 
+                                    end='\r'
+                                )
+                            else:
+                                if type(msg) == int:
+                                    pbar.update(msg)
+
             except KeyboardInterrupt:
                 print("\r+ INTERRUPTED!!!")
                 if self.trap:
                     print(
                         "+ Close message status: {}".format("OK!" if self.send_close_message() else "ERROR!"))
+        
+        if pbar is not None:
+                pbar.close()
         # else:
         #     print("\r+ INTERRUPTED!!!")
         #     if self.trap:

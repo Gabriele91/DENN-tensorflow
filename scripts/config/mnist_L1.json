@@ -1,16 +1,20 @@
 [
     {
         "name": "mnist_dataset",
-        "dataset_file": "../datasets/mnist_f_2000xB_5s.gz",
-        "TOT_GEN": 200,
+        "dataset_file": "../datasets/mnist_f_4000xB_5s.gz",
+        "TOT_GEN": 10000,
         "GEN_STEP": 100,
         "TYPE": "float",
-        "F": 0.6,
-        "NP": 20,
+        "F": 0.8,
+        "NP": 10,
         "de_types": [
             "rand/1/bin"
         ],
-        "CR": 0.6,
+        "clamp": {
+            "min": -100.0,
+            "max": 100.0
+        },
+        "CR": 0.5,
         "levels": [
             {
                 "shape": [[784,10], [10]],
@@ -26,16 +30,18 @@
                             "name": "random_uniform",
                             "kwargs": {
                                 "seed": 1,
-                                "minval": -1.0, 
-                                "maxval": 1.0
+                                "minval": -50.0, 
+                                "maxval": 50.0
                             }
                         }
                     },
                     {
                         "fx": {
-                            "name": "random_normal",
+                            "name": "random_uniform",
                             "kwargs": {
-                                "seed": 1
+                                "seed": 1,
+                                "minval": -50.0, 
+                                "maxval": 50.0
                             }
                         }
                     }

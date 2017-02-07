@@ -104,13 +104,15 @@ def main():
                             f_input_labels=cur_nn.label_placeholder.name,
                             f_input_features=cur_nn.input_placeholder.name,
                             CR=job.CR,
-                            DE=de_type
+                            DE=de_type,
+                            f_min=job.clamp.min,
+                            f_max=job.clamp.max
                         ).train
 
                     print(
                         "++ Node creation {}".format(time() - time_node_creation))
                     # Soket listener
-                    with DENN.OpListener() as listener:
+                    with DENN.OpListener(tot_steps=job.TOT_GEN) as listener:
                         ##
                         # Handle SIGINT
                         def my_handler(signal, frame):

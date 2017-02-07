@@ -154,7 +154,9 @@ def main():
                             f_cross_entropy=cur_nn.cross_entropy.name,
                             f_input_cross_entropy=cur_nn.y_placeholder.name,
                             CR=job.CR,
-                            DE=de_type
+                            DE=de_type,
+                            f_min=job.clamp.min,
+                            f_max=job.clamp.max
                         ).ada
 
                 print(

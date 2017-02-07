@@ -176,6 +176,19 @@ class Level(object):
         }
 
 
+class Clamp(object):
+
+    def __init__(self, clamp):
+        self.min = clamp['min'] if clamp is not None else -1.0
+        self.max = clamp['max'] if clamp is not None else 1.0
+
+    def to_dict(self):
+        return {
+            'min': self.min,
+            'max': self.max
+        }
+
+
 class DETask(object):
 
     """Python object for DE tasks."""
@@ -210,6 +223,7 @@ class DETask(object):
         self.NP = cur_task.get("NP")
         self.de_types = cur_task.get("de_types")
         self.CR = cur_task.get("CR")
+        self.clamp = Clamp(cur_task.get("clamp", None))
         self.levels = [Level(obj) for obj in cur_task.get("levels")]
         self.num_intra_threads = cur_task.get("NUM_INTRA_THREADS", 4)
         self.num_inter_threads = cur_task.get("NUM_INTER_THREADS", 4)
@@ -249,6 +263,7 @@ class DETask(object):
 + INTRA Threads -> {}
 + INTER Threads -> {}
 + AdaBoost -> {}
++ Clamp -> {}
 + levels:\n{}
 +++++""".format(
             self.name,
@@ -263,6 +278,7 @@ class DETask(object):
             self.num_intra_threads,
             self.num_inter_threads,
             self.ada_boost,
+            self.clamp,
             "\n".join([str(level) for level in self.levels])
         )
         return string
@@ -348,9 +364,9 @@ class DETask(object):
                                                name="y_placeholder"
                                                )
                 ada_C_placeholder = tf.placeholder(cur_type,
-                                               [None],
-                                               name="C"
-                                               )
+                                                   [None],
+                                                   name="C"
+                                                   )
             else:
                 y_placeholder = None
                 ada_C_placeholder = None
@@ -551,6 +567,8 @@ class TaskEncoder(json.JSONEncoder):
             ('de_types', obj.de_types),
             ('NUM_INTRA_THREADS', obj.num_intra_threads),
             ('NUM_INTER_THREADS', obj.num_inter_threads),
+            ('AdaBoost', obj.ada_boost),
+            ('clamp', obj.clamp.to_dict()),
             ('levels', [level.to_dict() for level in obj.levels])
         ])
 

@@ -2,7 +2,7 @@
     {
         "name": "iris_dataset",
         "dataset_file": "../datasets/iris_15-B_5s.gz",
-        "TOT_GEN": 10000,
+        "TOT_GEN": 1000,
         "GEN_STEP": 100,
         "TYPE": "double",
         "F": 0.8,
@@ -13,10 +13,14 @@
         "NUM_INTRA_THREADS": 2,
         "NUM_INTER_THREADS": 2,
         "CR": 0.5,
-        "AdaBoost": {
+        "clamp": {
+            "min": -100.0,
+            "max": 100.0
+        },
+        /*"AdaBoost": {
             "alpha": 0.5,
             "C": 1.0
-        },
+        },*/
         "levels": [
             {
                 "shape": [[4,3], [3]],

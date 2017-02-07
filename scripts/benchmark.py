@@ -152,7 +152,9 @@ def main():
                             f_input_labels=cur_nn.label_placeholder.name,
                             f_input_features=cur_nn.input_placeholder.name,
                             CR=job.CR,
-                            DE=de_type
+                            DE=de_type,
+                            f_min=job.clamp.min,
+                            f_max=job.clamp.max
                         ).standard
 
                 print(

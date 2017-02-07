@@ -138,7 +138,8 @@ namespace tensorflow
                 SOCKET_DEBUG(
 
                     //output
-                    this->m_debug.write( "Stage[" + std::to_string(i_sub_gen*sub_gen) + "] complete" );
+                    //this->m_debug.write( "Stage[" + std::to_string(i_sub_gen*sub_gen) + "] complete" );
+                    //this->m_debug.write(int(sub_gen));
                     //process message
                     while(this->m_debug.get_n_recv_mgs())
                     {

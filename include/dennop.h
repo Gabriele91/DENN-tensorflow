@@ -266,9 +266,10 @@ public:
                     ref_current_eval_result(index) = new_eval;
                 }
             }   
-            #if 0
+            #if 1
             SOCKET_DEBUG(
-                m_debug.write(i);
+                //m_debug.write(i);
+                m_debug.write(1);
             )
             #endif
         }

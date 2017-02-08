@@ -41,20 +41,118 @@ namespace tensorflow
         //star execution from python
         virtual void Compute(OpKernelContext *context) override
         {        
-            // start input
-            const size_t start_input = 4;
+            ////////////////////////////////////////////////////////////////////////////
+            // get input info
+            const Tensor& t_metainfo_i = context->input(0);
+            //info 1: (NUM GEN)
+            const int num_gen = t_metainfo_i.flat<int>()(0);
+            //info 2; (COMPUTE FIRST VALUTATION OF POPULATION)
+            const int calc_first_eval = t_metainfo_i.flat<int>()(1);
+            ////////////////////////////////////////////////////////////////////////////
+            // get input bach labels
+            const Tensor& t_bach_labels = context->input(1);
+            // get input bach data
+            const Tensor& t_bach_features = context->input(2);
+            ////////////////////////////////////////////////////////////////////////////
+            // start input w
+            const size_t start_input_weigth = 3;
+            // W
+            std::vector < Tensor >  W_list;
+            // pupulation inputs
+            for(int i=0; i != this->m_space_size; ++i)
+            {
+                W_list.push_back(context->input(start_input_weigth+i));
+            }
+            ////////////////////////////////////////////////////////////////////////////
+            // start input population
+            const size_t start_input_population = start_input_weigth + this->m_space_size;
+            // populations
+            std::vector < std::vector <Tensor> >  current_populations_list;        
+            // populations inputs
+            for(int i=0; i != this->m_space_size; ++i)
+            {
+                const Tensor& population = context->input(start_input_population+i);
+                current_populations_list.push_back(splitDim0(population));
+            }
+            //Test sizeof populations
+            if NOT(DENNOp_t::TestPopulationSize(context,current_populations_list)) return;
+            ////////////////////////////////////////////////////////////////////////////
+            // start input of C / EC / Y
+            const size_t start_input_C_EC_Y = start_input_population + this->m_space_size;
             // Take C [ start input + W + population ]
-            m_C = context->input(start_input + this->m_space_size * 2);
-            // Alloc C Counter
-            m_C_counter = Tensor(data_type<int>(), m_C.shape());
-            //fill value
-            fill<int>(m_C_counter,0);
-            //compute DENN
-            DENNOp_t::Compute(context);
+            m_C      = context->input(start_input_C_EC_Y);
+            // C errors list
+            m_EC     = splitDim0(context->input(start_input_C_EC_Y+1));
+            // C errors list
+             m_pop_Y = splitDim0(context->input(start_input_C_EC_Y+2));
+            ////////////////////////////////////////////////////////////////////////////
+            //Temp of new gen of populations
+            std::vector < std::vector <Tensor> > new_populations_list;
+            
+            ////////////////////////////////////////////////////////////////////////////
+            //Alloc temp vector of populations
+            this->GenCachePopulation(current_populations_list,new_populations_list); 
+            ////////////////////////////////////////////////////////////////////////////
+            //Alloc input 
+            this->AllocCacheInputs(current_populations_list);
+            //Copy bach in input
+            this->SetDatasetInCacheInputs(t_bach_labels,t_bach_features);
+
+            ////////////////////////////////////////////////////////////////////////////
+            // init evaluation
+            if(calc_first_eval)
+            {
+                ComputePopY(context, current_populations_list);
+            }
+            //Get np 
+            const int NP = current_populations_list[0].size();
+            //Tensor first evaluation of all ppopulations
+            Tensor current_eval_result(data_type<value_t>(),TensorShape({int64(NP)}));
+            //fill all to 0
+            fill<value_t>(current_eval_result,0);
+            ////////////////////////////////////////////////////////////////////////////
+            // Execute DE
+            RunDe
+            (
+                  // Input
+                  context
+                , num_gen
+                , W_list
+                // Cache
+                , new_populations_list
+                // In/Out
+                , current_populations_list
+                , current_eval_result
+            );
+            ////////////////////////////////////////////////////////////////////////////
+            // Output populations
+            for(int i=0; i != this->m_space_size; ++i)
+            {
+                Tensor* new_generation_tensor = nullptr;
+                Tensor current_pop = concatDim0(current_populations_list[i]);
+                OP_REQUIRES_OK(context, context->allocate_output(i, current_pop.shape(), &new_generation_tensor));
+                (*new_generation_tensor) = current_pop;
+            }
             //return C
-            Tensor* new_generation_tensor = nullptr;
-            OP_REQUIRES_OK(context, context->allocate_output(this->m_space_size+1, m_C.shape(), &new_generation_tensor));
-            (*new_generation_tensor) = m_C;
+            {
+                Tensor* new_generation_tensor = nullptr;
+                OP_REQUIRES_OK(context, context->allocate_output(this->m_space_size, m_C.shape(), &new_generation_tensor));
+                (*new_generation_tensor) = m_C;
+            }
+            //return EC
+            {
+                const Tensor& all_EC = concatDim0(m_EC);
+                Tensor* new_generation_tensor = nullptr;
+                OP_REQUIRES_OK(context, context->allocate_output(this->m_space_size+1, all_EC.shape(), &new_generation_tensor));
+                (*new_generation_tensor) = all_EC;
+            }
+            //return pop Y
+            {
+                const Tensor& all_pop_Y = concatDim0(m_pop_Y);
+                Tensor* new_generation_tensor = nullptr;
+                OP_REQUIRES_OK(context, context->allocate_output(this->m_space_size+2, all_pop_Y.shape(), &new_generation_tensor));
+                (*new_generation_tensor) = all_pop_Y;
+            }
         }
 
         /**
@@ -80,6 +178,11 @@ namespace tensorflow
             const int NP = current_populations_list[0].size();
             //Pointer to memory
             auto ref_current_eval_result = current_eval_result.flat<value_t>();
+            //evaluete all population 
+            for(size_t NP_i = 0; NP_i != NP; ++NP_i)
+            {
+                ref_current_eval_result(NP_i) = ExecuteEvaluateAdaBoost(  context, m_pop_Y[NP_i] );
+            }
             //loop
             for(int i=0;i!=num_gen;++i)
             {
@@ -93,119 +196,101 @@ namespace tensorflow
                 //Change old population (if required)
                 for(int index = 0; index!=NP ;++index)
                 {
-                    //Evaluation
-                    value_t new_eval = ExecuteEvaluateTrainAda(context, index, new_populations_list);
+                    //get y and ec
+                    Tensor y;
+                    Tensor ec;
+                    ComputeYAndEC(context, index, new_populations_list, y, ec);
+                    //execute cross
+                    value_t new_eval = ExecuteEvaluateAdaBoost(context, y);
                     //Choice
                     if(new_eval < ref_current_eval_result(index))
                     {
+                        //save all populations (W, B)
                         for(int p=0; p!=current_populations_list.size(); ++p)
-                        {
                             current_populations_list[p][index] = new_populations_list[p][index];
-                        }
+                        //save EC 
+                        m_EC[index] = ec; 
+                        //save Y
+                        m_pop_Y[index] = y;
+                        //save Eval
                         ref_current_eval_result(index) = new_eval;
                     }
                 }   
-                #if 0
-                SOCKET_DEBUG(
-                             m_debug.write(i);
-                )
-                #endif
                 //////////////////////////////////////////////////////////////
                 // TO DO: Update C and to 0 C_counter
                 // C(gen+1) = (1-alpha) * C(gen) + alpha * (Ni / Np)
                 //////////////////////////////////////////////////////////////
+                //alloc counter of all ec
+                Tensor ec_counter(data_type<int>(),m_C.shape());
+                //all to 0
+                fill<int>(ec_counter,0);
+                //get pointer
+                auto raw_EC_counter = ec_counter.template flat<int>();
+                //for all errors
+                for(size_t i = 0; i!=m_EC.size(); ++i)
+                {
+                    //get ec
+                    auto raw_ec_i = m_EC[i].template flat<bool>();
+                    //for all ec
+                    for(size_t j=0; j!=ec_counter.dim_size(0); ++j)
+                    {
+                        raw_EC_counter(j) += int(raw_ec_i(j));
+                    }
+                }
                 //get values
                 auto raw_C         = m_C.flat<value_t>();
-                auto raw_C_counter = m_C_counter.flat<int>();
-                //
+                //new c
                 for(size_t i = 0; i!=m_C.shape().dim_size(0); ++i)
                 {
                     value_t  op0 = (value_t(1.0)-m_alpha) * raw_C(i);
-                    value_t  op1 = m_alpha * (value_t(raw_C_counter(i)) / NP);
+                    value_t  op1 = m_alpha * (value_t(raw_EC_counter(i)) / NP);
                     raw_C(i) = op0 + op1;
                 }
-                //fill value
-                fill<int>(m_C_counter,0);
             }
         }
  
         /**
-        * Do evaluation if required 
-        * @param force_to_eval, if true, eval all populations in anyway
-        * @param current_populations_list, (input) populations
-        * @param population_first_eval, (input) last evaluation of population
-        * @param current_eval_result, (output) new evaluation of population
+        * Compute NN if req
+        * @param populations_list, (input) populations
         */
-        virtual void DoFirstEvaluationIfRequired
+        virtual void ComputePopY
         (
             OpKernelContext *context,
-            const bool force_to_eval,
-            const std::vector < std::vector <Tensor> >& current_populations_list,
-            const Tensor& population_first_eval,
-            Tensor& current_eval_result
+            const std::vector < std::vector <Tensor> >& populations_list
         )
         {
             //Get np 
-            const int NP = current_populations_list[0].size();
-            //Population already evaluated?
-            if(  !(force_to_eval)
-            && population_first_eval.shape().dims() == 1
-            && population_first_eval.shape().dim_size(0) == NP)
-            {
-                //copy eval
-                current_eval_result = population_first_eval;
-            }
-            //else execute evaluation
-            else
-            {
-                //Alloc
-                current_eval_result = Tensor(data_type<value_t>(), TensorShape({(int)NP}));
-                //First eval
-                for(int index = 0; index!=NP ;++index)
-                {
-                    current_eval_result.flat<value_t>()(index) = ExecuteEvaluateTrainAda(context, index, current_populations_list);
-                }
-            }
-
+            const int NP = populations_list[0].size();
+            //execute
+            for(size_t NP_i=0; NP_i!=NP; ++NP_i)
+                ComputeYAndEC(context, NP_i, populations_list, m_pop_Y[NP_i], m_EC[NP_i]);
         }
 
-        //execute evaluate train function (tensorflow function)   
-        virtual value_t ExecuteEvaluateTrainAda
+        /**
+        * Compute NN if req
+        * @param NP_i, (input) populations
+        * @param populations_list, (input) populations
+        */
+        virtual bool ComputeYAndEC
         (
-            OpKernelContext* context,
-            const int NP_i,
-            const std::vector < std::vector<Tensor> >& populations_list
-        ) 
-        {
-            NameList function
-            {
-                  this->m_name_execute_net
-                , this->m_name_correct_predition
-                , this->m_name_cross_entropy    
-            };
-            return ExecuteEvaluateAdaBoost(context, NP_i, populations_list, function);
-        }
-
-        //execute evaluate function (tensorflow function)
-        virtual value_t ExecuteEvaluateAdaBoost
-        (
-            OpKernelContext* context,
-            const int NP_i,
-            const std::vector < std::vector<Tensor> >& populations_list,
-            const NameList& functions_list
+            OpKernelContext *context,
+            //input
+            const size_t NP_i,
+            const std::vector < std::vector <Tensor> >& populations_list,
+            //output 
+            Tensor& out_y,
+            Tensor& out_ec            
         )
         {
-            //Output
             TensorList 
               output_y
-            , output_correct_values
-            , cross_value;
+            , output_correct_values;
             //Set input
             if NOT(this->SetCacheInputs(populations_list, NP_i))
             {
                 context->CtxFailure({tensorflow::error::Code::ABORTED,"Run evaluate: error to set inputs"});
+                return false;
             }
-
             //execute network
             {
                 auto
@@ -213,8 +298,9 @@ namespace tensorflow
                                     (   //input
                                         this->m_inputs_tensor_cache,
                                         //function
-                                        NameList{
-                                            functions_list[0] //m_name_execute_net
+                                        NameList
+                                        {
+                                            this->m_name_execute_net
                                         },
                                         //one
                                         NameList{ },
@@ -225,15 +311,16 @@ namespace tensorflow
                 if NOT(status.ok())
                 {
                     context->CtxFailure({tensorflow::error::Code::ABORTED,"Run execute network: "+status.ToString()});
-                    return value_t(-1);
+                    return false;
                 }
+                //return Y
+                out_y = output_y[0];
             }
-
-            //execute m_name_correct_predition
-            //if(0)
+            //Run Diff
             {
                 auto
-                status= this->m_session->Run(//input
+                status= this->m_session->Run(
+                                        //input
                                         TensorInputs
                                         {
                                             { this->m_name_input_correct_predition, output_y[0] }, // y
@@ -241,7 +328,7 @@ namespace tensorflow
                                         },
                                         //function
                                         NameList{
-                                            functions_list[1] //m_name_correct_predition
+                                            this->m_name_correct_predition
                                         },
                                         //one
                                         NameList{ },
@@ -252,51 +339,48 @@ namespace tensorflow
                 if NOT(status.ok())
                 {
                     context->CtxFailure({tensorflow::error::Code::ABORTED,"Run correct predition: "+status.ToString()});
-                    return value_t(-1);
+                    return true;
                 }
+                //return Y
+                out_ec = output_correct_values[0];
             }
-            
-            //compute N_i of C(gen+1) = (1-alpha) * C(gen) + alpha * (Ni / Np)
-            //if(0)
-            {
-                //
-                const Tensor& y_correct = output_correct_values[0];
-                auto raw_y_correct = y_correct.flat<bool>();
-                auto raw_C_counter = m_C_counter.flat<int>();
-                //
-                for(size_t i = 0; i != y_correct.shape().dim_size(0); ++i)
-                {
-                    if NOT(raw_y_correct(i)) ++raw_C_counter(i);
-                }
-            }
+        }
 
-            //Compute Y*C
-            //if(0)
+        //execute evaluate function (tensorflow function->cross entropy)
+        virtual value_t ExecuteEvaluateAdaBoost
+        (
+            OpKernelContext* context,
+            //input
+            const Tensor& nn_Y
+        )
+        {
+            //Output
+            TensorList  cross_value;
+            //Temp Y*C 
+            Tensor tmp_Y_C(nn_Y.dtype(),nn_Y.shape());
+            //Compute Y*C            
+            auto  raw_y_c  = tmp_Y_C.template flat_inner_dims<value_t>();
+            auto  raw_y    = nn_Y.template flat_inner_dims<value_t>();
+            auto  raw_c    = m_C.template flat<value_t>();
+            //for all values
+            for(size_t i = 0; i != tmp_Y_C.shape().dim_size(0); ++i)
+            for(size_t j = 0; j != tmp_Y_C.shape().dim_size(1); ++j)
             {
-                //get Y
-                auto& curr_y = output_y[0];
-                auto raw_y  = curr_y.template flat_inner_dims<value_t>();
-                auto raw_c  = m_C.template flat<value_t>();
-                //for all values
-                for(size_t i = 0; i != curr_y.shape().dim_size(0); ++i)
-                for(size_t j = 0; j != curr_y.shape().dim_size(1); ++j)
-                {
-                    raw_y(i,j) *= raw_c(i);
-                }
+                raw_y_c(i,j) = raw_y(i,j) * raw_c(i);
             }
-
             //compure cross (Y*C)
             {   
                 auto
                 status= this->m_session->Run( //input
                                         TensorInputs
                                         {
-                                            { this->m_name_input_cross_entropy ,  output_y[0]  },  // y * c
-                                            { this->m_input_labels,               m_labels     }   // y_
+                                            { this->m_name_input_cross_entropy ,  tmp_Y_C  },  // y * c
+                                            { this->m_input_labels,               m_labels }   // y_
                                         },
                                         //function
-                                        NameList{
-                                            functions_list[2] //m_name_cross_entropy
+                                        NameList
+                                        {
+                                            this->m_name_cross_entropy    
                                         },
                                         //one
                                         NameList{ },
@@ -388,7 +472,8 @@ namespace tensorflow
         //ada boost factor 
         value_t m_alpha;
         Tensor  m_C;
-        Tensor  m_C_counter;
+        std::vector < Tensor >  m_EC;
+        std::vector < Tensor >  m_pop_Y;
         //:D
         mutable Tensor m_labels;
 

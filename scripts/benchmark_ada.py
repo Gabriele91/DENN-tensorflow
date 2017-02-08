@@ -137,10 +137,11 @@ def main():
                             cur_nn.cur_gen_options,
                             cur_nn.label_placeholder,
                             cur_nn.input_placeholder,
-                            cur_nn.evaluated,  # FIRST EVAL
                             cur_nn.weights,  # PASS WEIGHTS
                             cur_nn.populations,  # POPULATIONS
                             cur_nn.ada_C_placeholder,
+                            cur_nn.ada_EC_placeholder,
+                            cur_nn.population_y_placeholder,
                             # attributes
                             # space = 2,
                             graph=DENN.get_graph_proto(
@@ -177,7 +178,7 @@ def main():
 
                         gen = int(job.GEN_STEP / job.GEN_SAMPLES)
                         cur_batch = dataset[batch_counter]
-                        ada_boost_C = job.get_adaboost_C(
+                        ada_C, ada_EC, ada_pop_y = job.get_adaboost_C(
                             batch_counter, cur_batch
                         )
 
@@ -194,7 +195,7 @@ def main():
                             #     "+ Start gen. [{}] with batch[{}]".format((gen + 1) * job.GEN_STEP, batch_counter))
                             time_start_gen = time()
 
-                            # print(ada_boost_C)
+                            # print(ada_C)
 
                             results = sess.run(denn_op, feed_dict=dict(
                                 [
@@ -208,16 +209,14 @@ def main():
                                 ]
                                 +
                                 [
-                                    (cur_nn.evaluated, v_res)
-                                ]
-                                +
-                                [
                                     (cur_nn.cur_gen_options, [
                                     job.GEN_STEP, first_time])
                                 ]
                                 +
                                 [
-                                    (cur_nn.ada_C_placeholder, ada_boost_C)
+                                    (cur_nn.ada_C_placeholder, ada_C),
+                                    (cur_nn.ada_EC_placeholder, ada_EC),
+                                    (cur_nn.population_y_placeholder, ada_pop_y)
                                 ]
                             ))
 
@@ -225,10 +224,12 @@ def main():
 
                             # get output
                             cur_pop = results.final_populations
-                            v_res = results.final_eval
                             # print(results.final_c)
                             job.set_adaboost_C(
-                                batch_counter, results.final_c
+                                batch_counter, 
+                                results.final_c,
+                                results.final_ec,
+                                results.final_pop_y
                             )
 
                             # print(len(cur_pop))

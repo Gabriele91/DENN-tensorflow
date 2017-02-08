@@ -257,13 +257,23 @@ class DETask(object):
 
     def get_adaboost_C(self, idx, batch):
         if idx not in self.__ada_boost_cache:
-            self.__ada_boost_cache[idx] = np.full(
-                [len(batch.data)], self.ada_boost.C, dtype=batch.data.dtype
+            self.__ada_boost_cache[idx] = (
+                np.full(
+                    [len(batch.data)], self.ada_boost.C, dtype=batch.data.dtype
+                ),
+                np.full(
+                    [self.NP, len(batch.data)], 0, dtype=np.int32
+                ),
+                np.full(
+                    [self.NP, len(batch.data), batch.labels.shape[-1]], 
+                    0.0, 
+                    dtype=batch.data.dtype
+                ),
             )
         return self.__ada_boost_cache[idx]
 
-    def set_adaboost_C(self, idx, C):
-        self.__ada_boost_cache[idx] = C
+    def set_adaboost_C(self, idx, C, EC, pop_y):
+        self.__ada_boost_cache[idx] = (C, EC, pop_y)
 
     def __repr__(self):
         """A string representation of the object TFFx"""
@@ -360,7 +370,6 @@ class DETask(object):
             target_ref = []
             pop_ref = []
             rand_pop_ref = []
-            cur_pop_VAL = tf.placeholder(cur_type, [self.NP])
             cur_gen_options = tf.placeholder(tf.int32, [2])
 
             weights = []
@@ -384,9 +393,19 @@ class DETask(object):
                                                    [None],
                                                    name="C"
                                                    )
+                ada_EC_placeholder = tf.placeholder(tf.int32,
+                                                   [self.NP, None],
+                                                   name="EC"
+                                                   )
+                population_y_placeholder = tf.placeholder(cur_type,
+                                               [self.NP, None, label_size],
+                                               name="population_y_placeholder"
+                                               )
+                cur_pop_VAL = None
             else:
                 y_placeholder = None
                 ada_C_placeholder = None
+                cur_pop_VAL = tf.placeholder(cur_type, [self.NP])
 
             last_input = input_placeholder
 
@@ -519,7 +538,9 @@ class DETask(object):
             ('cur_gen_options', cur_gen_options),
             ('ada_label_diff', ada_label_diff),
             ('ada_C_placeholder', ada_C_placeholder),
-            ('y_placeholder', y_placeholder)
+            ('y_placeholder', y_placeholder),
+            ('ada_EC_placeholder', ada_EC_placeholder),
+            ('population_y_placeholder', population_y_placeholder)
         ])
 
 

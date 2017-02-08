@@ -1,6 +1,6 @@
 [
     {
-        "name": "NO_ada_qsar_dataset",
+        "name": "ada_qsar_dataset",
         "dataset_file": "../datasets/qsar_d_100xB_5s.gz",
         "TOT_GEN": 50000,
         "GEN_STEP": 200,
@@ -17,6 +17,10 @@
             "rand/2/bin",
             "best/1/bin"
         ],
+        "AdaBoost": {
+            "alpha": 0.05,
+            "C": 1.0
+        },
         "CR": 0.5,
         "levels": [
             {   
@@ -49,7 +53,7 @@
         ]
     },
     {
-        "name": "NO_ada_bank_dataset_0",
+        "name": "ada_bank_dataset_0",
         "dataset_file": "../datasets/bank_d_no_duration_0_4000xB_5s.gz",
         "TOT_GEN": 5000,
         "GEN_STEP": 200,
@@ -66,6 +70,10 @@
             "rand/2/bin",
             "best/1/bin"
         ],
+        "AdaBoost": {
+            "alpha": 0.05,
+            "C": 1.0
+        },
         "CR": 0.5,
         "levels": [
             {   
@@ -99,7 +107,7 @@
         ]
     },
     {
-        "name": "NO_ada_magic_dataset",
+        "name": "ada_magic_dataset",
         "dataset_file": "../datasets/magic_d_2000xB_5s.gz",
         "TOT_GEN": 20000,
         "GEN_STEP": 200,
@@ -116,6 +124,10 @@
             "rand/2/bin",
             "best/1/bin"
         ],
+        "AdaBoost": {
+            "alpha": 0.05,
+            "C": 1.0
+        },
         "CR": 0.5,
         "levels": [
             {   
@@ -149,7 +161,7 @@
         ]
     },
     {
-        "name": "NO_ada_mnist_dataset",
+        "name": "ada_mnist_dataset",
         "dataset_file": "../datasets/mnist_f_4000xB_5s.gz",
         "TOT_GEN": 200000,
         "GEN_STEP": 2000,
@@ -162,6 +174,10 @@
         "clamp": {
             "min": -30.0,
             "max": 30.0
+        },
+        "AdaBoost": {
+            "alpha": 0.05,
+            "C": 1.0
         },
         "CR": 0.5,
         "levels": [

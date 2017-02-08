@@ -188,7 +188,7 @@ def main():
                         for sample in range(job.GEN_SAMPLES):
                             ##
                             # Last iteration of odd division
-                            if sample == job.GEN_SAMPLES -1:
+                            if sample == job.GEN_SAMPLES - 1:
                                 gen += (job.GEN_STEP % job.GEN_SAMPLES)
 
                             # print(
@@ -196,6 +196,7 @@ def main():
                             time_start_gen = time()
 
                             # print(ada_C)
+                            # print(ada_EC)
 
                             results = sess.run(denn_op, feed_dict=dict(
                                 [
@@ -210,7 +211,7 @@ def main():
                                 +
                                 [
                                     (cur_nn.cur_gen_options, [
-                                    job.GEN_STEP, first_time])
+                                        job.GEN_STEP, first_time])
                                 ]
                                 +
                                 [
@@ -224,9 +225,12 @@ def main():
 
                             # get output
                             cur_pop = results.final_populations
+
                             # print(results.final_c)
+                            # print(results.final_ec)
+
                             job.set_adaboost_C(
-                                batch_counter, 
+                                batch_counter,
                                 results.final_c,
                                 results.final_ec,
                                 results.final_pop_y
@@ -271,7 +275,8 @@ def main():
                                     accuracy_ops.append(network.accuracy)
 
                                     for num, target in enumerate(network.targets):
-                                        feed_dict_ops[target] = cur_pop[num][idx]
+                                        feed_dict_ops[
+                                            target] = cur_pop[num][idx]
 
                                     feed_dict_ops[
                                         network.label_placeholder] = dataset.validation_labels
@@ -315,7 +320,7 @@ def main():
                                 +
                                 [
                                     (cur_nn.label_placeholder,
-                                    dataset.test_labels),
+                                     dataset.test_labels),
                                     (cur_nn.input_placeholder, dataset.test_data)
                                 ]
                             ))
@@ -360,7 +365,8 @@ def main():
                         ]
                     ))
 
-                    job.confusionM[de_type] = DENN.training.calc_confusin_M(dataset.test_labels, result)
+                    job.confusionM[de_type] = DENN.training.calc_confusin_M(
+                        dataset.test_labels, result)
 
                     for class_ in range(job.confusionM[de_type][0].shape[0]):
                         elm_tf = DENN.training.calc_TF(
@@ -371,8 +377,6 @@ def main():
                             DENN.training.precision_recall_acc(elm_tf))
 
                     pbar.close()
-
-                        
 
         print("+ Completed all test on dataset {} in {} sec.".format(job.name,
                                                                      time() - time_start_dataset))
@@ -387,7 +391,7 @@ def main():
         job.time = time() - time_start_test
 
         DENN.training.export_results(test_results, int(
-            job.GEN_STEP / job.GEN_SAMPLES), 
+            job.GEN_STEP / job.GEN_SAMPLES),
             job.name, out_options
         )
 

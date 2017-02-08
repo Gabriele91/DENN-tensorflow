@@ -234,11 +234,11 @@ namespace tensorflow
                     //for all ec
                     for(size_t j=0; j!=ec_counter.dim_size(0); ++j)
                     {
-                        raw_EC_counter(j) += int(raw_ec_i(j));
+                        raw_EC_counter(j) += int(!raw_ec_i(j));
                     }
                 }
                 //get values
-                auto raw_C         = m_C.flat<value_t>();
+                auto raw_C = m_C.flat<value_t>();
                 //new c
                 for(size_t i = 0; i!=m_C.shape().dim_size(0); ++i)
                 {

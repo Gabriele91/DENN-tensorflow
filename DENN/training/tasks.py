@@ -262,7 +262,7 @@ class DETask(object):
                     [len(batch.data)], self.ada_boost.C, dtype=batch.data.dtype
                 ),
                 np.full(
-                    [self.NP, len(batch.data)], 0, dtype=np.int32
+                    [self.NP, len(batch.data)], 0, dtype=np.bool
                 ),
                 np.full(
                     [self.NP, len(batch.data), batch.labels.shape[-1]], 
@@ -393,7 +393,7 @@ class DETask(object):
                                                    [None],
                                                    name="C"
                                                    )
-                ada_EC_placeholder = tf.placeholder(tf.int32,
+                ada_EC_placeholder = tf.placeholder(tf.bool,
                                                    [self.NP, None],
                                                    name="EC"
                                                    )
@@ -405,6 +405,8 @@ class DETask(object):
             else:
                 y_placeholder = None
                 ada_C_placeholder = None
+                ada_EC_placeholder = None
+                population_y_placeholder = None
                 cur_pop_VAL = tf.placeholder(cur_type, [self.NP])
 
             last_input = input_placeholder

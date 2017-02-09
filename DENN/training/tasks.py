@@ -265,8 +265,8 @@ class DETask(object):
                     [self.NP, len(batch.data)], 0, dtype=np.bool
                 ),
                 np.full(
-                    [self.NP, len(batch.data), batch.labels.shape[-1]], 
-                    0.0, 
+                    [self.NP, len(batch.data), batch.labels.shape[-1]],
+                    0.0,
                     dtype=batch.data.dtype
                 ),
             )
@@ -394,13 +394,14 @@ class DETask(object):
                                                    name="C"
                                                    )
                 ada_EC_placeholder = tf.placeholder(tf.bool,
-                                                   [self.NP, None],
-                                                   name="EC"
-                                                   )
+                                                    [self.NP, None],
+                                                    name="EC"
+                                                    )
                 population_y_placeholder = tf.placeholder(cur_type,
-                                               [self.NP, None, label_size],
-                                               name="population_y_placeholder"
-                                               )
+                                                          [self.NP, None,
+                                                              label_size],
+                                                          name="population_y_placeholder"
+                                                          )
                 cur_pop_VAL = None
             else:
                 y_placeholder = None
@@ -588,44 +589,48 @@ class TaskEncoder(json.JSONEncoder):
             obj: the current object to serialize
         """
 
+        # print("obj", type(obj))
+
         if type(obj) == np.ndarray:
             return obj.tolist()
         elif type(obj) in [np.int32, np.int64]:
             return int(obj)
         elif type(obj) in [np.float32, np.float64]:
             return float(obj)
+        elif type(obj) == DETask:
+            new_obj = OrderedDict([
+                ('name', obj.name),
+                ('TYPE', obj.TYPE),
+                ('dataset_file', obj.dataset_file),
+                ('TOT_GEN', obj.TOT_GEN),
+                ('GEN_STEP', obj.GEN_STEP),
+                ('GEN_SAMPLES', obj.GEN_SAMPLES),
+                ('F', obj.F),
+                ('NP', obj.NP),
+                ('CR', obj.CR),
+                ('de_types', obj.de_types),
+                ('NUM_INTRA_THREADS', obj.num_intra_threads),
+                ('NUM_INTER_THREADS', obj.num_inter_threads),
+                ('AdaBoost', obj.ada_boost.to_dict()
+                 if obj.ada_boost is not None else None),
+                ('clamp', obj.clamp.to_dict()),
+                ('levels', [level.to_dict() for level in obj.levels])
+            ])
 
-        new_obj = OrderedDict([
-            ('name', obj.name),
-            ('TYPE', obj.TYPE),
-            ('dataset_file', obj.dataset_file),
-            ('TOT_GEN', obj.TOT_GEN),
-            ('GEN_STEP', obj.GEN_STEP),
-            ('GEN_SAMPLES', obj.GEN_SAMPLES),
-            ('F', obj.F),
-            ('NP', obj.NP),
-            ('CR', obj.CR),
-            ('de_types', obj.de_types),
-            ('NUM_INTRA_THREADS', obj.num_intra_threads),
-            ('NUM_INTER_THREADS', obj.num_inter_threads),
-            ('AdaBoost', obj.ada_boost.to_dict()
-             if obj.ada_boost is not None else None),
-            ('clamp', obj.clamp.to_dict()),
-            ('levels', [level.to_dict() for level in obj.levels])
-        ])
-
-        if len(obj.best) > 0:
-            new_obj['best'] = obj.best
-        if len(obj.times) > 0:
-            new_obj['times'] = obj.times
-        if obj.time is not None:
-            new_obj['time'] = obj.time
-        if len(obj.accuracy) is not None:
-            new_obj['accuracy'] = obj.accuracy
-        if len(obj.confusionM) > 0:
-            new_obj['confusionM'] = obj.confusionM
-        if len(obj.stats) > 0:
-            new_obj['stats'] = obj.stats
+            if len(obj.best) > 0:
+                new_obj['best'] = obj.best
+            if len(obj.times) > 0:
+                new_obj['times'] = obj.times
+            if obj.time is not None:
+                new_obj['time'] = obj.time
+            if len(obj.accuracy) is not None:
+                new_obj['accuracy'] = obj.accuracy
+            if len(obj.confusionM) > 0:
+                new_obj['confusionM'] = obj.confusionM
+            if len(obj.stats) > 0:
+                new_obj['stats'] = obj.stats
+        else:
+            return json.JSONEncoder.default(self, obj)
 
         return new_obj
 

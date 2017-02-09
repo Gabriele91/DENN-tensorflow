@@ -14,22 +14,26 @@ __all__ = ['write_all_results', 'expand_results', 'export_results']
 
 OUT_DIR = "./benchmark_results"
 
+
 def export_results(results, gen_step, name, out_options, folderByTime=True):
     if folderByTime:
         BASE_FOLDER = gen_folder_name_by_time(name)
     else:
         BASE_FOLDER = gen_folder_name(
             name, out_options.job.TOT_GEN, out_options.num_batches, out_options.job.levels)
-    
+
     makedirs(OUT_DIR, exist_ok=True)
     makedirs(path.join(OUT_DIR, BASE_FOLDER), exist_ok=True)
-    
+
     with open(path.join(OUT_DIR, BASE_FOLDER, "test_results.json"), "w") as res_file:
         json.dump({
             'gen_step': gen_step,
             'results': results
-        }, res_file, indent=2)
-    
+        }, res_file,
+            indent=2,
+            cls=TaskEncoder
+        )
+
 
 def expand_results(results, gen_step, de_types):
     """Duplicate the value of the accuracy for the entire range of time.

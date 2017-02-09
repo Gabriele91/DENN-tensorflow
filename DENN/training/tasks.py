@@ -269,11 +269,12 @@ class DETask(object):
                     0.0,
                     dtype=batch.data.dtype
                 ),
+                True
             )
         return self.__ada_boost_cache[idx]
 
-    def set_adaboost_C(self, idx, C, EC, pop_y):
-        self.__ada_boost_cache[idx] = (C, EC, pop_y)
+    def set_adaboost_C(self, idx, C, EC, pop_y, force_evaluation=False):
+        self.__ada_boost_cache[idx] = (C, EC, pop_y, force_evaluation)
 
     def __repr__(self):
         """A string representation of the object TFFx"""

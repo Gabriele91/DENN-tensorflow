@@ -230,7 +230,7 @@ def main():
                             # print(results.final_ec)
 
                             job.set_adaboost_C(
-                                batch_counter,
+                                batch_counter - 1,  # the current batch
                                 results.final_c,
                                 results.final_ec,
                                 results.final_pop_y

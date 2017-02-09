@@ -166,8 +166,6 @@ def main():
 
                 for de_type, denn_op in denn_operators.items():
 
-                    first_time = True
-
                     start_evolution = time()
 
                     print("+ Start evolution")
@@ -178,7 +176,7 @@ def main():
 
                         gen = int(job.GEN_STEP / job.GEN_SAMPLES)
                         cur_batch = dataset[batch_counter]
-                        ada_C, ada_EC, ada_pop_y = job.get_adaboost_C(
+                        ada_C, ada_EC, ada_pop_y, first_time = job.get_adaboost_C(
                             batch_counter, cur_batch
                         )
 

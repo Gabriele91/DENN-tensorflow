@@ -545,10 +545,12 @@ class DETask(object):
             ('input_placeholder', input_placeholder),
             ('label_placeholder', label_placeholder),
             ('cur_gen_options', cur_gen_options),
+            ##
+            # AdaBoost placeolder
             ('ada_label_diff', ada_label_diff),
             ('ada_C_placeholder', ada_C_placeholder),
-            ('y_placeholder', y_placeholder),
             ('ada_EC_placeholder', ada_EC_placeholder),
+            ('y_placeholder', y_placeholder),
             ('population_y_placeholder', population_y_placeholder)
         ])
 
@@ -571,14 +573,13 @@ class Network(object):
         'graph',
         'input_placeholder',
         'label_placeholder',
-        'cur_gen_options',
-        
+        'cur_gen_options', 
         ##
         # AdaBoost placeolder
         'ada_label_diff',
         'ada_C_placeholder',
-        'y_placeholder',
         'ada_EC_placeholder',
+        'y_placeholder',
         'population_y_placeholder'
     ]
 

@@ -10,7 +10,8 @@
     "tasks": [
         {
             "taskName": "make",
-            "args": ["make clean && make"]
+            "args": ["make clean && make"],
+            "isBuildCommand": true
         },
         {
             "taskName": "make-debug",
@@ -22,8 +23,7 @@
         },
         {
             "taskName": "make-ada-debug",
-            "args": ["make make_denn_ada_op USE_DEBUG=true"],
-            "isBuildCommand": true
+            "args": ["make make_denn_ada_op USE_DEBUG=true"]
         }
     ]
 }

@@ -238,6 +238,7 @@ class DETask(object):
         self.de_types = cur_task.get("de_types")
         self.CR = cur_task.get("CR")
         self.clamp = Clamp(cur_task.get("clamp", None))
+        self.training = cur_task.get("training", False)
         self.levels = [Level(obj) for obj in cur_task.get("levels")]
         self.num_intra_threads = cur_task.get("NUM_INTRA_THREADS", 4)
         self.num_inter_threads = cur_task.get("NUM_INTER_THREADS", 4)
@@ -245,6 +246,8 @@ class DETask(object):
         ##
         # AdaBoost
         tmp = cur_task.get("AdaBoost", None)
+        if self.training and tmp:
+            raise Exception("You can't use AdaBoost and training at the same time...")
         self.ada_boost = AdaBoost(tmp) if tmp is not None else tmp
         self.__ada_boost_cache = {}
 
@@ -290,6 +293,7 @@ class DETask(object):
 + INTRA Threads -> {}
 + INTER Threads -> {}
 + AdaBoost -> {}
++ Training -> {}
 + Clamp -> {}
 + levels:\n{}
 +++++""".format(
@@ -305,7 +309,8 @@ class DETask(object):
             self.de_types,
             self.num_intra_threads,
             self.num_inter_threads,
-            self.ada_boost.to_dict(),
+            self.ada_boost.to_dict() if self.ada_boost is not None else None,
+            self.training,
             self.clamp,
             "\n".join([str(level) for level in self.levels])
         )
@@ -542,8 +547,8 @@ class DETask(object):
             ('cur_gen_options', cur_gen_options),
             ('ada_label_diff', ada_label_diff),
             ('ada_C_placeholder', ada_C_placeholder),
-            ('y_placeholder', y_placeholder),
             ('ada_EC_placeholder', ada_EC_placeholder),
+            ('y_placeholder', y_placeholder),
             ('population_y_placeholder', population_y_placeholder)
         ])
 
@@ -551,6 +556,30 @@ class DETask(object):
 class Network(object):
 
     """A network container for DENN op."""
+
+    __slots__ = [
+        'targets',
+        'populations',
+        'rand_pop',
+        'weights',
+        'evaluated',
+        'nn_exec',
+        'y',
+        'y_test',
+        'cross_entropy',
+        'accuracy',
+        'graph',
+        'input_placeholder',
+        'label_placeholder',
+        'cur_gen_options',
+        ##
+        # AdaBoost placeolder
+        'ada_label_diff',
+        'ada_C_placeholder',
+        'ada_EC_placeholder',
+        'y_placeholder',
+        'population_y_placeholder'
+    ]
 
     def __init__(self, list_):
         """Insert all attributes of the network.
@@ -561,19 +590,25 @@ class Network(object):
             - rand_pop
             - weights
             - evaluated
+            - nn_exec
             - y
             - y_test
-            - cross_entropy (with or without AdaBoost)
+            - cross_entropy
             - accuracy
             - graph
             - input_placeholder
             - label_placeholder
             - cur_gen_options
-            - ada_boost_C (could be None)
+            - ada_label_diff (only with AdaBoost)
+            - ada_C_placeholder (only with AdaBoost)
+            - ada_EC_placeholder (only with AdaBoost)
+            - y_placeholder (only with AdaBoost)
+            - population_y_placeholder (only with AdaBoost)
         """
 
         for name, value in list_:
-            setattr(self, name, value)
+            if value is not None:
+                setattr(self, name, value)
 
 
 class TaskEncoder(json.JSONEncoder):
@@ -614,6 +649,7 @@ class TaskEncoder(json.JSONEncoder):
                 ('NUM_INTER_THREADS', obj.num_inter_threads),
                 ('AdaBoost', obj.ada_boost.to_dict()
                  if obj.ada_boost is not None else None),
+                ('training', obj.training),
                 ('clamp', obj.clamp.to_dict()),
                 ('levels', [level.to_dict() for level in obj.levels])
             ])

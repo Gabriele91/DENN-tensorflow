@@ -14,7 +14,7 @@ from . utils import OpListener
 from types import MethodType
 
 
-__all__ = ['Operation']
+__all__ = ['Operation', 'create']
 
 OUT_FOLDER = "benchmark_results"
 
@@ -51,7 +51,7 @@ def adaboost_run(self, sess, prev_NN, test_results, options={}):
 
             ##
             # Get C, EC, Y of last iteration
-            ada_C, ada_EC, ada_pop_y, first_time = self.job.get_adaboost_C(
+            ada_C, ada_EC, ada_pop_y, first_time = self.    job.get_adaboost_C(
                 batch_id,
                 cur_batch
             )
@@ -119,7 +119,7 @@ def adaboost_run(self, sess, prev_NN, test_results, options={}):
                     [
                         (self.net.label_placeholder,
                          self.dataset.validation_labels),
-                        (self.net.input_placeholder, 
+                        (self.net.input_placeholder,
                          self.dataset.validation_data)
                     ]
                 ))
@@ -622,3 +622,39 @@ class Operation(object):
             ##
             # add standard run
             self.run = MethodType(standard_run, self)
+
+
+class create(object):
+    """Create a DENN object."""
+
+    def __init__(self, *args, **kwargs):
+        self.__args = args
+        self.__kwargs = kwargs
+        self.__module = None
+
+    def __call__(self, *args, **kwargs):
+        module = tf.load_op_library(path.join(
+            path.dirname(__file__), 'DENNOp.so')
+        )
+        return module.denn(*args, **kwargs)
+
+    @property
+    def standard(self):
+        self.__module = tf.load_op_library(path.join(
+            path.dirname(__file__), 'DENNOp.so')
+        )
+        return self.__module.denn(*self.__args, **self.__kwargs)
+
+    @property
+    def train(self):
+        self.__module = tf.load_op_library(path.join(
+            path.dirname(__file__), 'DENNOp_training.so')
+        )
+        return self.__module.denn(*self.__args, **self.__kwargs)
+
+    @property
+    def ada(self):
+        self.__module = tf.load_op_library(path.join(
+            path.dirname(__file__), 'DENNOp_ada.so')
+        )
+        return self.__module.denn(*self.__args, **self.__kwargs)

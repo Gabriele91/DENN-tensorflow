@@ -176,10 +176,6 @@ def main():
 
                         gen = int(job.GEN_STEP / job.GEN_SAMPLES)
                         cur_batch = dataset[batch_counter]
-                        ada_C, ada_EC, ada_pop_y, first_time = job.get_adaboost_C(
-                            batch_counter, cur_batch
-                        )
-
                         batch_counter = (
                             batch_counter + 1) % dataset.num_batches
 
@@ -189,6 +185,10 @@ def main():
                             if sample == job.GEN_SAMPLES - 1:
                                 gen += (job.GEN_STEP % job.GEN_SAMPLES)
 
+                            #Get C, EC, Y of last iteration
+                            ada_C, ada_EC, ada_pop_y, first_time = job.get_adaboost_C(
+                                batch_counter, cur_batch
+                            )
                             # print(
                             #     "+ Start gen. [{}] with batch[{}]".format((gen + 1) * job.GEN_STEP, batch_counter))
                             time_start_gen = time()
@@ -334,8 +334,9 @@ def main():
                             #         time() - time_start_gen
                             #     )
                             # )
-
-                            first_time = False
+                            
+                            # Not more required
+                            #first_time = False
 
                             prev_NN[de_type] = cur_pop
 

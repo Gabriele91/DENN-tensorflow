@@ -176,9 +176,8 @@ def main():
 
                         gen = int(job.GEN_STEP / job.GEN_SAMPLES)
                         cur_batch = dataset[batch_counter]
+                        batch_id = batch_counter
                         batch_counter = (batch_counter + 1) % dataset.num_batches
-                        #Compute batch id 
-                        batch_id = (batch_counter-1) % dataset.num_batches
 
                         for sample in range(job.GEN_SAMPLES):
                             ##

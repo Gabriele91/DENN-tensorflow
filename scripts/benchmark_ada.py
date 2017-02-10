@@ -176,8 +176,9 @@ def main():
 
                         gen = int(job.GEN_STEP / job.GEN_SAMPLES)
                         cur_batch = dataset[batch_counter]
-                        batch_counter = (
-                            batch_counter + 1) % dataset.num_batches
+                        batch_counter = (batch_counter + 1) % dataset.num_batches
+                        #Compute batch id 
+                        batch_id = (batch_counter-1) % dataset.num_batches
 
                         for sample in range(job.GEN_SAMPLES):
                             ##
@@ -187,8 +188,8 @@ def main():
 
                             #Get C, EC, Y of last iteration
                             ada_C, ada_EC, ada_pop_y, first_time = job.get_adaboost_C(
-                                  batch_counter-1 # the current batch id
-                                , cur_batch
+                                  batch_id,
+                                  cur_batch
                             )
                             # print(
                             #     "+ Start gen. [{}] with batch[{}]".format((gen + 1) * job.GEN_STEP, batch_counter))
@@ -229,7 +230,7 @@ def main():
                             # print(results.final_ec)
 
                             job.set_adaboost_C(
-                                batch_counter - 1,  # the current batch id
+                                batch_id,
                                 results.final_c,
                                 results.final_ec,
                                 results.final_pop_y

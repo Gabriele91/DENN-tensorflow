@@ -2,7 +2,7 @@
     {
         "name": "mnist_dataset",
         "dataset_file": "../datasets/mnist_d_4000xB_5s.gz",
-        "TOT_GEN": 250000,
+        "TOT_GEN": 100000,
         "GEN_STEP": 2000,
         "TYPE": "double",
         "F": 0.8,
@@ -57,7 +57,7 @@
     {
         "name": "mnist_dataset",
         "dataset_file": "../datasets/mnist_d_4000xB_5s.gz",
-        "TOT_GEN": 250000,
+        "TOT_GEN": 100000,
         "GEN_STEP": 2000,
         "TYPE": "double",
         "F": 0.8,
@@ -112,7 +112,7 @@
     {
         "name": "mnist_dataset",
         "dataset_file": "../datasets/mnist_d_4000xB_5s.gz",
-        "TOT_GEN": 250000,
+        "TOT_GEN": 100000,
         "GEN_STEP": 2000,
         "TYPE": "double",
         "F": 0.8,

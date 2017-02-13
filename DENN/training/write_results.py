@@ -185,6 +185,7 @@ def write_all_results(name, results, description, out_options, showDelimiter=Fal
                     plt.axvline(delimiter, color='k')
 
             plt.savefig(figure['filename'], dpi=400, bbox_inches='tight')
+            plt.clf()
 
     if len(out_options.job.confusionM) > 0:
         for method, matrix in out_options.job.confusionM.items():
@@ -204,3 +205,4 @@ def write_all_results(name, results, description, out_options, showDelimiter=Fal
                 dpi=400,
                 bbox_inches='tight'
             )
+            plt.clf()

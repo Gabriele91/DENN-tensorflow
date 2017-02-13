@@ -53,7 +53,7 @@ def main():
     print("+ Load datasets")
     assert len(set([job.training for job in jobs])) == 1, "All tasks have to be of the same type [standard, AdaBoost, training]"
     assert len(set([job.ada_boost is not None for job in jobs])) == 1, "All tasks have to be of the same type [standard, AdaBoost, training]"
-    exit()
+
     for job in jobs:
         datasets.append((DENN.training.Dataset(job.dataset_file), job))
 

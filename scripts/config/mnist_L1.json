@@ -1,18 +1,22 @@
 [
     {
         "name": "mnist_dataset",
-        "dataset_file": "../datasets/mnist_f_4000xB_5s.gz",
-        "TOT_GEN": 10000,
-        "GEN_STEP": 100,
-        "TYPE": "float",
+        "dataset_file": "../datasets/mnist_d_2000xB_5s.gz",
+        "TOT_GEN": 250000,
+        "GEN_STEP": 2000,
+        "TYPE": "double",
         "F": 0.8,
-        "NP": 10,
+        "NP": 20,
         "de_types": [
             "rand/1/bin"
         ],
         "clamp": {
-            "min": -100.0,
-            "max": 100.0
+            "min": -30.0,
+            "max": 30.0
+        },
+        "AdaBoost": {
+            "alpha": 0.05,
+            "C": 1.0
         },
         "CR": 0.5,
         "levels": [
@@ -30,8 +34,8 @@
                             "name": "random_uniform",
                             "kwargs": {
                                 "seed": 1,
-                                "minval": -50.0, 
-                                "maxval": 50.0
+                                "minval": -15.0, 
+                                "maxval": 15.0
                             }
                         }
                     },
@@ -40,8 +44,8 @@
                             "name": "random_uniform",
                             "kwargs": {
                                 "seed": 1,
-                                "minval": -50.0, 
-                                "maxval": 50.0
+                                "minval": -15.0, 
+                                "maxval": 15.0
                             }
                         }
                     }

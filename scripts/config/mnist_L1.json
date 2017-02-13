@@ -1,7 +1,7 @@
 [
     {
         "name": "mnist_dataset",
-        "dataset_file": "../datasets/mnist_d_2000xB_5s.gz",
+        "dataset_file": "../datasets/mnist_d_4000xB_5s.gz",
         "TOT_GEN": 250000,
         "GEN_STEP": 2000,
         "TYPE": "double",

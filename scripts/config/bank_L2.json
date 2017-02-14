@@ -1,0 +1,87 @@
+[
+    {
+        "name": "NO_ADA_bank",
+        "dataset_file": "../datasets/bank_d_no_duration_4000xB_5s.gz",
+        "TOT_GEN": 5000,
+        "GEN_STEP": 500,
+        "GEN_SAMPLES": 1,
+        "TYPE": "double",
+        "F": 0.8,
+        "NP": 38,
+        "de_types": [
+            "rand/1/bin",
+            "best/1/bin"
+        ],
+        "CR": 0.5,
+        "clamp": {
+            "min": -30.0,
+            "max": 30.0
+        },
+        /*"AdaBoost": {
+            "alpha": 0.05,
+            "C": 1.0
+        },*/
+        "levels": [
+            {   
+                // With no duration
+                "shape": [[19,38], [38]],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.relu6"
+                },
+                "init": [
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -15.0, 
+                                "maxval": 15.0
+                            }
+                        }
+                    },
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -15.0, 
+                                "maxval": 15.0
+                            }
+                        }
+                    }
+                ]
+            },
+            {   
+                // With no duration
+                "shape": [[38,2], [2]],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits"
+                },
+                "init": [
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -15.0, 
+                                "maxval": 15.0
+                            }
+                        }
+                    },
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -15.0, 
+                                "maxval": 15.0
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+]

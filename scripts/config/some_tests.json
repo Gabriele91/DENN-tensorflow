@@ -3,8 +3,8 @@
         "name": "NO_ada_qsar_dataset",
         "dataset_file": "../datasets/qsar_d_100xB_5s.gz",
         "TOT_GEN": 50000,
-        "GEN_STEP": 200,
-        "GEN_SAMPLES": 2,
+        "GEN_STEP": 500,
+        "GEN_SAMPLES": 5,
         "TYPE": "double",
         "F": 0.8,
         "NP": 100,
@@ -14,13 +14,39 @@
         },
         "de_types": [
             "rand/1/bin",
-            "rand/2/bin",
             "best/1/bin"
         ],
         "CR": 0.5,
         "levels": [
             {   
-                "shape": [[41,2], [2]],
+                "shape": [[41, 82], [82]],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.relu6"
+                },
+                "init": [
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -1.0, 
+                                "maxval": 1.0
+                            }
+                        }
+                    },
+                    {
+                        "fx": {
+                            "name": "random_normal",
+                            "kwargs": {
+                                "seed": 1
+                            }
+                        }
+                    }
+                ]
+            },
+            {   
+                "shape": [[82,2], [2]],
                 "preferred_device": "CPU",
                 "fx": {
                     "name": "nn.softmax_cross_entropy_with_logits"
@@ -52,8 +78,8 @@
         "name": "NO_ada_bank_dataset_0",
         "dataset_file": "../datasets/bank_d_no_duration_0_4000xB_5s.gz",
         "TOT_GEN": 5000,
-        "GEN_STEP": 200,
-        "GEN_SAMPLES": 2,
+        "GEN_STEP": 500,
+        "GEN_SAMPLES": 5,
         "TYPE": "double",
         "F": 0.8,
         "NP": 50,
@@ -63,14 +89,41 @@
         },
         "de_types": [
             "rand/1/bin",
-            "rand/2/bin",
             "best/1/bin"
         ],
         "CR": 0.5,
         "levels": [
             {   
                 // With no duration
-                "shape": [[19,2], [2]],
+                "shape": [[19,38], [38]],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.sigmoid"
+                },
+                "init": [
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -1.0, 
+                                "maxval": 1.0
+                            }
+                        }
+                    },
+                    {
+                        "fx": {
+                            "name": "random_normal",
+                            "kwargs": {
+                                "seed": 1
+                            }
+                        }
+                    }
+                ]
+            },
+            {   
+                // With no duration
+                "shape": [[38,2], [2]],
                 "preferred_device": "CPU",
                 "fx": {
                     "name": "nn.softmax_cross_entropy_with_logits"
@@ -102,8 +155,8 @@
         "name": "NO_ada_magic_dataset",
         "dataset_file": "../datasets/magic_d_2000xB_5s.gz",
         "TOT_GEN": 20000,
-        "GEN_STEP": 200,
-        "GEN_SAMPLES": 2,
+        "GEN_STEP": 500,
+        "GEN_SAMPLES": 5,
         "TYPE": "double",
         "F": 0.8,
         "NP": 100,
@@ -113,17 +166,16 @@
         },
         "de_types": [
             "rand/1/bin",
-            "rand/2/bin",
             "best/1/bin"
         ],
         "CR": 0.5,
         "levels": [
             {   
                 // With no duration
-                "shape": [[10,2], [2]],
+                "shape": [[10,20], [20]],
                 "preferred_device": "CPU",
                 "fx": {
-                    "name": "nn.softmax_cross_entropy_with_logits"
+                    "name": "nn.relu6"
                 },
                 "init": [
                     {
@@ -145,81 +197,10 @@
                         }
                     }
                 ]
-            }
-        ]
-    },
-    {
-        "name": "NO_ada_400_qsar_dataset",
-        "dataset_file": "../datasets/qsar_d_100xB_5s.gz",
-        "TOT_GEN": 50000,
-        "GEN_STEP": 400,
-        "GEN_SAMPLES": 2,
-        "TYPE": "double",
-        "F": 0.8,
-        "NP": 100,
-        "clamp": {
-            "min": -30.0,
-            "max": 30.0
-        },
-        "de_types": [
-            "rand/1/bin",
-            "rand/2/bin",
-            "best/1/bin"
-        ],
-        "CR": 0.5,
-        "levels": [
-            {   
-                "shape": [[41,2], [2]],
-                "preferred_device": "CPU",
-                "fx": {
-                    "name": "nn.softmax_cross_entropy_with_logits"
-                },
-                "init": [
-                    {
-                        "fx": {
-                            "name": "random_uniform",
-                            "kwargs": {
-                                "seed": 1,
-                                "minval": -1.0, 
-                                "maxval": 1.0
-                            }
-                        }
-                    },
-                    {
-                        "fx": {
-                            "name": "random_normal",
-                            "kwargs": {
-                                "seed": 1
-                            }
-                        }
-                    }
-                ]
-            }
-        ]
-    },
-    {
-        "name": "NO_ada_400_bank_dataset_0",
-        "dataset_file": "../datasets/bank_d_no_duration_0_4000xB_5s.gz",
-        "TOT_GEN": 5000,
-        "GEN_STEP": 400,
-        "GEN_SAMPLES": 2,
-        "TYPE": "double",
-        "F": 0.8,
-        "NP": 50,
-        "clamp": {
-            "min": -30.0,
-            "max": 30.0
-        },
-        "de_types": [
-            "rand/1/bin",
-            "rand/2/bin",
-            "best/1/bin"
-        ],
-        "CR": 0.5,
-        "levels": [
+            },
             {   
                 // With no duration
-                "shape": [[19,2], [2]],
+                "shape": [[20,2], [2]],
                 "preferred_device": "CPU",
                 "fx": {
                     "name": "nn.softmax_cross_entropy_with_logits"
@@ -240,106 +221,6 @@
                             "name": "random_normal",
                             "kwargs": {
                                 "seed": 1
-                            }
-                        }
-                    }
-                ]
-            }
-        ]
-    },
-    {
-        "name": "NO_ada_400_magic_dataset",
-        "dataset_file": "../datasets/magic_d_2000xB_5s.gz",
-        "TOT_GEN": 20000,
-        "GEN_STEP": 400,
-        "GEN_SAMPLES": 2,
-        "TYPE": "double",
-        "F": 0.8,
-        "NP": 100,
-        "clamp": {
-            "min": -30.0,
-            "max": 30.0
-        },
-        "de_types": [
-            "rand/1/bin",
-            "rand/2/bin",
-            "best/1/bin"
-        ],
-        "CR": 0.5,
-        "levels": [
-            {   
-                // With no duration
-                "shape": [[10,2], [2]],
-                "preferred_device": "CPU",
-                "fx": {
-                    "name": "nn.softmax_cross_entropy_with_logits"
-                },
-                "init": [
-                    {
-                        "fx": {
-                            "name": "random_uniform",
-                            "kwargs": {
-                                "seed": 1,
-                                "minval": -1.0, 
-                                "maxval": 1.0
-                            }
-                        }
-                    },
-                    {
-                        "fx": {
-                            "name": "random_normal",
-                            "kwargs": {
-                                "seed": 1
-                            }
-                        }
-                    }
-                ]
-            }
-        ]
-    },
-    {
-        "name": "NO_ada_mnist_dataset",
-        "dataset_file": "../datasets/mnist_f_4000xB_5s.gz",
-        "TOT_GEN": 200000,
-        "GEN_STEP": 2000,
-        "TYPE": "float",
-        "F": 0.8,
-        "NP": 20,
-        "de_types": [
-            "rand/1/bin"
-        ],
-        "clamp": {
-            "min": -30.0,
-            "max": 30.0
-        },
-        "CR": 0.5,
-        "levels": [
-            {
-                "shape": [[784,10], [10]],
-                "preferred_device": "CPU",
-                "fx": {
-                    "name": "nn.softmax_cross_entropy_with_logits"//,
-                    //"args": []
-                    //"kwargs": {}
-                },
-                "init": [
-                    {
-                        "fx": {
-                            "name": "random_uniform",
-                            "kwargs": {
-                                "seed": 1,
-                                "minval": -1.0, 
-                                "maxval": 1.0
-                            }
-                        }
-                    },
-                    {
-                        "fx": {
-                            "name": "random_uniform",
-                            "kwargs": {
-                                "seed": 1,
-                                "minval": -2.0, 
-                                "maxval": 2.0
                             }
                         }
                     }

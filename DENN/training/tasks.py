@@ -468,9 +468,13 @@ class DETask(object):
                                         sizes[idx]
                                     ))
                                 tmp_init.append(
-                                    tf.constant(init_elm,
-                                                shape=[self.NP] + sizes[idx],
-                                                dtype=cur_type))
+                                    tf.constant(
+                                        np.array([init_elm.copy()
+                                         for _ in range(self.NP)]),
+                                        shape=[self.NP] + sizes[idx],
+                                        dtype=cur_type
+                                    )
+                                )
 
                         rand_pop_ref += tmp_init
 

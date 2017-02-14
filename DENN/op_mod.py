@@ -51,7 +51,7 @@ def adaboost_run(self, sess, prev_NN, test_results, options={}):
 
             ##
             # Get C, EC, Y of last iteration
-            ada_C, ada_EC, ada_pop_y, first_time = self.    job.get_adaboost_C(
+            ada_C, ada_EC, ada_pop_y, first_time = self.    job.get_adaboost_cache(
                 batch_id,
                 cur_batch
             )
@@ -94,7 +94,7 @@ def adaboost_run(self, sess, prev_NN, test_results, options={}):
 
             ##
             # Update adaboost cache
-            self.job.set_adaboost_C(
+            self.job.set_adaboost_cache(
                 batch_id,
                 results.final_c,
                 results.final_ec,

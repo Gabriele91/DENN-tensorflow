@@ -186,7 +186,7 @@ def main():
                                 gen += (job.GEN_STEP % job.GEN_SAMPLES)
 
                             #Get C, EC, Y of last iteration
-                            ada_C, ada_EC, ada_pop_y, first_time = job.get_adaboost_C(
+                            ada_C, ada_EC, ada_pop_y, first_time = job.get_adaboost_cache(
                                   batch_id,
                                   cur_batch
                             )
@@ -228,7 +228,7 @@ def main():
                             # print(results.final_c)
                             # print(results.final_ec)
 
-                            job.set_adaboost_C(
+                            job.set_adaboost_cache(
                                 batch_id,
                                 results.final_c,
                                 results.final_ec,
@@ -377,6 +377,8 @@ def main():
                             DENN.training.precision_recall_acc(elm_tf))
 
                     pbar.close()
+
+                    job.reset_adaboost_C()
 
         print("+ Completed all test on dataset {} in {} sec.".format(job.name,
                                                                      time() - time_start_dataset))

@@ -156,6 +156,8 @@ def main():
                         'test_networks': test_networks
                     })
 
+                    job.reset_adaboost_cache()
+
         print("+ Completed all test on dataset {} in {} sec.".format(job.name,
                                                                      time() - time_start_dataset))
         print("+ Save results for {}".format(job.name))

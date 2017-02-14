@@ -247,7 +247,8 @@ class DETask(object):
         # AdaBoost
         tmp = cur_task.get("AdaBoost", None)
         if self.training and tmp:
-            raise Exception("You can't use AdaBoost and training at the same time...")
+            raise Exception(
+                "You can't use AdaBoost and training at the same time...")
         self.ada_boost = AdaBoost(tmp) if tmp is not None else tmp
         self.__ada_boost_cache = {}
 
@@ -258,7 +259,10 @@ class DETask(object):
         self.confusionM = {}
         self.stats = {}
 
-    def get_adaboost_C(self, idx, batch):
+    def reset_adaboost_cache(self):
+        self.__ada_boost_cache = {}
+
+    def get_adaboost_cache(self, idx, batch):
         if idx not in self.__ada_boost_cache:
             self.__ada_boost_cache[idx] = (
                 np.full(
@@ -276,7 +280,7 @@ class DETask(object):
             )
         return self.__ada_boost_cache[idx]
 
-    def set_adaboost_C(self, idx, C, EC, pop_y, force_evaluation=False):
+    def set_adaboost_cache(self, idx, C, EC, pop_y, force_evaluation=False):
         self.__ada_boost_cache[idx] = (C, EC, pop_y, force_evaluation)
 
     def __repr__(self):
@@ -573,7 +577,7 @@ class Network(object):
         'graph',
         'input_placeholder',
         'label_placeholder',
-        'cur_gen_options', 
+        'cur_gen_options',
         ##
         # AdaBoost placeolder
         'ada_label_diff',

@@ -5,7 +5,7 @@
         "TOT_GEN": 100000,
         "GEN_STEP": 2000,
         "TYPE": "double",
-        "F": 0.8,
+        "F": 0.5,
         "NP": 24,
         "de_types": [
             "rand/1/bin",
@@ -19,7 +19,7 @@
             "alpha": 0.05,
             "C": 1.0
         },
-        "CR": 0.5,
+        "CR": 0.9,
         "levels": [
             {
                 "shape": [[784,10], [10]],

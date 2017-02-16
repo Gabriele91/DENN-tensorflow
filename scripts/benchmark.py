@@ -51,14 +51,16 @@ def main():
     ##
     # Load data
     print("+ Load datasets")
-    assert len(set([job.training for job in jobs])) == 1, "All tasks have to be of the same type [standard, AdaBoost, training]"
-    assert len(set([job.ada_boost is not None for job in jobs])) == 1, "All tasks have to be of the same type [standard, AdaBoost, training]"
+    assert len(set([job.training for job in jobs])
+               ) == 1, "All tasks have to be of the same type [standard, AdaBoost, training]"
+    assert len(set([job.ada_boost is not None for job in jobs])
+               ) == 1, "All tasks have to be of the same type [standard, AdaBoost, training]"
 
     for job in jobs:
         datasets.append((DENN.training.Dataset(job.dataset_file), job))
 
     print("+ Start tests")
-    time_start_test=time()
+    time_start_test = time()
 
     for dataset, job in datasets:
 
@@ -71,11 +73,11 @@ def main():
 
         # print(job)
 
-        time_start_dataset=time()
+        time_start_dataset = time()
 
         ##
         # test data collections
-        test_results=NDict(
+        test_results = NDict(
             list(
                 zip(job.de_types, [
                     ENDict(
@@ -149,13 +151,52 @@ def main():
 
                 for de_type, denn_op in denn_operators.items():
 
-                    denn_op.run(sess, prev_NN, test_results,{
-                        'TEST_PARALLEL_OP':TEST_PARALLEL_OP,
-                        'TEST_PARTIAL':TEST_PARTIAL,
+                    ##
+                    # Do first evaluation
+                    evaluations = []
+
+                    for idx in range(job.NP):
+                        cur_evaluation = sess.run(cur_nn.accuracy, feed_dict=dict(
+                            [
+                                (target, cur_pop[num][idx])
+                                for num, target in enumerate(cur_nn.targets)
+                            ]
+                            +
+                            [
+                                (cur_nn.label_placeholder,
+                                 dataset.validation_labels),
+                                (cur_nn.input_placeholder,
+                                 dataset.validation_data)
+                            ]
+                        ))
+                        evaluations.append(cur_evaluation)
+
+                    best_idx = np.argmin(evaluations)
+
+                    cur_accuracy = sess.run(cur_nn.accuracy, feed_dict=dict(
+                        [
+                            (target, cur_pop[num][best_idx])
+                            for num, target in enumerate(cur_nn.targets)
+                        ]
+                        +
+                        [
+                            (cur_nn.label_placeholder, dataset.test_labels),
+                            (cur_nn.input_placeholder, dataset.test_data)
+                        ]
+                    ))
+                    test_results[de_type].values.append(cur_accuracy)
+
+                    ##
+                    # Do evolution
+                    denn_op.run(sess, prev_NN, test_results, {
+                        'TEST_PARALLEL_OP': TEST_PARALLEL_OP,
+                        'TEST_PARTIAL': TEST_PARTIAL,
                         'start_job': start_job,
                         'test_networks': test_networks
                     })
 
+                    ##
+                    # Reset AdaBoost cache
                     job.reset_adaboost_cache()
 
         print("+ Completed all test on dataset {} in {} sec.".format(job.name,

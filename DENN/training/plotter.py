@@ -12,7 +12,7 @@ def my_confusion_matrix(fig, matrix):
         tmp_arr = []
         a = sum(i, 0)
         for j in i:
-            tmp_arr.append(float(j)/float(a))
+            tmp_arr.append(float(j) / float(a))
         norm_conf.append(tmp_arr)
 
     res = plt.imshow(norm_conf, cmap=plt.cm.jet,
@@ -100,3 +100,95 @@ def my_hist(fig, data, bins_, range_, colors, labels, normalized=False, max_y=No
     if normalized:
         formatter = FuncFormatter(to_percent)
         plt.gca().yaxis.set_major_formatter(formatter)
+
+
+def plot_results(results):
+    """Plot a result graph.
+
+    Params:
+        results (dict or string): the result dictionary or the json file to
+                                  parse
+
+    Note:
+        results: {
+            "title": ...,
+            "x_label": ...,
+            "y_label": ...
+        }
+    """
+    MARKERS = ['o', 's', '*', '^', '+']
+    COLORS = [
+        "#000000",
+        "#999999",
+        "#222222",
+        "#555555",
+        "#CCCCCC"
+    ]
+    ALPHA = [
+        0.4,
+        0.6,
+        0.8,
+        0.8,
+        1.0
+    ]
+    LINESTYLE = ["-.", "-", "--", "steps", ":"]
+
+    if type(results) != dict:
+        with open(results) as result_file:
+            from json import load as js_load
+            results = js_load(result_file)
+
+    from scipy.interpolate import interp1d
+    from math import cos, pi
+
+    fig = plt.figure()
+    fig.suptitle(results.get('title', ''), fontsize=14, fontweight='bold')
+
+    data = results.get('results')
+
+    for idx, (type_, obj) in enumerate(data.items()):
+        _y_ = obj.get('values')
+        _x_ = range(len(_y_))
+        gen_step = results.get("gen_step", 1)
+        tot_gen = (len(_y_) - 1) * gen_step
+
+        print(len(_y_))
+
+        x_real = range(tot_gen)
+        y_real = []
+        
+        for _n_, val in enumerate(_y_[:-1]):
+            next_ = _y_[_n_+1]
+            y_real.append(val)
+            for cur_step in range(gen_step-1):
+                ##
+                # Cos interpolation
+                alpha = float((cur_step + 1.) / gen_step)
+                alpha2 = (1-cos(alpha*pi))/2
+                new_point = (val*(1-alpha2)+next_*alpha2)
+                y_real.append(
+                    new_point
+                )
+        ##
+        # Do lines
+        plt.plot(x_real, y_real,
+                 marker='None',
+                 color=COLORS[idx],
+                 ls=LINESTYLE[idx],
+                 alpha=ALPHA[idx]
+                 )
+        ##
+        # Do points
+        plt.plot([elm*gen_step for elm in _x_], _y_,
+                 marker=MARKERS[idx],
+                 color=COLORS[idx],
+                 ls="None",
+                 alpha=0.9
+                 )
+    
+    plt.axis((0, tot_gen, 0, 1))
+    plt.xlabel(results.get('x_label', 'generation'))
+    plt.ylabel(results.get('y_label', 'accuracy'))
+    plt.grid(True)
+    plt.show()
+    plt.close()

@@ -502,9 +502,17 @@ protected:
                 //random index
                 int random_index = irand(D);
                 //compute
-                for (int elm = 0; elm < D; ++elm)
+                for (int i = 0, elm = 0; i < D; ++i)
                 {
-                    if (do_random && (random() < m_CR || random_index == elm))
+                    //start element 
+                    if(m_cr_type != CR_EXP) 
+                        elm = i;
+                    else 
+                        elm = (elm + random_index) % D;
+                    //cross event
+                    bool cross_event = random() < m_CR ;
+                    //cases
+                    if (do_random && (cross_event || random_index == elm))
                     {
                         switch (m_diff_vector)
                         {
@@ -529,9 +537,9 @@ protected:
                     else
                     {
                         new_generation(elm) = population[index].flat_inner_dims<value_t>()(elm);
-                        //in exp case stop to rand values
-                        if(!do_random && m_cr_type == CR_EXP) do_random = false;
                     }
+                    //in exp case stop to rand values
+                    if(do_random  &&  !cross_event && m_cr_type == CR_EXP)  do_random = false;
                 }
             }
         }
@@ -616,9 +624,17 @@ protected:
                 //random index
                 int random_index = irand(D);
                 //compute
-                for (int elm = 0; elm < D; ++elm)
+                for (int i = 0, elm = 0; i < D; ++i)
                 {
-                    if (do_random && (random() < m_CR || random_index == elm))
+                    //start element 
+                    if(m_cr_type != CR_EXP) 
+                        elm = i;
+                    else 
+                        elm = (elm + random_index) % D;
+                    //cross event
+                    bool cross_event = random() < m_CR ;
+                    //cases
+                    if (do_random && (cross_event || random_index == elm))
                     {
                         switch (m_diff_vector)
                         {
@@ -643,9 +659,9 @@ protected:
                     else
                     {
                         new_generation(elm) = population[index].flat_inner_dims<value_t>()(elm);
-                        //in exp case stop to rand values
-                        if(!do_random && m_cr_type == CR_EXP) do_random = false;
                     }
+                    //in exp case stop to rand values
+                    if(do_random  &&  !cross_event && m_cr_type == CR_EXP )  do_random = false;
                 }
             }
         }

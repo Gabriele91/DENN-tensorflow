@@ -508,7 +508,7 @@ protected:
                     if(m_cr_type != CR_EXP) 
                         elm = i;
                     else 
-                        elm = (elm + random_index) % D;
+                        elm = (i + random_index) % D;
                     //cross event
                     bool cross_event = random() < m_CR ;
                     //cases
@@ -630,7 +630,7 @@ protected:
                     if(m_cr_type != CR_EXP) 
                         elm = i;
                     else 
-                        elm = (elm + random_index) % D;
+                        elm = (i + random_index) % D;
                     //cross event
                     bool cross_event = random() < m_CR ;
                     //cases

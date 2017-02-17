@@ -1,4 +1,5 @@
 from matplotlib import pyplot as plt
+from matplotlib.legend_handler import HandlerLine2D
 from matplotlib.ticker import FuncFormatter
 import numpy as np
 
@@ -116,7 +117,7 @@ def plot_results(results):
             "y_label": ...
         }
     """
-    MARKERS = ['o', 's', '*', '^', '+']
+    MARKERS = ['o', '^', '*', 's', '+']
     COLORS = [
         "#000000",
         "#999999",
@@ -125,13 +126,13 @@ def plot_results(results):
         "#CCCCCC"
     ]
     ALPHA = [
-        0.4,
-        0.6,
-        0.8,
-        0.8,
+        0.9,
+        1.0,
+        1.0,
+        1.0,
         1.0
     ]
-    LINESTYLE = ["-.", "-", "--", "steps", ":"]
+    LINESTYLE = [":", "--", "-", "-.", "steps"]
 
     if type(results) != dict:
         with open(results) as result_file:
@@ -145,14 +146,13 @@ def plot_results(results):
     fig.suptitle(results.get('title', ''), fontsize=14, fontweight='bold')
 
     data = results.get('results')
+    labels = []
 
     for idx, (type_, obj) in enumerate(data.items()):
         _y_ = obj.get('values')
         _x_ = range(len(_y_))
         gen_step = results.get("gen_step", 1)
         tot_gen = (len(_y_) - 1) * gen_step
-
-        print(len(_y_))
 
         x_real = range(tot_gen)
         y_real = []
@@ -169,22 +169,26 @@ def plot_results(results):
                 y_real.append(
                     new_point
                 )
+        
         ##
-        # Do lines
-        plt.plot(x_real, y_real,
-                 marker='None',
-                 color=COLORS[idx],
-                 ls=LINESTYLE[idx],
-                 alpha=ALPHA[idx]
-                 )
-        ##
-        # Do points
-        plt.plot([elm*gen_step for elm in _x_], _y_,
+        # Do lines and point
+        cur_plot = plt.plot(x_real, y_real,
                  marker=MARKERS[idx],
                  color=COLORS[idx],
-                 ls="None",
-                 alpha=0.9
+                #  ls=LINESTYLE[idx],
+                 alpha=ALPHA[idx],
+                 label=obj.get('label'),
+                 markevery=[int(elm*gen_step) for elm in _x_[:-1]]
                  )
+        labels.append(cur_plot[0])
+    
+    plt.legend(
+        handler_map=dict(
+            [
+                (label, HandlerLine2D(numpoints=1))for label in labels
+            ]
+        )
+    )
     
     plt.axis((0, tot_gen, 0, 1))
     plt.xlabel(results.get('x_label', 'generation'))

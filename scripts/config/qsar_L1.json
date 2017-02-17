@@ -1,10 +1,10 @@
 [
     {
-        "name": "AAA_qsar_dataset",
+        "name": "AAA_100_qsar_dataset",
         "dataset_file": "../datasets/test_qsar_10_d_10xB_5s.gz",
         "TOT_GEN": 50000,
-        "GEN_STEP": 500,
-        "GEN_SAMPLES": 5,
+        "GEN_STEP": 100,
+        "GEN_SAMPLES": 2,
         "TYPE": "double",
         "F": 0.5,
         "NP": 24,
@@ -23,11 +23,11 @@
         ]
     },
     {
-        "name": "AAA_qsar_dataset",
+        "name": "AAA_100_qsar_dataset",
         "dataset_file": "../datasets/test_qsar_20_d_20xB_5s.gz",
         "TOT_GEN": 50000,
-        "GEN_STEP": 500,
-        "GEN_SAMPLES": 5,
+        "GEN_STEP": 100,
+        "GEN_SAMPLES": 2,
         "TYPE": "double",
         "F": 0.5,
         "NP": 24,
@@ -46,11 +46,11 @@
         ]
     },
     {
-        "name": "AAA_qsar_dataset",
+        "name": "AAA_100_qsar_dataset",
         "dataset_file": "../datasets/test_qsar_40_d_40xB_5s.gz",
         "TOT_GEN": 50000,
-        "GEN_STEP": 500,
-        "GEN_SAMPLES": 5,
+        "GEN_STEP": 100,
+        "GEN_SAMPLES": 2,
         "TYPE": "double",
         "F": 0.5,
         "NP": 24,
@@ -69,11 +69,11 @@
         ]
     },
     {
-        "name": "AAA_qsar_dataset",
+        "name": "AAA_100_qsar_dataset",
         "dataset_file": "../datasets/test_qsar_80_d_80xB_5s.gz",
         "TOT_GEN": 50000,
-        "GEN_STEP": 500,
-        "GEN_SAMPLES": 5,
+        "GEN_STEP": 100,
+        "GEN_SAMPLES": 2,
         "TYPE": "double",
         "F": 0.5,
         "NP": 24,
@@ -92,11 +92,11 @@
         ]
     },
     {
-        "name": "AAA_qsar_dataset",
+        "name": "AAA_100_qsar_dataset",
         "dataset_file": "../datasets/test_qsar_160_d_160xB_5s.gz",
         "TOT_GEN": 50000,
-        "GEN_STEP": 500,
-        "GEN_SAMPLES": 5,
+        "GEN_STEP": 100,
+        "GEN_SAMPLES": 2,
         "TYPE": "double",
         "F": 0.5,
         "NP": 24,

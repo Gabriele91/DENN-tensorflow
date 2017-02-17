@@ -1,15 +1,15 @@
 [
     {
-        "name": "mnist_dataset",
+        "name": "mnist_CR_F_TEST_ADA",
         "dataset_file": "../datasets/mnist_d_5perV_4000xB_5s.gz",
-        "TOT_GEN": 100000,
+        "TOT_GEN": 40000,
         "GEN_STEP": 2000,
         "TYPE": "double",
         "F": 0.5,
+        "CR": 0.9,
         "NP": 24,
         "de_types": [
-            "rand/1/bin",
-            "best/1/bin"
+            "rand/1/bin"
         ],
         "clamp": {
             "min": -30.0,
@@ -19,7 +19,6 @@
             "alpha": 0.05,
             "C": 1.0
         },
-        "CR": 0.9,
         "levels": [
             {
                 "shape": [[784,10], [10]],
@@ -54,72 +53,17 @@
             }
         ]
     },
-    // {
-    //     "name": "mnist_dataset",
-    //     "dataset_file": "../datasets/mnist_d_4000xB_5s.gz",
-    //     "TOT_GEN": 100000,
-    //     "GEN_STEP": 2000,
-    //     "TYPE": "double",
-    //     "F": 0.8,
-    //     "NP": 10,
-    //     "de_types": [
-    //         //"rand/1/bin",
-    //         "best/1/bin"
-    //     ],
-    //     "clamp": {
-    //         "min": -30.0,
-    //         "max": 30.0
-    //     },
-    //     "AdaBoost": {
-    //         "alpha": 0.05,
-    //         "C": 1.0
-    //     },
-    //     "CR": 0.5,
-    //     "levels": [
-    //         {
-    //             "shape": [[784,10], [10]],
-    //             "preferred_device": "CPU",
-    //             "fx": {
-    //                 "name": "nn.softmax_cross_entropy_with_logits"//,
-    //                 //"args": []
-    //                 //"kwargs": {}
-    //             },
-    //             "init": [
-    //                 {
-    //                     "fx": {
-    //                         "name": "random_uniform",
-    //                         "kwargs": {
-    //                             "seed": 1,
-    //                             "minval": -15.0, 
-    //                             "maxval": 15.0
-    //                         }
-    //                     }
-    //                 },
-    //                 {
-    //                     "fx": {
-    //                         "name": "random_uniform",
-    //                         "kwargs": {
-    //                             "seed": 1,
-    //                             "minval": -15.0, 
-    //                             "maxval": 15.0
-    //                         }
-    //                     }
-    //                 }
-    //             ]
-    //         }
-    //     ]
-    // },
     {
-        "name": "mnist_dataset",
-        "dataset_file": "../datasets/mnist_d_4000xB_5s.gz",
-        "TOT_GEN": 100000,
+        "name": "mnist_CR_F_TEST_ADA",
+        "dataset_file": "../datasets/mnist_d_5perV_4000xB_5s.gz",
+        "TOT_GEN": 40000,
         "GEN_STEP": 2000,
         "TYPE": "double",
-        "F": 0.8,
-        "NP": 30,
+        "F": 1.0,
+        "CR": 0.5,
+        "NP": 24,
         "de_types": [
-            "rand/1/bin",
-            "best/1/bin"
+            "rand/1/bin"
         ],
         "clamp": {
             "min": -30.0,
@@ -129,7 +73,168 @@
             "alpha": 0.05,
             "C": 1.0
         },
+        "levels": [
+            {
+                "shape": [[784,10], [10]],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits"//,
+                    //"args": []
+                    //"kwargs": {}
+                },
+                "init": [
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -15.0, 
+                                "maxval": 15.0
+                            }
+                        }
+                    },
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -15.0, 
+                                "maxval": 15.0
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "name": "mnist_CR_F_TEST_ADA",
+        "dataset_file": "../datasets/mnist_d_5perV_4000xB_5s.gz",
+        "TOT_GEN": 40000,
+        "GEN_STEP": 2000,
+        "TYPE": "double",
+        "F": 1.5,
+        "CR": 0.2,
+        "NP": 24,
+        "de_types": [
+            "rand/1/bin"
+        ],
+        "clamp": {
+            "min": -30.0,
+            "max": 30.0
+        },
+        "AdaBoost": {
+            "alpha": 0.05,
+            "C": 1.0
+        },
+        "levels": [
+            {
+                "shape": [[784,10], [10]],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits"//,
+                    //"args": []
+                    //"kwargs": {}
+                },
+                "init": [
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -15.0, 
+                                "maxval": 15.0
+                            }
+                        }
+                    },
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -15.0, 
+                                "maxval": 15.0
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "name": "mnist_CR_F_TEST_ADA",
+        "dataset_file": "../datasets/mnist_d_5perV_4000xB_5s.gz",
+        "TOT_GEN": 40000,
+        "GEN_STEP": 2000,
+        "TYPE": "double",
+        "F": 0.5,
+        "CR": 0.2,
+        "NP": 24,
+        "de_types": [
+            "rand/1/bin"
+        ],
+        "clamp": {
+            "min": -30.0,
+            "max": 30.0
+        },
+        "AdaBoost": {
+            "alpha": 0.05,
+            "C": 1.0
+        },
+        "levels": [
+            {
+                "shape": [[784,10], [10]],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits"//,
+                    //"args": []
+                    //"kwargs": {}
+                },
+                "init": [
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -15.0, 
+                                "maxval": 15.0
+                            }
+                        }
+                    },
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -15.0, 
+                                "maxval": 15.0
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "name": "mnist_CR_F_TEST_ADA",
+        "dataset_file": "../datasets/mnist_d_5perV_4000xB_5s.gz",
+        "TOT_GEN": 40000,
+        "GEN_STEP": 2000,
+        "TYPE": "double",
+        "F": 0.5,
         "CR": 0.5,
+        "NP": 24,
+        "de_types": [
+            "rand/1/bin"
+        ],
+        "clamp": {
+            "min": -30.0,
+            "max": 30.0
+        },
+        "AdaBoost": {
+            "alpha": 0.05,
+            "C": 1.0
+        },
         "levels": [
             {
                 "shape": [[784,10], [10]],

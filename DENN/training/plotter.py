@@ -1,4 +1,5 @@
 from matplotlib import pyplot as plt
+import matplotlib as mpl
 from matplotlib.legend_handler import HandlerLine2D
 from matplotlib.ticker import FuncFormatter
 import numpy as np
@@ -123,7 +124,7 @@ def plot_results(results):
         "#999999",
         "#222222",
         "#555555",
-        "#CCCCCC"
+        "#AAAAAA"
     ]
     ALPHA = [
         0.9,
@@ -148,8 +149,16 @@ def plot_results(results):
     data = results.get('results')
     labels = []
 
-    for idx, (type_, obj) in enumerate(data.items()):
-        _y_ = obj.get('values')
+    if results.get("sorted", False):
+        all_data = enumerate(sorted(data.items(), key=lambda elm: int(elm[0])))
+    else:
+        all_data = enumerate(data.items())
+
+    for idx, (type_, obj) in all_data:
+        if results.get("max_step", False):
+            _y_ = obj.get('values')[:results.get("max_step")]
+        else:
+            _y_ = obj.get('values')
         _x_ = range(len(_y_))
         gen_step = results.get("gen_step", 1)
         tot_gen = (len(_y_) - 1) * gen_step
@@ -178,7 +187,8 @@ def plot_results(results):
                 #  ls=LINESTYLE[idx],
                  alpha=ALPHA[idx],
                  label=obj.get('label'),
-                 markevery=[int(elm*gen_step) for elm in _x_[:-1]]
+                #  markevery=[int(elm*gen_step) for elm in _x_[:-1]]
+                markevery=1000
                  )
         labels.append(cur_plot[0])
     
@@ -187,12 +197,17 @@ def plot_results(results):
             [
                 (label, HandlerLine2D(numpoints=1))for label in labels
             ]
-        )
+        ),
+        bbox_to_anchor=results.get("legend_ancor", (1.0, 1.0)),
+        fontsize=20
     )
-    
+
+    plt.tick_params(axis='both', which='major', labelsize=22)
+    plt.tick_params(axis='both', which='minor', labelsize=22)
+
     plt.axis((0, tot_gen, 0, 1))
-    plt.xlabel(results.get('x_label', 'generation'))
-    plt.ylabel(results.get('y_label', 'accuracy'))
+    plt.xlabel(results.get('x_label', 'Generations'), fontsize=22)
+    plt.ylabel(results.get('y_label', 'Accuracy'), fontsize=22)
     plt.grid(True)
     plt.show()
     plt.close()

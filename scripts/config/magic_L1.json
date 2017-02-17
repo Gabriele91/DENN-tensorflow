@@ -1,16 +1,113 @@
 [
     {
-        "name": "magic_dataset",
-        "dataset_file": "../datasets/magic_d_2000xB_5s.gz",
-        "TOT_GEN": 200000,
+        "name": "AAA_magic_dataset",
+        "dataset_file": "../datasets/test_magic_100_d_100xB_5s.gz",
+        "TOT_GEN": 50000,
         "GEN_STEP": 500,
+        "GEN_SAMPLES": 5,
         "TYPE": "double",
-        "F": 0.8,
-        "NP": 100,
+        "F": 0.5,
+        "NP": 24,
         "de_types": [
             "rand/1/bin"
         ],
-        "CR": 0.5,
+        "CR": 0.9,
+        "levels": [
+            {   
+                // With no duration
+                "shape": [[10,2], [2]],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits"
+                }
+            }
+        ]
+    },
+    {
+        "name": "magic_dataset",
+        "dataset_file": "../datasets/test_magic_200_d_200xB_5s.gz",
+        "TOT_GEN": 50000,
+        "GEN_STEP": 500,
+        "GEN_SAMPLES": 5,
+        "TYPE": "double",
+        "F": 0.5,
+        "NP": 24,
+        "de_types": [
+            "rand/1/bin"
+        ],
+        "CR": 0.9,
+        "levels": [
+            {   
+                // With no duration
+                "shape": [[10,2], [2]],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits"
+                }
+            }
+        ]
+    },
+    {
+        "name": "magic_dataset",
+        "dataset_file": "../datasets/test_magic_400_d_400xB_5s.gz",
+        "TOT_GEN": 50000,
+        "GEN_STEP": 500,
+        "GEN_SAMPLES": 5,
+        "TYPE": "double",
+        "F": 0.5,
+        "NP": 24,
+        "de_types": [
+            "rand/1/bin"
+        ],
+        "CR": 0.9,
+        "levels": [
+            {   
+                // With no duration
+                "shape": [[10,2], [2]],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits"
+                }
+            }
+        ]
+    },
+    {
+        "name": "magic_dataset",
+        "dataset_file": "../datasets/test_magic_800_d_800xB_5s.gz",
+        "TOT_GEN": 50000,
+        "GEN_STEP": 500,
+        "GEN_SAMPLES": 5,
+        "TYPE": "double",
+        "F": 0.5,
+        "NP": 24,
+        "de_types": [
+            "rand/1/bin"
+        ],
+        "CR": 0.9,
+        "levels": [
+            {   
+                // With no duration
+                "shape": [[10,2], [2]],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits"
+                }
+            }
+        ]
+    },
+    {
+        "name": "magic_dataset",
+        "dataset_file": "../datasets/test_magic_1600_d_1600xB_5s.gz",
+        "TOT_GEN": 50000,
+        "GEN_STEP": 500,
+        "GEN_SAMPLES": 5,
+        "TYPE": "double",
+        "F": 0.5,
+        "NP": 24,
+        "de_types": [
+            "rand/1/bin"
+        ],
+        "CR": 0.9,
         "levels": [
             {   
                 // With no duration

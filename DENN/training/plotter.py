@@ -3,6 +3,7 @@ import matplotlib as mpl
 from matplotlib.legend_handler import HandlerLine2D
 from matplotlib.ticker import FuncFormatter
 import numpy as np
+from math import cos, pi
 
 
 def my_confusion_matrix(fig, matrix):
@@ -104,7 +105,7 @@ def my_hist(fig, data, bins_, range_, colors, labels, normalized=False, max_y=No
         plt.gca().yaxis.set_major_formatter(formatter)
 
 
-def plot_results(results):
+def plot_results(results, save=False):
     """Plot a result graph.
 
     Params:
@@ -140,9 +141,6 @@ def plot_results(results):
             from json import load as js_load
             results = js_load(result_file)
 
-    from scipy.interpolate import interp1d
-    from math import cos, pi
-
     fig = plt.figure()
     fig.suptitle(results.get('title', ''), fontsize=14, fontweight='bold')
 
@@ -165,33 +163,34 @@ def plot_results(results):
 
         x_real = range(tot_gen)
         y_real = []
-        
+
         for _n_, val in enumerate(_y_[:-1]):
-            next_ = _y_[_n_+1]
+            next_ = _y_[_n_ + 1]
             y_real.append(val)
-            for cur_step in range(gen_step-1):
+            for cur_step in range(gen_step - 1):
                 ##
                 # Cos interpolation
                 alpha = float((cur_step + 1.) / gen_step)
-                alpha2 = (1-cos(alpha*pi))/2
-                new_point = (val*(1-alpha2)+next_*alpha2)
+                alpha2 = (1 - cos(alpha * pi)) / 2
+                new_point = (val * (1 - alpha2) + next_ * alpha2)
                 y_real.append(
                     new_point
                 )
-        
+
         ##
         # Do lines and point
-        cur_plot = plt.plot(x_real, y_real,
-                 marker=MARKERS[idx],
-                 color=COLORS[idx],
-                #  ls=LINESTYLE[idx],
-                 alpha=ALPHA[idx],
-                 label=obj.get('label'),
-                #  markevery=[int(elm*gen_step) for elm in _x_[:-1]]
-                markevery=1000
-                 )
+        cur_plot = plt.plot(
+            x_real, y_real,
+            marker=MARKERS[idx],
+            color=COLORS[idx],
+            #  ls=LINESTYLE[idx],
+            alpha=obj.get('alpha', ALPHA[idx]),
+            label=obj.get('label'),
+            markevery=results.get(
+                "markevery", [int(elm * gen_step) for elm in _x_[:-1]])
+        )
         labels.append(cur_plot[0])
-    
+
     plt.legend(
         handler_map=dict(
             [
@@ -199,15 +198,19 @@ def plot_results(results):
             ]
         ),
         bbox_to_anchor=results.get("legend_ancor", (1.0, 1.0)),
-        fontsize=20
+        fontsize=18
     )
 
-    plt.tick_params(axis='both', which='major', labelsize=22)
-    plt.tick_params(axis='both', which='minor', labelsize=22)
+    plt.tick_params(axis='both', which='major', labelsize=14)
+    plt.tick_params(axis='both', which='minor', labelsize=14)
 
     plt.axis((0, tot_gen, 0, 1))
-    plt.xlabel(results.get('x_label', 'Generations'), fontsize=22)
-    plt.ylabel(results.get('y_label', 'Accuracy'), fontsize=22)
+    plt.xlabel(results.get('x_label', 'Generations'), fontsize=14)
+    plt.ylabel(results.get('y_label', 'Accuracy'), fontsize=14)
     plt.grid(True)
+
+    if save:
+        plt.savefig("{}.png".format(save), dpi=600, bbox_inches='tight')
+        print("+ out file -> {}.png".format(save))
     plt.show()
     plt.close()

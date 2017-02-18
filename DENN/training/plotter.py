@@ -181,8 +181,10 @@ def plot_results(results, save=False):
         # Do lines and point
         cur_plot = plt.plot(
             x_real, y_real,
-            marker=MARKERS[idx],
-            color=COLORS[idx],
+            marker=obj.get('marker', MARKERS[idx]),
+            markersize=obj.get('markersize', None),
+            color=obj.get('color', COLORS[idx]),
+            linewidth=obj.get('linewidth', 1),
             #  ls=LINESTYLE[idx],
             alpha=obj.get('alpha', ALPHA[idx]),
             label=obj.get('label'),

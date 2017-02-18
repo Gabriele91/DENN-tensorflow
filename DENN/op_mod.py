@@ -14,9 +14,18 @@ from . utils import OpListener
 from types import MethodType
 
 
-__all__ = ['Operation', 'create']
+__all__ = ['Operation', 'create', 'update_best_of']
 
 OUT_FOLDER = "benchmark_results"
+
+
+def update_best_of(de_type, test_results, new_accuracy, new_individual):
+    if test_results[de_type].best_of['accuracy'][-1] < new_accuracy:
+        test_results[de_type].best_of['accuracy'].append(new_accuracy)
+        test_results[de_type].best_of['individual'] = new_individual
+    else:
+        last_accuracy = test_results[de_type].best_of['accuracy'][-1]
+        test_results[de_type].best_of['accuracy'].append(last_accuracy)
 
 
 def adaboost_run(self, sess, prev_NN, test_results, options={}):
@@ -190,6 +199,15 @@ def adaboost_run(self, sess, prev_NN, test_results, options={}):
             ))
 
             test_results[self.de_type].values.append(cur_accuracy)
+
+            update_best_of(
+                self.de_type,
+                test_results,
+                cur_accuracy,
+                [
+                    cur_pop[num][best_idx] for num, target in enumerate(self.net.targets)
+                ]
+            )
 
             # print("++ Test {}".format(time() - time_test))
 
@@ -468,6 +486,15 @@ def standard_run(self, sess, prev_NN, test_results, options={}):
             ))
 
             test_results[self.de_type].values.append(cur_accuracy)
+
+            update_best_of(
+                self.de_type,
+                test_results,
+                cur_accuracy,
+                [
+                    cur_pop[num][best_idx] for num, target in enumerate(self.net.targets)
+                ]
+            )
 
             # print("++ Test {}".format(time() - time_test))
 

@@ -83,6 +83,10 @@ def main():
                     ENDict(
                         [
                             ('values', []),
+                            ('best_of', {
+                                'accuracy': [0],
+                                'individual': None
+                            })
                         ]
                     ) for _ in range(len(job.de_types))
                 ])
@@ -184,8 +188,17 @@ def main():
                             (cur_nn.input_placeholder, dataset.test_data)
                         ]
                     ))
+
                     test_results[de_type].values.append(cur_accuracy)
 
+                    DENN.update_best_of(
+                        de_type,
+                        test_results,
+                        cur_accuracy,
+                        [
+                            cur_pop[num][best_idx] for num, target in enumerate(cur_nn.targets)
+                        ]
+                    )
                     ##
                     # Do evolution
                     denn_op.run(sess, prev_NN, test_results, {

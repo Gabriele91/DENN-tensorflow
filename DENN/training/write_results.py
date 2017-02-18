@@ -111,6 +111,8 @@ def write_all_results(name, results, description, out_options, showDelimiter=Fal
 
     figures = []
 
+    ##
+    # all data plot
     all_data = [
         {
             'values': [range(len(result.values)), result.values],
@@ -136,6 +138,8 @@ def write_all_results(name, results, description, out_options, showDelimiter=Fal
         }
     )
 
+    ##
+    # plot for each method
     for num, (method_name, result) in enumerate(sorted(results.items())):
         figures.append(
             {
@@ -152,6 +156,29 @@ def write_all_results(name, results, description, out_options, showDelimiter=Fal
                 'axis': (0, len(result.values), 0.0, 1.0),
                 'filename': path.join(OUT_DIR, BASE_FOLDER,
                                       "{}_{}".format(name, method_name.replace("/", "_"))),
+                'plot': {
+                    'x_label': "generation",
+                    'y_label': "accuracy",
+                }
+            }
+        )
+        ##
+        # best of for each method
+        figures.append(
+            {
+                'data': [
+                    {
+                        'values': [range(len(result['best_of']['accuracy'])), result['best_of']['accuracy']],
+                        'color': colors[0],
+                        'label': method_name,
+                        'alpha': 0.9
+                    }
+                ],
+                'title': "best_of_{}".format(method_name),
+                'type': "plot",
+                'axis': (0, len(result['best_of']['accuracy']), 0.0, 1.0),
+                'filename': path.join(OUT_DIR, BASE_FOLDER,
+                                        "{}_{}".format(name, "best_of_{}".format(method_name.replace("/", "_")))),
                 'plot': {
                     'x_label': "generation",
                     'y_label': "accuracy",

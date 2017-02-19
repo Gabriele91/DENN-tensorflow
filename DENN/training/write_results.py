@@ -35,6 +35,14 @@ def export_results(results, gen_step, name, out_options, folderByTime=True):
         )
 
 
+def extend(list_, step):
+    tmp = []
+    for res in list_[:-1]:
+        tmp.extend([res for _ in range(step)])
+    tmp.append(list_[-1])
+    return tmp
+
+
 def expand_results(results, gen_step, de_types):
     """Duplicate the value of the accuracy for the entire range of time.
 
@@ -51,11 +59,9 @@ def expand_results(results, gen_step, de_types):
         |________________
     """
     for de_type in de_types:
-        tmp = []
-        for res in results[de_type].values:
-            tmp.extend([res for _ in range(gen_step)])
-
-        results[de_type].values = tmp
+        results[de_type].values = extend(results[de_type].values, gen_step)
+        results[de_type].best_of['accuracy'] = extend(
+            results[de_type].best_of['accuracy'], gen_step)
 
 
 def norm_rgb_2_hex(colors):
@@ -178,7 +184,7 @@ def write_all_results(name, results, description, out_options, showDelimiter=Fal
                 'type': "plot",
                 'axis': (0, len(result['best_of']['accuracy']), 0.0, 1.0),
                 'filename': path.join(OUT_DIR, BASE_FOLDER,
-                                        "{}_{}".format(name, "best_of_{}".format(method_name.replace("/", "_")))),
+                                      "{}_{}".format(name, "best_of_{}".format(method_name.replace("/", "_")))),
                 'plot': {
                     'x_label': "generation",
                     'y_label': "accuracy",

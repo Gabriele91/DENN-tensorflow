@@ -1,0 +1,164 @@
+[
+    {
+        "name": "mnist_diff_NP",
+        "dataset_file": "../datasets/mnist_d_5perV_4000xB_5s.gz",
+        "TOT_GEN": 40000,
+        "GEN_STEP": 2000,
+        "TYPE": "double",
+        "F": 0.5,
+        "CR": 0.9,
+        "NP": 6,
+        "de_types": [
+            "rand/1/bin"
+        ],
+        "clamp": {
+            "min": -30.0,
+            "max": 30.0
+        },
+        "AdaBoost": {
+            "alpha": 0.05,
+            "C": 1.0
+        },
+        "levels": [
+            {
+                "shape": [[784,10], [10]],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits"//,
+                    //"args": []
+                    //"kwargs": {}
+                },
+                "init": [
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -15.0, 
+                                "maxval": 15.0
+                            }
+                        }
+                    },
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -15.0, 
+                                "maxval": 15.0
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "name": "mnist_diff_NP",
+        "dataset_file": "../datasets/mnist_d_5perV_4000xB_5s.gz",
+        "TOT_GEN": 40000,
+        "GEN_STEP": 2000,
+        "TYPE": "double",
+        "F": 0.5,
+        "CR": 0.9,
+        "NP": 12,
+        "de_types": [
+            "rand/1/bin"
+        ],
+        "clamp": {
+            "min": -30.0,
+            "max": 30.0
+        },
+        "AdaBoost": {
+            "alpha": 0.05,
+            "C": 1.0
+        },
+        "levels": [
+            {
+                "shape": [[784,10], [10]],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits"//,
+                    //"args": []
+                    //"kwargs": {}
+                },
+                "init": [
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -15.0, 
+                                "maxval": 15.0
+                            }
+                        }
+                    },
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -15.0, 
+                                "maxval": 15.0
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "name": "mnist_diff_NP",
+        "dataset_file": "../datasets/mnist_d_5perV_4000xB_5s.gz",
+        "TOT_GEN": 40000,
+        "GEN_STEP": 2000,
+        "TYPE": "double",
+        "F": 0.5,
+        "CR": 0.9,
+        "NP": 24,
+        "de_types": [
+            "rand/1/bin"
+        ],
+        "clamp": {
+            "min": -30.0,
+            "max": 30.0
+        },
+        "AdaBoost": {
+            "alpha": 0.05,
+            "C": 1.0
+        },
+        "levels": [
+            {
+                "shape": [[784,10], [10]],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits"//,
+                    //"args": []
+                    //"kwargs": {}
+                },
+                "init": [
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -15.0, 
+                                "maxval": 15.0
+                            }
+                        }
+                    },
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -15.0, 
+                                "maxval": 15.0
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+]

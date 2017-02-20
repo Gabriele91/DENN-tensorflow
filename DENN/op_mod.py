@@ -33,9 +33,11 @@ def update_best_of(de_type, test_results, new_accuracy, new_individual):
     if test_results[de_type].best_of['accuracy'][-1] < new_accuracy:
         test_results[de_type].best_of['accuracy'].append(new_accuracy)
         test_results[de_type].best_of['individual'] = new_individual
+        return True
     else:
         last_accuracy = test_results[de_type].best_of['accuracy'][-1]
         test_results[de_type].best_of['accuracy'].append(last_accuracy)
+        return False
 
 
 class Operation(object):
@@ -246,6 +248,12 @@ class Operation(object):
         ))
 
         return best_idx, cur_accuracy
+    
+    def __reinsert_best(self, cur_pop, evaluations, test_results):
+        idx_worst = np.argmin(evaluations)
+        for num in range(len(self.net.targets)):
+            cur_pop[num][idx_worst] = test_results[
+                self.de_type].best_of['individual'][num]
 
     def adaboost_run(self, sess, prev_NN, test_results, options={}):
         """Run for AdaBoost jobs."""
@@ -395,7 +403,7 @@ class Operation(object):
 
                 # print("++ Test {}".format(time() - time_test))
 
-                update_best_of(
+                best_changed = update_best_of(
                     self.de_type,
                     test_results,
                     cur_accuracy,
@@ -403,6 +411,8 @@ class Operation(object):
                         cur_pop[num][best_idx] for num, target in enumerate(self.net.targets)
                     ]
                 )
+                if self.job.reinsert_best and not best_changed:
+                    self.__reinsert_best(cur_pop, evaluations, test_results)
 
                 # print(
                 #     "+ DENN[{}] up to {} gen on {} completed in {:.05} sec.".format(
@@ -640,7 +650,7 @@ class Operation(object):
 
                 test_results[self.de_type].values.append(cur_accuracy)
 
-                update_best_of(
+                best_changed = update_best_of(
                     self.de_type,
                     test_results,
                     cur_accuracy,
@@ -648,6 +658,8 @@ class Operation(object):
                         cur_pop[num][best_idx] for num, target in enumerate(self.net.targets)
                     ]
                 )
+                if self.job.reinsert_best and not best_changed:
+                    self.__reinsert_best(cur_pop, evaluations, test_results)
 
                 # print(
                 #     "+ DENN[{}] up to {} gen on {} completed in {:.05} sec.".format(

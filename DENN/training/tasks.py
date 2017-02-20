@@ -225,6 +225,7 @@ class DETask(object):
         self.TOT_GEN = cur_task.get("TOT_GEN")
         self.GEN_STEP = cur_task.get("GEN_STEP")
         self.GEN_SAMPLES = cur_task.get("GEN_SAMPLES", 1)
+        self.reinsert_best = cur_task.get("reinsert_best", False)
         ##
         # TYPE check
         assert cur_task.get("TYPE") in [
@@ -655,6 +656,7 @@ class TaskEncoder(json.JSONEncoder):
                 ('NP', obj.NP),
                 ('CR', obj.CR),
                 ('de_types', obj.de_types),
+                ('reinsert_best', obj.reinsert_best),
                 ('NUM_INTRA_THREADS', obj.num_intra_threads),
                 ('NUM_INTER_THREADS', obj.num_inter_threads),
                 ('AdaBoost', obj.ada_boost.to_dict()

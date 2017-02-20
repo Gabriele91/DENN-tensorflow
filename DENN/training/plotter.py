@@ -119,22 +119,24 @@ def plot_results(results, save=False):
             "y_label": ...
         }
     """
-    MARKERS = ['o', '^', '*', 's', '+']
+    MARKERS = ['o', '^', '*', 's', '+', 'v']
     COLORS = [
         "#000000",
         "#999999",
         "#222222",
         "#555555",
-        "#AAAAAA"
+        "#AAAAAA",
+        "#CCCCCC"
     ]
     ALPHA = [
         0.9,
         1.0,
         1.0,
         1.0,
+        1.0,
         1.0
     ]
-    LINESTYLE = [":", "--", "-", "-.", "steps"]
+    LINESTYLE = [":", "--", "-", "-.", "steps", ":"]
 
     if type(results) != dict:
         with open(results) as result_file:

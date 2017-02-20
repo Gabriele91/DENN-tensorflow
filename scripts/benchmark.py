@@ -143,6 +143,8 @@ def main():
                     # Random initialization of the NN
                     cur_pop = sess.run(cur_nn.rand_pop)
 
+                    ##
+                    # Initial population insertion
                     for level in job.levels:
                         for ind_pos, individual in enumerate(level.start):
                             for elm_idx, elem in enumerate(individual):
@@ -205,6 +207,7 @@ def main():
                             cur_pop[num][best_idx] for num, target in enumerate(cur_nn.targets)
                         ]
                     )
+
                     ##
                     # Do evolution
                     denn_op.run(sess, prev_NN, test_results, {

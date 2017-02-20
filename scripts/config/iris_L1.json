@@ -2,25 +2,30 @@
     {
         "name": "iris_dataset",
         "dataset_file": "../datasets/iris_15-B_5s.gz",
-        "TOT_GEN": 5000,
-        "GEN_STEP": 100,
+        "TOT_GEN": 10000,
+        "GEN_STEP": 40,
         "GEN_SAMPLES": 1,
         "TYPE": "double",
-        "F": 0.8,
+        "F": 0.6,
         "NP": 20,
+        "reset_every": {
+            "epsilon": 0.02,
+            "counter": 2
+        },
         "de_types": [
-            "rand/1/bin"
+            "rand/1/bin"//,
+            // "best/1/bin"
         ],
         "NUM_INTRA_THREADS": 2,
         "NUM_INTER_THREADS": 2,
-        "CR": 0.5,
+        "CR": 0.8,
         "clamp": {
             "min": -10.0,
             "max": 10.0
         },
         "AdaBoost": {
-            "alpha": 0.05,
-            "C": 0.5
+            "alpha": 1.0,
+            "C": 1.0
         },
         "levels": [
             {
@@ -45,9 +50,11 @@
                     //[0.5, 0.5, 0.5]
                     {
                         "fx": {
-                            "name": "random_normal",
+                            "name": "random_uniform",
                             "kwargs": {
-                                "seed": 1
+                                "seed": 1,
+                                "minval": -1.0, 
+                                "maxval": 1.0
                             }
                         }
                     }

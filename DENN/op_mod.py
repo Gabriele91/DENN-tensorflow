@@ -248,12 +248,27 @@ class Operation(object):
         ))
 
         return best_idx, cur_accuracy
-    
+
     def __reinsert_best(self, cur_pop, evaluations, test_results):
+        """Reinserts the best evaluated individual in the population."""
         idx_worst = np.argmin(evaluations)
         for num in range(len(self.net.targets)):
             cur_pop[num][idx_worst] = test_results[
                 self.de_type].best_of['individual'][num]
+
+    def __reset_with_1_best(self, sess, cur_pop, best, new_best_pos=0):
+        """Reset the whole population and put one best individual."""
+
+        ##
+        # Random initialization of the NN
+        cur_pop = sess.run(self.net.rand_pop)
+
+        ##
+        # Initial population insertion
+        for elm_idx, elem in enumerate(best):
+            cur_pop[elm_idx][new_best_pos] = elem
+
+        return cur_pop
 
     def adaboost_run(self, sess, prev_NN, test_results, options={}):
         """Run for AdaBoost jobs."""
@@ -265,6 +280,12 @@ class Operation(object):
 
         batch_counter = 0
         v_res = [0.0 for _ in range(self.job.NP)]
+
+        ##
+        # Reset checking
+        if self.job.reset_every != False:
+            reset_counter = 0
+            reset_last_accuracy = 0.0
 
         start_evolution = time()
 
@@ -426,6 +447,34 @@ class Operation(object):
 
                 pbar.update(gen)
 
+                #### END SAMPLE ###
+
+            ##
+            # Check reset
+            if self.job.reset_every != False:
+                ##
+                # Reset test
+                if abs(cur_accuracy - reset_last_accuracy) < self.job.reset_every['epsilon']:
+                    reset_counter += 1
+                else:
+                    reset_counter = 0
+                ##
+                # Update accuracy
+                reset_last_accuracy = cur_accuracy
+                ##
+                # Check for new population
+                if reset_counter >= self.job.reset_every['counter']:
+                    reset_counter = 0
+                    cur_pop = self.__reset_with_1_best(
+                        sess,
+                        cur_pop,
+                        test_results[self.de_type].best_of['individual']
+                    )
+                    prev_NN[self.de_type] = cur_pop
+                    ##
+                    # TO DO
+                    # - salvarsi la popolazione prima del reset
+
         self.job.times[self.de_type] = time() - start_evolution
         self.job.accuracy[self.de_type] = cur_accuracy
 
@@ -532,6 +581,12 @@ class Operation(object):
         first_time = True
         batch_counter = 0
         v_res = [0.0 for _ in range(self.job.NP)]
+
+        ##
+        # Reset checking
+        if self.job.reset_every != False:
+            reset_counter = 0
+            reset_last_accuracy = 0.0
 
         start_evolution = time()
 
@@ -674,6 +729,34 @@ class Operation(object):
                 prev_NN[self.de_type] = cur_pop
 
                 pbar.update(gen)
+
+                ### END SAMPLE ###
+
+            ##
+            # Check reset
+            if self.job.reset_every != False:
+                ##
+                # Reset test
+                if abs(cur_accuracy - reset_last_accuracy) < self.job.reset_every['epsilon']:
+                    reset_counter += 1
+                else:
+                    reset_counter = 0
+                ##
+                # Update accuracy
+                reset_last_accuracy = cur_accuracy
+                ##
+                # Check for new population
+                if reset_counter >= self.job.reset_every['counter']:
+                    reset_counter = 0
+                    cur_pop = self.__reset_with_1_best(
+                        sess,
+                        cur_pop,
+                        test_results[self.de_type].best_of['individual']
+                    )
+                    prev_NN[self.de_type] = cur_pop
+                    ##
+                    # TO DO
+                    # - salvarsi la popolazione prima del reset
 
         self.job.times[self.de_type] = time() - start_evolution
         self.job.accuracy[self.de_type] = cur_accuracy

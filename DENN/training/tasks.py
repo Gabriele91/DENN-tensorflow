@@ -243,6 +243,7 @@ class DETask(object):
         self.CR = cur_task.get("CR")
         self.clamp = Clamp(cur_task.get("clamp", None))
         self.training = cur_task.get("training", False)
+        self.reset_every = cur_task.get("reset_every", False)
         self.levels = [Level(obj) for obj in cur_task.get("levels")]
         self.num_intra_threads = cur_task.get("NUM_INTRA_THREADS", 4)
         self.num_inter_threads = cur_task.get("NUM_INTER_THREADS", 4)
@@ -659,6 +660,7 @@ class TaskEncoder(json.JSONEncoder):
                 ('NP', obj.NP),
                 ('CR', obj.CR),
                 ('de_types', obj.de_types),
+                ('reset_every', obj.reset_every)
                 ('reinsert_best', obj.reinsert_best),
                 ('NUM_INTRA_THREADS', obj.num_intra_threads),
                 ('NUM_INTER_THREADS', obj.num_inter_threads),

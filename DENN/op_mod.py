@@ -221,7 +221,7 @@ class Operation(object):
         return evaluations
 
     def __test(self, sess, cur_pop, evaluations):
-        """Calculates
+        """Calculates the accuracy on test set.
 
         Params:
             sess (tensorflow.Session): the session of current job

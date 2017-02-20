@@ -108,6 +108,7 @@ class Level(object):
         self.preferred_device = cur_lvl.get("preferred_device", "CPU")
         self.fx = TFFx(cur_lvl.get("fx"))
         self.init = cur_lvl.get("init", [])
+        self.start = cur_lvl.get("start", [])
         ##
         # init parse
         if len(self.init) > 0 and len(self.init) != len(self.shape):
@@ -165,14 +166,16 @@ class Level(object):
             'shape': ...,
             'fx': ...,
             'preferred_device': ...,
-            'init': ...
+            'init': ...,
+            'start': ...
         }
         """
         return {
             'shape': self.shape,
             'fx': self.fx.to_dict(),
             'preferred_device': self.preferred_device,
-            'init': self.__get_init_dict()
+            'init': self.__get_init_dict(),
+            'start': self.start
         }
 
 

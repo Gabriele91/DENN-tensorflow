@@ -142,6 +142,12 @@ def main():
                     ##
                     # Random initialization of the NN
                     cur_pop = sess.run(cur_nn.rand_pop)
+
+                    for level in job.levels:
+                        for ind_pos, individual in enumerate(level.start):
+                            for elm_idx, elem in enumerate(individual):
+                                cur_pop[elm_idx][ind_pos] = elem
+
                     prev_NN[de_type] = cur_pop
 
                     with tf.device("/cpu:0"):

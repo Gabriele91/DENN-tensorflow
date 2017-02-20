@@ -6,7 +6,8 @@
 namespace tensorflow
 {
     ASPACKED(struct DataSetHeader
-    {
+    {   
+        unsigned short m_version;
         int m_n_batch;
         int m_n_features;
         int m_n_classes;

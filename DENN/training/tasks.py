@@ -660,7 +660,7 @@ class TaskEncoder(json.JSONEncoder):
                 ('NP', obj.NP),
                 ('CR', obj.CR),
                 ('de_types', obj.de_types),
-                ('reset_every', obj.reset_every)
+                ('reset_every', obj.reset_every),
                 ('reinsert_best', obj.reinsert_best),
                 ('NUM_INTRA_THREADS', obj.num_intra_threads),
                 ('NUM_INTER_THREADS', obj.num_inter_threads),

@@ -232,8 +232,9 @@ class Dataset(object):
 
         with gzip.GzipFile(self.__file_name, mode='rb') as gz_file:
             self.stats = Header(
-                "<5if3I",
+                "<H5if3I",
                 [
+                    "version",
                     "n_batch",
                     "n_features",
                     "n_classes",
@@ -244,7 +245,7 @@ class Dataset(object):
                     "validation_offset",
                     "train_offset"
                 ],
-                gz_file.read(36)
+                gz_file.read(38)
             )
 
         # print(self.stats)

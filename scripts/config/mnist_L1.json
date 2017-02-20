@@ -2,7 +2,7 @@
     {
         "name": "mnist_new_test",
         "dataset_file": "../datasets/mnist_d_5perV_4000xB_5s.gz",
-        "TOT_GEN": 10000,
+        "TOT_GEN": 24000,
         "GEN_STEP": 2000,
         "TYPE": "double",
         "F": 0.5,

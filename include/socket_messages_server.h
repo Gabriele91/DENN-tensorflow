@@ -108,10 +108,59 @@ namespace debug
             MSG_FLOAT,
             MSG_DOUBLE,
             MSG_STRING,
-            MSG_CLOSE_CONNECTION
+            MSG_CLOSE_CONNECTION,
+            MSG_UNKNOW
         };
 
+        template < typename TYPE > message_type msg_type() { return MSG_UNKNOW; }
+
         using message_raw = std::vector< unsigned char >;
+
+        class message_decoder
+        {
+        public:
+        
+            //init decoder
+            message_decoder(const message_raw& data): m_data(data) { }
+
+            //message type
+            message_type get_type() const
+            {
+                //invalid meessage
+                if(m_data.size() < sizeof(unsigned int)) return MSG_UNKNOW;
+                //else get type 
+                unsigned int type = *((unsigned int*)m_data.data());
+                //test 
+                if(type >= MSG_UNKNOW) return MSG_UNKNOW;
+                //return type
+                return (message_type)type;
+            }
+
+            //get value by type
+            template < class T > 
+            T get_value() const
+            {
+                //type
+                message_type type = get_type();
+                //test
+                if(type == msg_type<T>() && type != MSG_UNKNOW)
+                {
+                    //ptr to int 
+                    T* i_ptr = (T*)(((unsigned char*)m_data.data()) + c_msg_type_size);
+                    //return 
+                    return *i_ptr;
+                }
+                return (T)0;
+            }
+
+        protected:
+
+            //type size
+            const size_t c_msg_type_size = sizeof(unsigned int);
+            const size_t c_msg_type_len  = sizeof(unsigned int);
+            //data ref
+            const message_raw& m_data;
+        };
 
         enum result
         {
@@ -648,6 +697,30 @@ namespace debug
         int                      m_port { 0 };
         
     };
+
+    //specialize
+    template <> socket_messages_server::message_type socket_messages_server::msg_type<int>()        { return MSG_INT; }
+    template <> socket_messages_server::message_type socket_messages_server::msg_type<float>()      { return MSG_FLOAT; }
+    template <> socket_messages_server::message_type socket_messages_server::msg_type<double>()     { return MSG_DOUBLE; }
+    template <> socket_messages_server::message_type socket_messages_server::msg_type<std::string>(){ return MSG_STRING; }
+    //get value by type (string)
+    template <> std::string socket_messages_server::message_decoder::get_value<std::string>() const
+    {
+        if(get_type() == MSG_STRING)
+        {
+            //get len
+            unsigned int*  len_ptr = (unsigned int*)(((unsigned char*)m_data.data()) + c_msg_type_size);
+            char*          str_ptr = (((char*)len_ptr) + c_msg_type_len);
+            //alloc buffer 
+            std::vector <char> s_buffer((*len_ptr)+1,'\0');
+            //copy 
+            std::memcpy(s_buffer.data(), str_ptr, size_t(*len_ptr));
+            //return 
+            return std::string(s_buffer.data());
+        }
+        return std::string();
+    }
+
     
 }
 }

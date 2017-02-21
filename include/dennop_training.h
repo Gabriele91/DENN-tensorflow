@@ -136,30 +136,24 @@ namespace tensorflow
                 );
 
                 SOCKET_DEBUG(
-
-                    //output
-                    //this->m_debug.write( "Stage[" + std::to_string(i_sub_gen*sub_gen) + "] complete" );
-                    //this->m_debug.write(int(sub_gen));
                     //process message
                     while(this->m_debug.get_n_recv_mgs())
                     {
                         MSG_DEBUG("+++ Read message")
-                        //get message
-                        auto msg = this->m_debug.pop_recv_msg();
-                        //get type 
-                        unsigned int type = *((unsigned int*)msg.data());
-                        MSG_DEBUG("+++ Message type: " << type)
                         /*
-                            msg types
-                            {
-                                MSG_INT,
-                                MSG_FLOAT,
-                                MSG_DOUBLE,
-                                MSG_STRING,
-                                MSG_CLOSE_CONNECTION
-                            };
+                        msg types
+                        {
+                            MSG_INT,
+                            MSG_FLOAT,
+                            MSG_DOUBLE,
+                            MSG_STRING,
+                            MSG_CLOSE_CONNECTION
+                        };
                         */
-                        switch(type)
+                        //get message
+                        debug::socket_messages_server::message_decoder msg( this->m_debug.pop_recv_msg() );
+                        //execute task by type
+                        switch(msg.get_type())
                         {
                             //exit case
                             case debug::socket_messages_server::MSG_CLOSE_CONNECTION:
@@ -182,18 +176,6 @@ namespace tensorflow
                 Tensor* new_generation_tensor = nullptr;
                 //Get output tensor
                 const Tensor& best_population = current_populations_list[i][best_of_populations];
-                //debug
-                #if 0
-                std::cout 
-                << "\nbest_space[" 
-                << i
-                << "] = NDIM "
-                << best_population.shape().dims()
-                << ", TYPE: "
-                << (best_population.dtype() == tensorflow::data_type<value_t>()
-                   ? "value_t"
-                   : "unknow");
-                #endif
                 //Alloct and send
                 OP_REQUIRES_OK(context, context->allocate_output(i, best_population.shape(), &new_generation_tensor));
                 (*new_generation_tensor) = current_populations_list[i][best_of_populations];
@@ -246,13 +228,13 @@ namespace tensorflow
             SetValidationDataInCacheInputs();
             //First eval
             value_t val_best= ExecuteEvaluateValidation(context, 0, current_populations_list);
-            int    id_best = 0;
+            int     id_best = 0;
             //search best
             for(int index = 1; index < NP ;++index)
             {
                 //eval
                 value_t eval_cur = ExecuteEvaluateValidation(context, index, current_populations_list);
-                //best?
+                //best? (the accuracy is increased)
                 if(val_best < eval_cur)
                 {
                     val_best= eval_cur;

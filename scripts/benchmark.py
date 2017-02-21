@@ -13,6 +13,8 @@ import numpy as np
 from sys import argv
 from time import sleep
 from time import time
+from datetime import datetime
+from pytz import timezone
 from tqdm import tqdm
 
 # from memory_profiler import profile
@@ -214,8 +216,6 @@ def main():
                         'test_networks': test_networks
                     })
 
-                    test_results[de_type].population = cur_pop
-
                     ##
                     # Reset AdaBoost cache
                     job.reset_adaboost_cache()
@@ -233,16 +233,21 @@ def main():
 
             job.time = time() - time_start_test
 
+            write_results_time = datetime.now(timezone('Europe/Rome'))
+
             DENN.training.export_results(test_results, int(
                 job.GEN_STEP / job.GEN_SAMPLES),
-                job.name, out_options
+                job.name, out_options,
+                folderByTime=write_results_time
             )
 
             DENN.training.expand_results(
                 test_results, int(job.GEN_STEP / job.GEN_SAMPLES), job.de_types)
 
             DENN.training.write_all_results(
-                job.name, test_results, description, out_options)
+                job.name, test_results, description, out_options,
+                folderByTime=write_results_time
+            )
 
         tf.reset_default_graph()
 

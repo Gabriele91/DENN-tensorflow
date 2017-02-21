@@ -9,15 +9,16 @@ import colorsys
 import json
 import numpy as np
 from time import time
+from time import ctime
 
 __all__ = ['write_all_results', 'expand_results', 'export_results']
 
 OUT_DIR = "./benchmark_results"
 
 
-def export_results(results, gen_step, name, out_options, folderByTime=True):
-    if folderByTime:
-        BASE_FOLDER = gen_folder_name_by_time(name)
+def export_results(results, gen_step, name, out_options, folderByTime=0):
+    if folderByTime != 0:
+        BASE_FOLDER = gen_folder_name_by_time(name, folderByTime)
     else:
         BASE_FOLDER = gen_folder_name(
             name, out_options.job.TOT_GEN, out_options.num_batches, out_options.job.levels)
@@ -89,22 +90,22 @@ def gen_folder_name(name, num_gen, num_batches, levels):
     )
 
 
-def gen_folder_name_by_time(name):
+def gen_folder_name_by_time(name, time_, fmt="%Y-%m-%d_%H-%M-%S"):
     return "{}_{}".format(
         name,
-        int(time())
+        time_.strftime(fmt)
     )
 
 
-def write_all_results(name, results, description, out_options, showDelimiter=False, folderByTime=True):
+def write_all_results(name, results, description, out_options, showDelimiter=False, folderByTime=0):
     color_delta = 1.0 / len(results)
     colors = [
         norm_rgb_2_hex(colorsys.hsv_to_rgb(idx * color_delta, 1, 1))
         for idx in range(len(results))
     ]
 
-    if folderByTime:
-        BASE_FOLDER = gen_folder_name_by_time(name)
+    if folderByTime != 0:
+        BASE_FOLDER = gen_folder_name_by_time(name, folderByTime)
     else:
         BASE_FOLDER = gen_folder_name(
             name, out_options.job.TOT_GEN, out_options.num_batches, out_options.job.levels)

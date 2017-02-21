@@ -432,6 +432,9 @@ class Operation(object):
                         cur_pop[num][best_idx] for num, target in enumerate(self.net.targets)
                     ]
                 )
+
+                test_results[self.de_type].population = cur_pop
+
                 if self.job.reinsert_best and not best_changed:
                     self.__reinsert_best(cur_pop, evaluations, test_results)
 
@@ -713,6 +716,9 @@ class Operation(object):
                         cur_pop[num][best_idx] for num, target in enumerate(self.net.targets)
                     ]
                 )
+
+                test_results[self.de_type].population = cur_pop
+
                 if self.job.reinsert_best and not best_changed:
                     self.__reinsert_best(cur_pop, evaluations, test_results)
 

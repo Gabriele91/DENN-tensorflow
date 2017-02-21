@@ -5,7 +5,7 @@
         "TOT_GEN": 100000,
         "GEN_STEP": 2000,
         "TYPE": "double",
-        "F": 0.5,
+        "F": 1.5,
         "CR": 0.9,
         "NP": 24,
         "de_types": [
@@ -9489,7 +9489,7 @@
         "TOT_GEN": 100000,
         "GEN_STEP": 2000,
         "TYPE": "double",
-        "F": 0.5,
+        "F": 1.5,
         "CR": 0.9,
         "NP": 24,
         "de_types": [
@@ -9548,7 +9548,7 @@
         "TOT_GEN": 100000,
         "GEN_STEP": 2000,
         "TYPE": "double",
-        "F": 0.5,
+        "F": 1.5,
         "CR": 0.9,
         "NP": 24,
         "de_types": [

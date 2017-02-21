@@ -2,162 +2,222 @@
     {
         "name": "diff_cr_qsar_dataset",
         "dataset_file": "../datasets/test_qsar_160_d_160xB_5s.gz",
-        "TOT_GEN": 50000,
+        "TOT_GEN": 10000,
         "GEN_STEP": 100,
-        "GEN_SAMPLES": 2,
+        "GEN_SAMPLES": 1,
         "TYPE": "double",
-        "F": 1.0,
+        "F": 0.6,
+        "CR": 0.8,
         "NP": 24,
+        "reinsert_best": true,
         "de_types": [
             "rand/1/bin"
         ],
-        "CR": 0.2,
+        "AdaBoost": {
+            "alpha": 0.5,
+            "C": 1.0
+        },
+        "clamp": {
+            "min": -30.0,
+            "max": 30.0
+        },
         "levels": [
             {   
-                "shape": [[41,2], [2]],
+                "shape": [[41,82], [82]],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.relu"
+                },
+                "init": [
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -15.0, 
+                                "maxval": 15.0
+                            }
+                        }
+                    },
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -15.0, 
+                                "maxval": 15.0
+                            }
+                        }
+                    }
+                ]
+            },
+            {   
+                "shape": [[82,2], [2]],
                 "preferred_device": "CPU",
                 "fx": {
                     "name": "nn.softmax_cross_entropy_with_logits"
-                }
+                },
+                "init": [
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -15.0, 
+                                "maxval": 15.0
+                            }
+                        }
+                    },
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -15.0, 
+                                "maxval": 15.0
+                            }
+                        }
+                    }
+                ]
             }
         ]
-    },
-    {
-        "name": "diff_cr_qsar_dataset",
-        "dataset_file": "../datasets/test_qsar_160_d_160xB_5s.gz",
-        "TOT_GEN": 50000,
-        "GEN_STEP": 100,
-        "GEN_SAMPLES": 2,
-        "TYPE": "double",
-        "F": 1.0,
-        "NP": 24,
-        "de_types": [
-            "rand/1/bin"
-        ],
-        "CR": 0.5,
-        "levels": [
-            {   
-                "shape": [[41,2], [2]],
-                "preferred_device": "CPU",
-                "fx": {
-                    "name": "nn.softmax_cross_entropy_with_logits"
-                }
-            }
-        ]
-    },
-    {
-        "name": "diff_cr_qsar_dataset",
-        "dataset_file": "../datasets/test_qsar_160_d_160xB_5s.gz",
-        "TOT_GEN": 50000,
-        "GEN_STEP": 100,
-        "GEN_SAMPLES": 2,
-        "TYPE": "double",
-        "F": 1.0,
-        "NP": 24,
-        "de_types": [
-            "rand/1/bin"
-        ],
-        "CR": 0.9,
-        "levels": [
-            {   
-                "shape": [[41,2], [2]],
-                "preferred_device": "CPU",
-                "fx": {
-                    "name": "nn.softmax_cross_entropy_with_logits"
-                }
-            }
-        ]
-    },
-    {
-        "name": "diff_f_qsar_dataset",
-        "dataset_file": "../datasets/test_qsar_160_d_160xB_5s.gz",
-        "TOT_GEN": 50000,
-        "GEN_STEP": 100,
-        "GEN_SAMPLES": 2,
-        "TYPE": "double",
-        "F": 0.5,
-        "NP": 24,
-        "de_types": [
-            "rand/1/bin"
-        ],
-        "CR": 0.9,
-        "levels": [
-            {   
-                "shape": [[41,2], [2]],
-                "preferred_device": "CPU",
-                "fx": {
-                    "name": "nn.softmax_cross_entropy_with_logits"
-                }
-            }
-        ]
-    },
-     {
-        "name": "diff_f_qsar_dataset",
-        "dataset_file": "../datasets/test_qsar_160_d_160xB_5s.gz",
-        "TOT_GEN": 50000,
-        "GEN_STEP": 100,
-        "GEN_SAMPLES": 2,
-        "TYPE": "double",
-        "F": 1.0,
-        "NP": 24,
-        "de_types": [
-            "rand/1/bin"
-        ],
-        "CR": 0.9,
-        "levels": [
-            {   
-                "shape": [[41,2], [2]],
-                "preferred_device": "CPU",
-                "fx": {
-                    "name": "nn.softmax_cross_entropy_with_logits"
-                }
-            }
-        ]
-    },
-     {
-        "name": "diff_f_qsar_dataset",
-        "dataset_file": "../datasets/test_qsar_160_d_160xB_5s.gz",
-        "TOT_GEN": 50000,
-        "GEN_STEP": 100,
-        "GEN_SAMPLES": 2,
-        "TYPE": "double",
-        "F": 1.5,
-        "NP": 24,
-        "de_types": [
-            "rand/1/bin"
-        ],
-        "CR": 0.9,
-        "levels": [
-            {   
-                "shape": [[41,2], [2]],
-                "preferred_device": "CPU",
-                "fx": {
-                    "name": "nn.softmax_cross_entropy_with_logits"
-                }
-            }
-        ]
-    },
-     {
-        "name": "diff_f_qsar_dataset",
-        "dataset_file": "../datasets/test_qsar_160_d_160xB_5s.gz",
-        "TOT_GEN": 50000,
-        "GEN_STEP": 100,
-        "GEN_SAMPLES": 2,
-        "TYPE": "double",
-        "F": 2.0,
-        "NP": 24,
-        "de_types": [
-            "rand/1/bin"
-        ],
-        "CR": 0.9,
-        "levels": [
-            {   
-                "shape": [[41,2], [2]],
-                "preferred_device": "CPU",
-                "fx": {
-                    "name": "nn.softmax_cross_entropy_with_logits"
-                }
-            }
-        ]
-    }
+    }//,
+    // {
+    //     "name": "diff_cr_qsar_dataset",
+    //     "dataset_file": "../datasets/test_qsar_160_d_160xB_5s.gz",
+    //     "TOT_GEN": 50000,
+    //     "GEN_STEP": 100,
+    //     "GEN_SAMPLES": 2,
+    //     "TYPE": "double",
+    //     "F": 1.0,
+    //     "NP": 24,
+    //     "de_types": [
+    //         "rand/1/bin"
+    //     ],
+    //     "CR": 0.5,
+    //     "levels": [
+    //         {   
+    //             "shape": [[41,2], [2]],
+    //             "preferred_device": "CPU",
+    //             "fx": {
+    //                 "name": "nn.softmax_cross_entropy_with_logits"
+    //             }
+    //         }
+    //     ]
+    // },
+    // {
+    //     "name": "diff_cr_qsar_dataset",
+    //     "dataset_file": "../datasets/test_qsar_160_d_160xB_5s.gz",
+    //     "TOT_GEN": 50000,
+    //     "GEN_STEP": 100,
+    //     "GEN_SAMPLES": 2,
+    //     "TYPE": "double",
+    //     "F": 1.0,
+    //     "NP": 24,
+    //     "de_types": [
+    //         "rand/1/bin"
+    //     ],
+    //     "CR": 0.9,
+    //     "levels": [
+    //         {   
+    //             "shape": [[41,2], [2]],
+    //             "preferred_device": "CPU",
+    //             "fx": {
+    //                 "name": "nn.softmax_cross_entropy_with_logits"
+    //             }
+    //         }
+    //     ]
+    // },
+    // {
+    //     "name": "diff_f_qsar_dataset",
+    //     "dataset_file": "../datasets/test_qsar_160_d_160xB_5s.gz",
+    //     "TOT_GEN": 50000,
+    //     "GEN_STEP": 100,
+    //     "GEN_SAMPLES": 2,
+    //     "TYPE": "double",
+    //     "F": 0.5,
+    //     "NP": 24,
+    //     "de_types": [
+    //         "rand/1/bin"
+    //     ],
+    //     "CR": 0.9,
+    //     "levels": [
+    //         {   
+    //             "shape": [[41,2], [2]],
+    //             "preferred_device": "CPU",
+    //             "fx": {
+    //                 "name": "nn.softmax_cross_entropy_with_logits"
+    //             }
+    //         }
+    //     ]
+    // },
+    //  {
+    //     "name": "diff_f_qsar_dataset",
+    //     "dataset_file": "../datasets/test_qsar_160_d_160xB_5s.gz",
+    //     "TOT_GEN": 50000,
+    //     "GEN_STEP": 100,
+    //     "GEN_SAMPLES": 2,
+    //     "TYPE": "double",
+    //     "F": 1.0,
+    //     "NP": 24,
+    //     "de_types": [
+    //         "rand/1/bin"
+    //     ],
+    //     "CR": 0.9,
+    //     "levels": [
+    //         {   
+    //             "shape": [[41,2], [2]],
+    //             "preferred_device": "CPU",
+    //             "fx": {
+    //                 "name": "nn.softmax_cross_entropy_with_logits"
+    //             }
+    //         }
+    //     ]
+    // },
+    //  {
+    //     "name": "diff_f_qsar_dataset",
+    //     "dataset_file": "../datasets/test_qsar_160_d_160xB_5s.gz",
+    //     "TOT_GEN": 50000,
+    //     "GEN_STEP": 100,
+    //     "GEN_SAMPLES": 2,
+    //     "TYPE": "double",
+    //     "F": 1.5,
+    //     "NP": 24,
+    //     "de_types": [
+    //         "rand/1/bin"
+    //     ],
+    //     "CR": 0.9,
+    //     "levels": [
+    //         {   
+    //             "shape": [[41,2], [2]],
+    //             "preferred_device": "CPU",
+    //             "fx": {
+    //                 "name": "nn.softmax_cross_entropy_with_logits"
+    //             }
+    //         }
+    //     ]
+    // },
+    //  {
+    //     "name": "diff_f_qsar_dataset",
+    //     "dataset_file": "../datasets/test_qsar_160_d_160xB_5s.gz",
+    //     "TOT_GEN": 50000,
+    //     "GEN_STEP": 100,
+    //     "GEN_SAMPLES": 2,
+    //     "TYPE": "double",
+    //     "F": 2.0,
+    //     "NP": 24,
+    //     "de_types": [
+    //         "rand/1/bin"
+    //     ],
+    //     "CR": 0.9,
+    //     "levels": [
+    //         {   
+    //             "shape": [[41,2], [2]],
+    //             "preferred_device": "CPU",
+    //             "fx": {
+    //                 "name": "nn.softmax_cross_entropy_with_logits"
+    //             }
+    //         }
+    //     ]
+    // }
 ]

@@ -86,7 +86,8 @@ def main():
                             ('best_of', {
                                 'accuracy': [0],
                                 'individual': None
-                            })
+                            }),
+                            ('population', None)
                         ]
                     ) for _ in range(len(job.de_types))
                 ])
@@ -216,6 +217,8 @@ def main():
                         'start_job': start_job,
                         'test_networks': test_networks
                     })
+
+                    test_results[de_type].population = cur_pop
 
                     ##
                     # Reset AdaBoost cache

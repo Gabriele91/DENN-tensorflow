@@ -1,7 +1,7 @@
 [
     {
         "name": "iris_dataset",
-        "dataset_file": "/Volumes/San64/Projects/DENN-dataset-samples/iris_15-B_5s.gz",
+        "dataset_file": "../datasets/iris_15-B_5s.gz",
         "TOT_GEN": 1000,
         "GEN_STEP": 40,
         "GEN_SAMPLES": 1,
@@ -71,7 +71,7 @@
     },
     {
         "name": "iris_dataset",
-        "dataset_file": "/Volumes/San64/Projects/DENN-dataset-samples/iris_15-B_5s.gz",
+        "dataset_file": "../datasets/iris_15-B_5s.gz",
         "TOT_GEN": 1000,
         "GEN_STEP": 40,
         "GEN_SAMPLES": 1,
@@ -137,7 +137,7 @@
     },
     {
         "name": "iris_dataset",
-        "dataset_file": "/Volumes/San64/Projects/DENN-dataset-samples/iris_15-B_5s.gz",
+        "dataset_file": "../datasets/iris_15-B_5s.gz",
         "TOT_GEN": 1000,
         "GEN_STEP": 40,
         "GEN_SAMPLES": 1,

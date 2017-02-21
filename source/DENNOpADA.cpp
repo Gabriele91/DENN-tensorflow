@@ -3,7 +3,7 @@
 
 using namespace tensorflow;
 
-REGISTER_OP("DENN")
+REGISTER_OP("DennAda")
 .Attr("T: {float, double}")
 .Attr("space: int")
 .Attr("graph: string")
@@ -46,6 +46,6 @@ REGISTER_OP("DENN")
 .Output("final_ec: bool")
 .Output("final_pop_y: T");
 
-REGISTER_KERNEL_BUILDER(Name("DENN").Device(DEVICE_CPU).TypeConstraint<float>("T"), DENNOpAdaBoost<float>);
-REGISTER_KERNEL_BUILDER(Name("DENN").Device(DEVICE_CPU).TypeConstraint<double>("T"), DENNOpAdaBoost<double>);
+REGISTER_KERNEL_BUILDER(Name("DennAda").Device(DEVICE_CPU).TypeConstraint<float>("T"), DENNOpAdaBoost<float>);
+REGISTER_KERNEL_BUILDER(Name("DennAda").Device(DEVICE_CPU).TypeConstraint<double>("T"), DENNOpAdaBoost<double>);
 

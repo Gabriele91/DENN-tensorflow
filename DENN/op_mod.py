@@ -75,7 +75,7 @@ class Operation(object):
             self._module = tf.load_op_library(path.join(
                 path.dirname(__file__), 'DENNOp_ada.so')
             )
-            self.denn_op = self._module.denn(
+            self.denn_op = self._module.denn_ada(
                 # input params
                 # [num_gen, eval_individual]
                 self.net.cur_gen_options,
@@ -107,7 +107,7 @@ class Operation(object):
             self._module = tf.load_op_library(path.join(
                 path.dirname(__file__), 'DENNOp_training.so')
             )
-            self.denn_op = self._module.denn(
+            self.denn_op = self._module.denn_training(
                 # input params
                 # [num_gen, step_gen, eval_individual]
                 [self.job.TOT_GEN, self.job.GEN_STEP, False],

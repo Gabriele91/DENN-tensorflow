@@ -2,7 +2,7 @@
 
 using namespace tensorflow;
 
-REGISTER_OP("DENN")
+REGISTER_OP("DennTraining")
 .Attr("T: {float, double}")
 .Attr("space: int")
 .Attr("graph: string")
@@ -33,5 +33,5 @@ REGISTER_OP("DENN")
 .Output("best_population: space * T")
 ;
 
-REGISTER_KERNEL_BUILDER(Name("DENN").Device(DEVICE_CPU).TypeConstraint<float>("T"), DENNOpTraining<float>);
-REGISTER_KERNEL_BUILDER(Name("DENN").Device(DEVICE_CPU).TypeConstraint<double>("T"), DENNOpTraining<double>);
+REGISTER_KERNEL_BUILDER(Name("DennTraining").Device(DEVICE_CPU).TypeConstraint<float>("T"), DENNOpTraining<float>);
+REGISTER_KERNEL_BUILDER(Name("DennTraining").Device(DEVICE_CPU).TypeConstraint<double>("T"), DENNOpTraining<double>);

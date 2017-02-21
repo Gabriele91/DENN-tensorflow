@@ -16,8 +16,8 @@
             "counter": 2
         },
         "clamp": {
-            "min": -5,
-            "max": 5
+            "min": -30,
+            "max": 30
         },
         "AdaBoost": {
             "alpha": 1.0,
@@ -9464,8 +9464,8 @@
                             "name": "random_uniform",
                             "kwargs": {
                                 "seed": 1,
-                                "minval": -1.0, 
-                                "maxval": 1.0
+                                "minval": -15.0, 
+                                "maxval": 15.0
                             }
                         }
                     },
@@ -9474,8 +9474,8 @@
                             "name": "random_uniform",
                             "kwargs": {
                                 "seed": 1,
-                                "minval": -1.0, 
-                                "maxval": 1.0
+                                "minval": -15.0, 
+                                "maxval": 15.0
                             }
                         }
                     }
@@ -9501,8 +9501,8 @@
         },
         "reinsert_best": true,
         "clamp": {
-            "min": -5,
-            "max": 5
+            "min": -30,
+            "max": 30
         },
         "AdaBoost": {
             "alpha": 1.0,
@@ -9523,8 +9523,8 @@
                             "name": "random_uniform",
                             "kwargs": {
                                 "seed": 1,
-                                "minval": -1.0, 
-                                "maxval": 1.0
+                                "minval": -15.0, 
+                                "maxval": 15.0
                             }
                         }
                     },
@@ -9533,8 +9533,8 @@
                             "name": "random_uniform",
                             "kwargs": {
                                 "seed": 1,
-                                "minval": -1.0, 
-                                "maxval": 1.0
+                                "minval": -15.0, 
+                                "maxval": 15.0
                             }
                         }
                     }
@@ -9555,8 +9555,8 @@
             "rand/1/bin"
         ],
         "clamp": {
-            "min": -5,
-            "max": 5
+            "min": -30,
+            "max": 30
         },
         "AdaBoost": {
             "alpha": 1.0,
@@ -9577,8 +9577,8 @@
                             "name": "random_uniform",
                             "kwargs": {
                                 "seed": 1,
-                                "minval": -1.0, 
-                                "maxval": 1.0
+                                "minval": -15.0, 
+                                "maxval": 15.0
                             }
                         }
                     },
@@ -9587,8 +9587,8 @@
                             "name": "random_uniform",
                             "kwargs": {
                                 "seed": 1,
-                                "minval": -1.0, 
-                                "maxval": 1.0
+                                "minval": -15.0, 
+                                "maxval": 15.0
                             }
                         }
                     }

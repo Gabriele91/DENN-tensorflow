@@ -20,23 +20,23 @@ namespace random_indices
     }
     
     //n random indices (not equals)
-    inline void threeRandIndicesDiffFrom(int size, int diff, std::vector< int >& indexs)
+    inline void threeRandIndicesDiffFrom(int size, int diff, std::vector< int >& indexs, int indexs_size)
     {
         //test
-        assert(size >= indexs.size());
+        assert(size >= indexs_size);
         //size of a batch
-        int batch_size = size / (int)indexs.size();
+        int batch_size = size / indexs_size;
         int batch_current = 0;
         int batch_next    = 0;
         //compute rands
-        for(size_t i=0; i!=indexs.size(); ++i)
+        for(int i=0; i!=indexs_size; ++i)
         {
             batch_current = batch_size*i;
             batch_next    = batch_size*(i+1);
             
-            if(i==indexs.size()-1)
+            if(i==indexs_size-1)
             {
-                int reminder = size % indexs.size();
+                int reminder = size % indexs_size;
                 batch_next += reminder;
                 batch_size += reminder;
             }

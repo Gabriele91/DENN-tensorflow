@@ -40,6 +40,10 @@
     #define MSG_DEBUG( _x_ )  
 #endif
 
+#ifndef NOT
+    #define NOT(x) (!(x))
+#endif 
+
 //LOADER UTILS
 #if defined( _MSC_VER )
     #define ASPACKED( __Declaration__ ) __pragma( pack(push, 1) ) __Declaration__ __pragma( pack(pop) )

@@ -1,7 +1,9 @@
 
 #pragma once
 #include "config.h"
+#include "de_info.h"
 #include "tensorflow_alias.h"
+#include "population_generator.h"
 #include <string>
 #include <iostream>
 #include <memory>
@@ -21,28 +23,6 @@ public:
     //num of threads (OpenMP)
     const int N_THREADS = 4;
     
-    //type of CR
-    enum CRType
-    {
-        CR_BIN,
-        CR_EXP
-    };
-    
-    //type of DE
-    enum DifferenceVector
-    {
-        DIFF_ONE,
-        DIFF_TWO
-    };
-    
-    //type of generator a new population
-    enum PerturbedVector
-    {
-        PV_RANDOM,
-        PV_BEST,
-        PV_RAND_TO_BEST
-    };
-
     //init DENN from param
     explicit DENNOp(OpKernelConstruction *context) : OpKernel(context)
     {
@@ -85,18 +65,18 @@ public:
         //get values
         while (getline(stream_de_type, type_elm, '/'))
         {
-                 if (type_elm == "rand")           m_pert_vector = PV_RANDOM;
-            else if (type_elm == "best")           m_pert_vector = PV_BEST;
-            else if (type_elm == "rand-to-best")   m_pert_vector = PV_RAND_TO_BEST;
-            else if (type_elm == "1")              m_diff_vector = DIFF_ONE;
-            else if (type_elm == "2")              m_diff_vector = DIFF_TWO;
-            else if (type_elm == "bin")            m_cr_type = CR_BIN;
-            else if (type_elm == "exp")            m_cr_type = CR_EXP;
+                 if (type_elm == "rand")           m_de_info.m_pert_vector = PV_RANDOM;
+            else if (type_elm == "best")           m_de_info.m_pert_vector = PV_BEST;
+            else if (type_elm == "rand-to-best")   m_de_info.m_pert_vector = PV_RAND_TO_BEST;
+            else if (type_elm == "1")              m_de_info.m_diff_vector = DIFF_ONE;
+            else if (type_elm == "2")              m_de_info.m_diff_vector = DIFF_TWO;
+            else if (type_elm == "bin")            m_de_info.m_cr_type = CR_BIN;
+            else if (type_elm == "exp")            m_de_info.m_cr_type = CR_EXP;
         }
         // params float to value_t
-        m_CR     = value_t(f_CR);
-        m_f_min  = value_t(f_f_min);
-        m_f_max  = value_t(f_f_max);
+        m_de_factors.m_CR     = value_t(f_CR);
+        m_de_factors.m_f_min  = value_t(f_f_min);
+        m_de_factors.m_f_max  = value_t(f_f_max);
         //options
         SessionOptions options;
         //session
@@ -240,12 +220,17 @@ public:
         for(int i=0;i!=num_gen;++i)
         {
             //Create new population
-            switch(m_pert_vector)
-            {
-                case PV_RANDOM: RandTrialVectorsOp(context, NP,W_list,current_populations_list,new_populations_list); break;
-                case PV_BEST: BestTrialVectorsOp(context, NP,W_list,current_eval_result,current_populations_list,new_populations_list); break;
-                default: return /* FAILED */;
-            }
+            PopulationGenerator< value_t >
+            (
+                context, 
+                m_de_info,
+                m_de_factors,
+                NP,
+                W_list,
+                current_eval_result,
+                current_populations_list,
+                new_populations_list
+            );
             //Change old population (if required)
             for(int index = 0; index!=NP ;++index)
             {
@@ -424,245 +409,6 @@ public:
 protected:
        
     /**
-     * Clamp DE final value
-     * @param t value,
-     * @return t between f_min and f_max
-     */
-    value_t f_clamp(const value_t t) const
-    {
-        return std::min(std::max(t, m_f_min), m_f_max);
-    }  
-       
-    /**
-     * RandTrialVectorsOp, create new generation (RAND DE METHOD)
-     * @param context,
-     * @param NP, size of population
-     * @param List, Factor to DE
-     * @param populations_list, input population list
-     * @param new_populations_list (output), return of function
-     */
-    void RandTrialVectorsOp
-    (
-        OpKernelContext*                           context,
-        const int                                  NP,
-        const TensorList&              W_list,
-        const TensorListList& cur_populations_list,
-              TensorListList& new_populations_list
-    ) const
-    {
-        //name space random indices
-        using namespace random_indices;
-        // Generate vector of random indexes
-        std::vector < int > randoms_i;
-        //Select type of method
-        switch (m_diff_vector)
-        {
-            default:
-            case DIFF_ONE: randoms_i.resize(3);  break;
-            case DIFF_TWO: randoms_i.resize(5);  break;
-        }
-        
-        //for all populations
-        for(size_t p=0; p!=cur_populations_list.size(); ++p)
-        {
-            //get values
-            const auto W = W_list[p].flat<value_t>();
-            //for all
-        #ifdef ENABLE_PARALLEL_NEW_GEN
-            #pragma omp parallel for num_threads(N_THREADS)
-            for (int index = 0; index < NP; ++index)
-        #else 
-            for (int index = 0; index < NP; ++index)
-        #endif
-            {
-                //ref to population
-                const TensorList& population = cur_populations_list[p];
-                //Num of dimations
-                const int NUM_OF_D = population[index].shape().dims();
-                //Compute flat dimension
-                int D = NUM_OF_D ? 1 : 0;
-                //compute D
-                for(int i=0; i < NUM_OF_D; ++i)
-                {
-                    D *= population[index].shape().dim_size(i);
-                }
-                // alloc
-                new_populations_list[p][index] = Tensor(data_type<value_t>(), population[index].shape());
-                //ref new gen
-                auto new_generation = new_populations_list[p][index].flat_inner_dims<value_t>();
-                //do rand indices
-                threeRandIndicesDiffFrom(NP, index, randoms_i);
-                //do random
-                bool do_random = true;
-                //random index
-                int random_index = irand(D);
-                //compute
-                for (int i = 0, elm = 0; i < D; ++i)
-                {
-                    //start element 
-                    if(m_cr_type != CR_EXP) 
-                        elm = i;
-                    else 
-                        elm = (i + random_index) % D;
-                    //cross event
-                    bool cross_event = random() < m_CR ;
-                    //cases
-                    if (do_random && (cross_event || random_index == elm))
-                    {
-                        switch (m_diff_vector)
-                        {
-                            default:
-                            case DIFF_ONE:
-                            {
-                                const value_t a = population[randoms_i[0]].flat<value_t>()(elm);
-                                const value_t b = population[randoms_i[1]].flat<value_t>()(elm);
-                                const value_t c = population[randoms_i[2]].flat<value_t>()(elm);
-                                new_generation(elm) = f_clamp( (a-b) * W(elm) + c );
-                            }
-                            break;
-                            case DIFF_TWO:
-                            {
-                                const value_t first_diff  = population[randoms_i[0]].flat<value_t>()(elm) - population[randoms_i[1]].flat<value_t>()(elm);
-                                const value_t second_diff = population[randoms_i[2]].flat<value_t>()(elm) - population[randoms_i[3]].flat<value_t>()(elm);
-                                new_generation(elm) = f_clamp( (first_diff + second_diff) * W(elm) + population[randoms_i[4]].flat<value_t>()(elm) );
-                            }
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        new_generation(elm) = population[index].flat_inner_dims<value_t>()(elm);
-                    }
-                    //in exp case stop to rand values
-                    if(do_random  &&  !cross_event && m_cr_type == CR_EXP)  do_random = false;
-                }
-            }
-        }
-    }
-
-    /**
-     * BestTrialVectorsOp, create new generation (BEST DE METHOD)
-     * @param context,
-     * @param NP, size of population
-     * @param List, Factor of DE
-     * @param populations_valutation, list(f_train(popularion) of all populations)
-     * @param populations_list, input population list
-     * @param new_populations_list (output), return of function
-     */
-    void BestTrialVectorsOp
-    (
-        OpKernelContext*       context,
-        const int              NP,
-        const TensorList&      W_list,
-              Tensor&          cur_populations_eval,
-        const TensorListList&  cur_populations_list,
-              TensorListList&  new_populations_list
-    ) const
-    {
-        //name space random indices
-        using namespace random_indices;
-        // Generate vector of random indexes
-        std::vector < int > randoms_i;
-        //First best
-        auto   pop_eval_ref = cur_populations_eval.flat<value_t>();
-        value_t val_best     = pop_eval_ref(0);
-        int    id_best      = 0;
-        //search best
-        for(int index = 1; index < NP ;++index)
-        {
-            //best?
-            if(val_best < pop_eval_ref(index))
-            {
-                val_best= pop_eval_ref(index);
-                id_best = index;
-            }
-        }
-        //Select type of method
-        switch (m_diff_vector)
-        {
-            default:
-            case DIFF_ONE: randoms_i.resize(2);  break;
-            case DIFF_TWO: randoms_i.resize(4);  break;
-        }        
-        //for all populations
-        for(size_t p=0; p!=cur_populations_list.size(); ++p)
-        {
-            //get values
-            const auto W = W_list[p].flat<value_t>();
-            //for all
-        #ifdef ENABLE_PARALLEL_NEW_GEN
-            #pragma omp parallel for num_threads(N_THREADS)
-            for (int index = 0; index < NP; ++index)
-        #else 
-            for (int index = 0; index < NP; ++index)
-        #endif
-            {
-                //ref to population
-                const TensorList& population = cur_populations_list[p];
-                //Num of dimations
-                const int NUM_OF_D = population[index].shape().dims();
-                //Compute flat dimension
-                int D = NUM_OF_D ? 1 : 0;
-                //compute D
-                for(int i=0; i < NUM_OF_D; ++i)
-                {
-                    D *= population[index].shape().dim_size(i);
-                }
-                // alloc
-                new_populations_list[p][index] = Tensor(data_type<value_t>(), population[index].shape());
-                //ref new gen
-                auto new_generation = new_populations_list[p][index].flat_inner_dims<value_t>();
-                //do rand indices
-                threeRandIndicesDiffFrom(NP, index, randoms_i);
-                //do random
-                bool do_random = true;
-                //random index
-                int random_index = irand(D);
-                //compute
-                for (int i = 0, elm = 0; i < D; ++i)
-                {
-                    //start element 
-                    if(m_cr_type != CR_EXP) 
-                        elm = i;
-                    else 
-                        elm = (i + random_index) % D;
-                    //cross event
-                    bool cross_event = random() < m_CR ;
-                    //cases
-                    if (do_random && (cross_event || random_index == elm))
-                    {
-                        switch (m_diff_vector)
-                        {
-                            default:
-                            case DIFF_ONE:
-                            {
-                                const value_t a = population[randoms_i[0]].flat<value_t>()(elm);
-                                const value_t b = population[randoms_i[1]].flat<value_t>()(elm);
-                                const value_t c = population[id_best].flat<value_t>()(elm);
-                                new_generation(elm) = f_clamp( (a-b) * W(elm) + c );
-                            }
-                            break;
-                            case DIFF_TWO:
-                            {
-                                const value_t first_diff  = population[randoms_i[0]].flat<value_t>()(elm) - population[randoms_i[1]].flat<value_t>()(elm);
-                                const value_t second_diff = population[randoms_i[2]].flat<value_t>()(elm) - population[randoms_i[3]].flat<value_t>()(elm);
-                                new_generation(elm) = f_clamp( (first_diff + second_diff) * W(elm) + population[id_best].flat<value_t>()(elm) );
-                            }
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        new_generation(elm) = population[index].flat_inner_dims<value_t>()(elm);
-                    }
-                    //in exp case stop to rand values
-                    if(do_random  &&  !cross_event && m_cr_type == CR_EXP )  do_random = false;
-                }
-            }
-        }
-    }
-    
-    /**
     * Alloc m_inputs_tensor_cache
     * @param populations_list, (input) populations
     */
@@ -737,11 +483,9 @@ protected:
 
     //session
     std::unique_ptr< Session > m_session;
-    //clamp
-    value_t                     m_f_min{ -1.0 };
-    value_t                     m_f_max{  1.0 };
-    //update factors
-    value_t                     m_CR   {  0.5 };
+    //de info
+    DeInfo                m_de_info;
+    DeFactors< value_t >  m_de_factors;
     // population variables
     int                        m_space_size{ 1 };
     //input evaluate
@@ -751,10 +495,6 @@ protected:
     //bach inputs
     std::string m_input_labels;
     std::string m_input_features;
-    //DE types
-    CRType           m_cr_type    { CR_BIN    };
-    DifferenceVector m_diff_vector{ DIFF_ONE  };
-    PerturbedVector  m_pert_vector{ PV_RANDOM };
     //debug
     SOCKET_DEBUG(
        debug::socket_messages_server m_debug;

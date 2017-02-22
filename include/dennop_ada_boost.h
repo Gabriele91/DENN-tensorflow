@@ -51,7 +51,7 @@ namespace tensorflow
             // start input w
             const size_t start_input_weigth = 3;
             // W
-            std::vector < Tensor >  W_list;
+            TensorList  W_list;
             // pupulation inputs
             for(int i=0; i != this->m_space_size; ++i)
             {
@@ -160,12 +160,12 @@ namespace tensorflow
         */
         virtual void RunDe
         (
-            OpKernelContext *context,
-            const int num_gen,
-            const std::vector < Tensor >& W_list,
-            TensorListList& new_populations_list,
-            TensorListList& current_populations_list,
-            Tensor& current_eval_result
+            OpKernelContext*  context,
+            const int         num_gen,
+            const TensorList& W_list,
+            TensorListList&   new_populations_list,
+            TensorListList&   current_populations_list,
+            Tensor&           current_eval_result
         )
         {
             //Get np 
@@ -181,12 +181,17 @@ namespace tensorflow
             for(int i=0;i!=num_gen;++i)
             {
                 //Create new population
-                switch(this->m_pert_vector)
-                {
-                    case DENNOp_t::PV_RANDOM: this->RandTrialVectorsOp(context, NP,W_list,current_populations_list,new_populations_list); break;
-                    case DENNOp_t::PV_BEST: this->BestTrialVectorsOp(context, NP,W_list,current_eval_result,current_populations_list,new_populations_list); break;
-                    default: return /* FAILED */;
-                }
+                PopulationGenerator< value_t >
+                (
+                    context, 
+                    this->m_de_info,
+                    this->m_de_factors,
+                    NP,
+                    W_list,
+                    current_eval_result,
+                    current_populations_list,
+                    new_populations_list
+                );
                 //Change old population (if required)
                 for(int index = 0; index!=NP ;++index)
                 {
@@ -420,7 +425,7 @@ namespace tensorflow
         */
         virtual bool SetCacheInputs
         (
-            const std::vector < std::vector<Tensor> >& populations_list,
+            const TensorListList& populations_list,
             const int NP_i
         ) const
         {
@@ -466,8 +471,8 @@ namespace tensorflow
         //ada boost factor 
         value_t m_alpha;
         Tensor  m_C;
-        std::vector < Tensor >  m_EC;
-        std::vector < Tensor >  m_pop_Y;
+        TensorList  m_EC;
+        TensorList  m_pop_Y;
         //:D
         mutable Tensor m_labels;
 

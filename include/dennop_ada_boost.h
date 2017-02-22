@@ -12,12 +12,6 @@ namespace tensorflow
     {
 
         using DENNOp_t = DENNOp< value_t >;
-        //types
-        using NameList      =  typename DENNOp_t::NameList;
-        using TensorList    =  typename DENNOp_t::TensorList;
-        using TensorInput   =  typename DENNOp_t::TensorInput;
-        using TensorInputs  =  typename DENNOp_t::TensorInputs;
-
 
     public:
 
@@ -67,7 +61,7 @@ namespace tensorflow
             // start input population
             const size_t start_input_population = start_input_weigth + this->m_space_size;
             // populations
-            std::vector < std::vector <Tensor> >  current_populations_list;        
+            TensorListList  current_populations_list;        
             // populations inputs
             for(int i=0; i != this->m_space_size; ++i)
             {
@@ -87,7 +81,7 @@ namespace tensorflow
              m_pop_Y = splitDim0(context->input(start_input_C_EC_Y+2));
             ////////////////////////////////////////////////////////////////////////////
             //Temp of new gen of populations
-            std::vector < std::vector <Tensor> > new_populations_list;
+            TensorListList new_populations_list;
             
             ////////////////////////////////////////////////////////////////////////////
             //Alloc temp vector of populations
@@ -169,8 +163,8 @@ namespace tensorflow
             OpKernelContext *context,
             const int num_gen,
             const std::vector < Tensor >& W_list,
-            std::vector < std::vector <Tensor> >& new_populations_list,
-            std::vector < std::vector <Tensor> >& current_populations_list,
+            TensorListList& new_populations_list,
+            TensorListList& current_populations_list,
             Tensor& current_eval_result
         )
         {
@@ -256,7 +250,7 @@ namespace tensorflow
         virtual void ComputePopY
         (
             OpKernelContext *context,
-            const std::vector < std::vector <Tensor> >& populations_list
+            const TensorListList& populations_list
         )
         {
             //Get np 
@@ -276,7 +270,7 @@ namespace tensorflow
             OpKernelContext *context,
             //input
             const size_t NP_i,
-            const std::vector < std::vector <Tensor> >& populations_list,
+            const TensorListList& populations_list,
             //output 
             Tensor& out_y,
             Tensor& out_ec            
@@ -406,7 +400,7 @@ namespace tensorflow
         * Alloc m_inputs_tensor_cache
         * @param populations_list, (input) populations
         */
-        virtual bool AllocCacheInputs(const std::vector < std::vector<Tensor> >& populations_list) const 
+        virtual bool AllocCacheInputs(const TensorListList& populations_list) const 
         {
             //resize
             this->m_inputs_tensor_cache.resize(populations_list.size()+1);

@@ -11,11 +11,6 @@ namespace tensorflow
     {
 
         using DENNOp_t = DENNOp< value_t >;
-        //types
-        using NameList      =  typename DENNOp_t::NameList;
-        using TensorList    =  typename DENNOp_t::TensorList;
-        using TensorInput   =  typename DENNOp_t::TensorInput;
-        using TensorInputs  =  typename DENNOp_t::TensorInputs;
 
     public:
 
@@ -60,7 +55,7 @@ namespace tensorflow
             const int n_sub_gen = tot_gen / sub_gen;
             ////////////////////////////////////////////////////////////////////////////
             // W
-            std::vector < Tensor >  W_list;
+            TensorList  W_list;
             // pupulation inputs
             for(int i=0; i != this->m_space_size; ++i)
             {
@@ -69,7 +64,7 @@ namespace tensorflow
             
             ////////////////////////////////////////////////////////////////////////////
             // populations
-            std::vector < std::vector <Tensor> >  current_populations_list;
+            TensorListList  current_populations_list;
             // populations inputs
             for(int i=0; i != this->m_space_size; ++i)
             {
@@ -81,7 +76,7 @@ namespace tensorflow
             
             ////////////////////////////////////////////////////////////////////////////
             //Temp of new gen of populations
-            std::vector < std::vector <Tensor> > new_populations_list;
+            TensorListList new_populations_list;
             //Alloc temp vector of populations
             DENNOp_t::GenCachePopulation(current_populations_list,new_populations_list);            
             
@@ -219,7 +214,7 @@ namespace tensorflow
         int FindBest
         (
             OpKernelContext *context,
-            const std::vector < std::vector <Tensor> >& current_populations_list
+            const TensorListList& current_populations_list
         ) const
         {
             //Get np 
@@ -253,7 +248,7 @@ namespace tensorflow
         value_t TestBest
         (
             OpKernelContext *context,
-            const std::vector < std::vector <Tensor> >& current_populations_list,
+            const TensorListList& current_populations_list,
             int best_index
         ) const
         {
@@ -266,7 +261,7 @@ namespace tensorflow
         (
             OpKernelContext* context,
             const int NP_i,
-            const std::vector < std::vector<Tensor> >& populations_list
+            const TensorListList& populations_list
         ) const
         {
             NameList function{ 
@@ -280,7 +275,7 @@ namespace tensorflow
         (
             OpKernelContext* context,
             const int NP_i,
-            const std::vector < std::vector<Tensor> >& populations_list
+            const TensorListList& populations_list
         ) const
         {
             NameList function{

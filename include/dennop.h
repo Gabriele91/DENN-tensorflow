@@ -1,6 +1,7 @@
 
 #pragma once
 #include "config.h"
+#include "tensorflow_alias.h"
 #include <string>
 #include <iostream>
 #include <memory>
@@ -16,12 +17,6 @@ template< class value_t = double >
 class DENNOp : public OpKernel 
 {
 public:
-
-    //types
-    using NameList      =  std::vector< std::string >;
-    using TensorList    =  std::vector< tensorflow::Tensor >;
-    using TensorInput   =  std::pair< std::string, tensorflow::Tensor >;
-    using TensorInputs  =  std::vector< TensorInput >;
 
     //num of threads (OpenMP)
     const int N_THREADS = 4;
@@ -139,7 +134,7 @@ public:
         // start input
         const size_t start_input = 4;
         // W
-        std::vector < Tensor >  W_list;
+        TensorList  W_list;
         // pupulation inputs
         for(int i=0; i != m_space_size; ++i)
         {
@@ -148,7 +143,7 @@ public:
 
         ////////////////////////////////////////////////////////////////////////////
         // populations
-        std::vector < std::vector <Tensor> >  current_populations_list;
+        TensorListList  current_populations_list;
         // populations inputs
         for(int i=0; i != m_space_size; ++i)
         {
@@ -160,7 +155,7 @@ public:
 
         ////////////////////////////////////////////////////////////////////////////
         //Temp of new gen of populations
-        std::vector < std::vector <Tensor> > new_populations_list;
+        TensorListList new_populations_list;
         //Alloc temp vector of populations
         GenCachePopulation(current_populations_list,new_populations_list);
 
@@ -231,9 +226,9 @@ public:
     (
         OpKernelContext *context,
         const int num_gen,
-        const std::vector < Tensor >& W_list,
-        std::vector < std::vector <Tensor> >& new_populations_list,
-        std::vector < std::vector <Tensor> >& current_populations_list,
+        const TensorList& W_list,
+        TensorListList& new_populations_list,
+        TensorListList& current_populations_list,
         Tensor& current_eval_result
     )
     {
@@ -283,8 +278,8 @@ public:
      */
     void GenCachePopulation
     (
-        const std::vector < std::vector <Tensor> >& current_populations_list,
-        std::vector < std::vector <Tensor> >& new_populations_list
+        const TensorListList& current_populations_list,
+        TensorListList& new_populations_list
     ) const
     {
         //new pupulations
@@ -307,7 +302,7 @@ public:
     (
          OpKernelContext *context,
          const bool force_to_eval,
-         const std::vector < std::vector <Tensor> >& current_populations_list,
+         const TensorListList& current_populations_list,
          const Tensor& population_first_eval,
          Tensor& current_eval_result
     )
@@ -344,7 +339,7 @@ public:
     bool TestPopulationSize
     (
          OpKernelContext *context,
-         const std::vector < std::vector <Tensor> >& current_populations_list 
+         const TensorListList& current_populations_list 
     ) const
     {
         //Size of population
@@ -367,7 +362,7 @@ public:
     (
         OpKernelContext* context,
         const int NP_i,
-        const std::vector < std::vector<Tensor> >& populations_list
+        const TensorListList& populations_list
     ) const
     {
         NameList function{
@@ -381,7 +376,7 @@ public:
     (
         OpKernelContext* context,
         const int NP_i,
-        const std::vector < std::vector<Tensor> >& populations_list,
+        const TensorListList& populations_list,
         const NameList& functions_list
     ) const
     {
@@ -450,9 +445,9 @@ protected:
     (
         OpKernelContext*                           context,
         const int                                  NP,
-        const std::vector < Tensor >&              W_list,
-        const std::vector < std::vector<Tensor> >& cur_populations_list,
-        std::vector < std::vector<Tensor> >&       new_populations_list
+        const TensorList&              W_list,
+        const TensorListList& cur_populations_list,
+              TensorListList& new_populations_list
     ) const
     {
         //name space random indices
@@ -481,7 +476,7 @@ protected:
         #endif
             {
                 //ref to population
-                const std::vector< Tensor >& population = cur_populations_list[p];
+                const TensorList& population = cur_populations_list[p];
                 //Num of dimations
                 const int NUM_OF_D = population[index].shape().dims();
                 //Compute flat dimension
@@ -556,12 +551,12 @@ protected:
      */
     void BestTrialVectorsOp
     (
-        OpKernelContext*                           context,
-        const int                                  NP,
-        const std::vector < Tensor >&              W_list,
-              Tensor&                              cur_populations_eval,
-        const std::vector < std::vector<Tensor> >& cur_populations_list,
-        std::vector < std::vector<Tensor> >&       new_populations_list
+        OpKernelContext*       context,
+        const int              NP,
+        const TensorList&      W_list,
+              Tensor&          cur_populations_eval,
+        const TensorListList&  cur_populations_list,
+              TensorListList&  new_populations_list
     ) const
     {
         //name space random indices
@@ -603,7 +598,7 @@ protected:
         #endif
             {
                 //ref to population
-                const std::vector< Tensor >& population = cur_populations_list[p];
+                const TensorList& population = cur_populations_list[p];
                 //Num of dimations
                 const int NUM_OF_D = population[index].shape().dims();
                 //Compute flat dimension
@@ -671,7 +666,7 @@ protected:
     * Alloc m_inputs_tensor_cache
     * @param populations_list, (input) populations
     */
-    virtual bool AllocCacheInputs(const std::vector < std::vector<Tensor> >& populations_list) const 
+    virtual bool AllocCacheInputs(const TensorListList& populations_list) const 
     {
         //resize
         m_inputs_tensor_cache.resize(populations_list.size()+2);
@@ -692,7 +687,7 @@ protected:
      */
     virtual bool SetCacheInputs
     (
-        const std::vector < std::vector<Tensor> >& populations_list,
+        const TensorListList& populations_list,
         const int NP_i
     ) const
     {

@@ -124,6 +124,7 @@ namespace tensorflow
                         }
                         //set init to true 
                         m_init = true;
+                        m_eval = eval;
                     }
                 }
             }

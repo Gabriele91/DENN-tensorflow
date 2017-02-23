@@ -565,8 +565,8 @@ class Operation(object):
             print(
                 "++ Test {}, result {}".format(test_time, cur_accuracy))
 
-            result_y = self.__eval_individual(
-                sess, test_results[self.de_type].best_of['individual'])
+            test_results[self.de_type].best_of['individual'] = current_result
+            result_y = self.__eval_individual(sess, current_result)
 
             self.job.confusionM[self.de_type] = calc_confusin_M(
                 self.dataset.test_labels, result_y)

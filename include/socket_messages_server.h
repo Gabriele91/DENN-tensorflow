@@ -112,7 +112,7 @@ namespace debug
             MSG_UNKNOW
         };
 
-        template < typename TYPE > message_type msg_type() { return MSG_UNKNOW; }
+        template < typename TYPE > static message_type msg_type() { return MSG_UNKNOW; }
 
         using message_raw = std::vector< unsigned char >;
 

@@ -19,7 +19,7 @@ __all__ = ['Operation', 'create', 'update_best_of']
 OUT_FOLDER = "benchmark_results"
 
 
-def update_best_of(de_type, test_results, new_accuracy, new_individual):
+def update_best_of(de_type, test_results, new_accuracy, new_individual, job):
     """Tracks the best of the whole evolution.
 
     Params:
@@ -33,6 +33,8 @@ def update_best_of(de_type, test_results, new_accuracy, new_individual):
     if test_results[de_type].best_of['accuracy'][-1] < new_accuracy:
         test_results[de_type].best_of['accuracy'].append(new_accuracy)
         test_results[de_type].best_of['individual'] = new_individual
+        job.best['accuracy'] = new_accuracy
+        job.best['individual'] = new_individual
         return True
     else:
         last_accuracy = test_results[de_type].best_of['accuracy'][-1]
@@ -160,6 +162,29 @@ class Operation(object):
         """Runs the DE evolution."""
         raise NotImplementedError
 
+    def __eval_individual(self, sess, individual):
+        """Evaluates the NN with an individual.
+
+        Params:
+            sess (tensorflow.Session): the session of current job
+            individual (numpy.ndarray): the current individual
+
+        Returns:
+            numpy.ndarray: the result of the NN for each record of
+                           the test set 
+        """
+        return sess.run(self.net.y, feed_dict=dict(
+            [
+                (target, individual[num])
+                for num, target in enumerate(self.net.targets)
+            ]
+            +
+            [
+                (self.net.label_placeholder, self.dataset.test_labels),
+                (self.net.input_placeholder, self.dataset.test_data)
+            ]
+        ))
+
     def __eval_y(self, sess, best_idx, cur_pop):
         """Evaluates the NN with the best individual.
 
@@ -177,8 +202,6 @@ class Operation(object):
             cur_pop[num][best_idx]
             for num, target in enumerate(self.net.targets)
         ]
-
-        self.job.best[self.de_type] = best
 
         return sess.run(self.net.y, feed_dict=dict(
             [
@@ -430,7 +453,8 @@ class Operation(object):
                     cur_accuracy,
                     [
                         cur_pop[num][best_idx] for num, target in enumerate(self.net.targets)
-                    ]
+                    ],
+                    self.job
                 )
 
                 test_results[self.de_type].population = cur_pop
@@ -481,7 +505,8 @@ class Operation(object):
         self.job.times[self.de_type] = time() - start_evolution
         self.job.accuracy[self.de_type] = cur_accuracy
 
-        result_y = self.__eval_y(sess, best_idx, cur_pop)
+        result_y = self.__eval_individual(
+            sess, test_results[self.de_type].best_of['individual'])
 
         self.job.confusionM[self.de_type] = calc_confusin_M(
             self.dataset.test_labels, result_y)
@@ -540,20 +565,11 @@ class Operation(object):
             print(
                 "++ Test {}, result {}".format(test_time, cur_accuracy))
 
-            result = sess.run(self.net.y, feed_dict=dict(
-                [
-                    (target, current_result[num])
-                    for num, target in enumerate(self.net.targets)
-                ]
-                +
-                [
-                    (self.net.label_placeholder, self.dataset.test_labels),
-                    (self.net.input_placeholder, self.dataset.test_data)
-                ]
-            ))
+            result_y = self.__eval_individual(
+                sess, test_results[self.de_type].best_of['individual'])
 
             self.job.confusionM[self.de_type] = calc_confusin_M(
-                self.dataset.test_labels, result)
+                self.dataset.test_labels, result_y)
 
             for class_ in range(self.job.confusionM[self.de_type][0].shape[0]):
                 elm_tf = calc_TF(self.job.confusionM[self.de_type], class_)
@@ -714,7 +730,8 @@ class Operation(object):
                     cur_accuracy,
                     [
                         cur_pop[num][best_idx] for num, target in enumerate(self.net.targets)
-                    ]
+                    ],
+                    self.job
                 )
 
                 test_results[self.de_type].population = cur_pop
@@ -767,7 +784,8 @@ class Operation(object):
         self.job.times[self.de_type] = time() - start_evolution
         self.job.accuracy[self.de_type] = cur_accuracy
 
-        result_y = self.__eval_y(sess, best_idx, cur_pop)
+        result_y = self.__eval_individual(
+            sess, test_results[self.de_type].best_of['individual'])
 
         self.job.confusionM[self.de_type] = calc_confusin_M(
             self.dataset.test_labels, result_y)

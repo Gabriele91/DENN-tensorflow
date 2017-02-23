@@ -204,7 +204,8 @@ def main():
                         cur_accuracy,
                         [
                             cur_pop[num][best_idx] for num, target in enumerate(cur_nn.targets)
-                        ]
+                        ],
+                        job
                     )
 
                     ##

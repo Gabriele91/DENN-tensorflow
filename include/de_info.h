@@ -1,4 +1,6 @@
-namespace
+#include "config.h"
+
+namespace tensorflow
 {
     //type of CR
     enum CRType
@@ -39,9 +41,18 @@ namespace
         //update factors
         value_t                     m_CR   {  0.5 };
         value_t                     m_F    {  1.0 };
-        //enable 2D smooth
-        bool                        m_smoothing{ false };
-        int                         m_shape_smoothing[2];
+        //smoothing shape
+        std::vector<TensorShapeProto> m_shapes_smoothing;
+        //can execute smooth?
+        bool can_smoothing(int layer) const
+        {
+            return layer < m_shapes_smoothing.size();
+        }
+        //get shape 
+        const TensorShapeProto& get_shape(int layer) const
+        {
+            return m_shapes_smoothing[layer];
+        }
         /**
         * Clamp DE final value
         * @param t value,

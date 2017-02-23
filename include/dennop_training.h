@@ -160,7 +160,9 @@ namespace tensorflow
 
                 //Execute validation test 
                 for(int individual_id = 0; individual_id != NP; ++individual_id)
-                {                
+                {         
+                    //Change input 
+                    SetValidationDataInCacheInputs();
                     //execute evaluation
                     value_t eval = ExecuteEvaluateValidation(context, individual_id, current_populations_list);
                     //add 

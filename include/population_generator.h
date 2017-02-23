@@ -1,4 +1,5 @@
 #include "config.h"
+#include "image_filters.h"
 #include "tensorflow_alias.h"
 #include <string>
 #include <iostream>
@@ -195,7 +196,7 @@ namespace tensorflow
                 D *= cur_population[index].shape().dim_size(i);
             }
             // alloc
-            new_population[index]   = Tensor(data_type<value_t>(), cur_population[index].shape());
+            new_population[index]  = Tensor(data_type<value_t>(), cur_population[index].shape());
             //get ref 
             typename TTypes<value_t>::Matrix ref_new_population = new_population[index].flat_inner_dims<value_t>();
             //do rand indices
@@ -261,13 +262,13 @@ namespace tensorflow
             //set best
             v_random.set_best(id_best);
         }
-        //for all populations
-        for(size_t p=0; p!=cur_populations_list.size(); ++p)
+        //for all layers types
+        for(size_t l_type=0; l_type!=cur_populations_list.size(); ++l_type)
         {
             //ref to population
-            const TensorList& cur_population = cur_populations_list[p];
+            const TensorList& cur_population = cur_populations_list[l_type];
             //ref to new pupulation
-            TensorList& new_population = new_populations_list[p];
+            TensorList& new_population = new_populations_list[l_type];
             //gen a new layer by method selected 
             LayerGenerator< value_t >
             (
@@ -278,6 +279,19 @@ namespace tensorflow
                 new_population,
                 v_random
             );
+            //smoothing if enable 
+            if(factors.can_smoothing(l_type))
+            {
+            #ifdef ENABLE_PARALLEL_NEW_GEN
+                #pragma omp parallel for
+                for (int index = 0; index < NP; ++index)
+            #else 
+                for (int index = 0; index < NP; ++index)
+            #endif
+                {
+                    ApplayFilterAVG(new_population[index],factors.get_shape(l_type));
+                }
+            }
         }
     }
 }

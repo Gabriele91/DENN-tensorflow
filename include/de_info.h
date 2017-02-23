@@ -49,9 +49,9 @@ namespace tensorflow
             return layer < m_shapes_smoothing.size();
         }
         //get shape 
-        const TensorShapeProto& get_shape(int layer) const
+        TensorShape get_shape(int layer) const
         {
-            return m_shapes_smoothing[layer];
+            return TensorShape(m_shapes_smoothing[layer]);
         }
         /**
         * Clamp DE final value

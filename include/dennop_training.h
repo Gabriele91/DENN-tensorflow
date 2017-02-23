@@ -102,7 +102,34 @@ namespace tensorflow
              , population_first_eval 
              , current_eval_result
             );
-
+            ////////////////////////////////////////////////////////////////////////////
+            struct CacheBest
+            {
+                //attrs
+                bool m_init{ false };
+                value_t m_eval{ 0 };
+                TensorList m_individual;
+                //add 
+                void test_best(value_t eval,int id, const TensorListList& pop)
+                {
+                    //case to copy the individual
+                    if(!m_init || eval > m_eval)
+                    {
+                        //pop all
+                        m_individual.clear();
+                        //copy 
+                        for(const TensorList& layer : pop)
+                        {
+                            m_individual.push_back(layer[id]);
+                        }
+                        //set init to true 
+                        m_init = true;
+                    }
+                }
+            }
+            best;
+            //Get np 
+            const int NP = current_populations_list[0].size();
             ////////////////////////////////////////////////////////////////////////////
             // Execute DE
             for
@@ -129,6 +156,15 @@ namespace tensorflow
                  , current_populations_list
                  , current_eval_result
                 );
+
+                //Execute validation test 
+                for(int individual_id = 0; individual_id != NP; ++individual_id)
+                {                
+                    //execute evaluation
+                    value_t eval = ExecuteEvaluateValidation(context, individual_id, current_populations_list);
+                    //add 
+                    best.test_best(eval, individual_id, current_populations_list);
+                }
 
                 SOCKET_DEBUG(
                     //process message
@@ -162,18 +198,17 @@ namespace tensorflow
                 )
             }
             ////////////////////////////////////////////////////////////////////////////
-            //Search best pop
-            int best_of_populations = FindBest(context,current_populations_list); 
             // Output best pop
             for(int i=0; i != this->m_space_size; ++i)
             {
                 //Output ptr
                 Tensor* new_generation_tensor = nullptr;
                 //Get output tensor
-                const Tensor& best_population = current_populations_list[i][best_of_populations];
-                //Alloct and send
+                const Tensor& best_population = best.m_individual[i];
+                //Alloc
                 OP_REQUIRES_OK(context, context->allocate_output(i, best_population.shape(), &new_generation_tensor));
-                (*new_generation_tensor) = current_populations_list[i][best_of_populations];
+                //copy tensor
+                (*new_generation_tensor) = best_population;
             }
 
         }

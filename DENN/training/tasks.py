@@ -325,14 +325,6 @@ class DETask(object):
         )
         return string
 
-    def gen_F(self, shape):
-        """Returns a numpy array full of F values with the given shape.
-
-        Params:
-            shape (list)
-        """
-        return np.full(shape, self.F)
-
     def get_device(self, preference):
         """Returns prefer device if available.
 
@@ -387,8 +379,6 @@ class DETask(object):
             rand_pop_ref = []
             cur_gen_options = tf.placeholder(tf.int32, [2])
 
-            weights = []
-
             input_size = levels[0].in_size
             label_size = levels[-1].out_size
             input_placeholder = tf.placeholder(cur_type,
@@ -434,14 +424,6 @@ class DETask(object):
                     level = cur_level.shape
 
                     SIZE_W, SIZE_B = level
-
-                    ##
-                    # DE W -> NN (W, B)
-                    deW_nnW = self.gen_F(SIZE_W)
-                    deW_nnB = self.gen_F(SIZE_B)
-
-                    weights.append(deW_nnW)
-                    weights.append(deW_nnB)
 
                     ##
                     # Init population
@@ -547,7 +529,6 @@ class DETask(object):
             ('targets', target_ref),
             ('populations', pop_ref),
             ('rand_pop', rand_pop_ref),
-            ('weights', weights),
             ('evaluated', cur_pop_VAL),
             ('nn_exec', y),
             ('y', y),

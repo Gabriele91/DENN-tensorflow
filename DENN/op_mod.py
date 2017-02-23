@@ -83,7 +83,6 @@ class Operation(object):
                 self.net.cur_gen_options,
                 self.net.label_placeholder,
                 self.net.input_placeholder,
-                self.net.weights,  # PASS WEIGHTS
                 self.net.populations,  # POPULATIONS
                 self.net.ada_C_placeholder,
                 self.net.ada_EC_placeholder,
@@ -100,6 +99,7 @@ class Operation(object):
                 f_cross_entropy=self.net.cross_entropy.name,
                 f_input_cross_entropy=self.net.y_placeholder.name,
                 ada_boost_alpha=self.job.ada_boost.alpha,
+                F=self.job.F,
                 CR=self.job.CR,
                 DE=self.de_type,
                 f_min=self.job.clamp.min,
@@ -115,7 +115,6 @@ class Operation(object):
                 [self.job.TOT_GEN, self.job.GEN_STEP, False],
                 np.array([], dtype=np.float64 if self.job.TYPE ==
                          "double" else np.float32),  # FIRST EVAL
-                self.net.weights,  # PASS WEIGHTS
                 self.net.populations,  # POPULATIONS
                 # attributes
                 graph=get_graph_proto(
@@ -127,6 +126,7 @@ class Operation(object):
                 f_inputs=[elm.name for elm in self.net.targets],
                 f_input_labels=self.net.label_placeholder.name,
                 f_input_features=self.net.input_placeholder.name,
+                F=self.job.F,
                 CR=self.job.CR,
                 DE=de_type,
                 f_min=self.job.clamp.min,
@@ -143,7 +143,6 @@ class Operation(object):
                 self.net.label_placeholder,
                 self.net.input_placeholder,
                 self.net.evaluated,  # FIRST EVAL
-                self.net.weights,  # PASS WEIGHTS
                 self.net.populations,  # POPULATIONS
                 # attributes
                 graph=get_graph_proto(
@@ -154,6 +153,7 @@ class Operation(object):
                 f_input_features=self.net.input_placeholder.name,
                 f_min=self.job.clamp.min,
                 f_max=self.job.clamp.max,
+                F=self.job.F,
                 CR=self.job.CR,
                 DE=self.de_type
             )

@@ -39,6 +39,9 @@ namespace
         //update factors
         value_t                     m_CR   {  0.5 };
         value_t                     m_F    {  1.0 };
+        //enable 2D smooth
+        bool                        m_smoothing{ false };
+        int                         m_shape_smoothing[2];
         /**
         * Clamp DE final value
         * @param t value,

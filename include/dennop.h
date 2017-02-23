@@ -59,6 +59,10 @@ public:
         context->GetAttr("f_min", &f_f_min);
         // get f max
         context->GetAttr("f_max", &f_f_max);
+        // get vector of shape 
+        std::vector< int > shape_smoothing; 
+        // get smoothing
+        context->GetAttr("smoothing", &shape_smoothing);
         // get DE
         std::string de_type;
         context->GetAttr("DE", &de_type);
@@ -81,6 +85,12 @@ public:
         m_de_factors.m_F      = value_t(f_F);
         m_de_factors.m_f_min  = value_t(f_f_min);
         m_de_factors.m_f_max  = value_t(f_f_max);
+        //smoothing
+        if(m_de_factors.m_smoothing = shape_smoothing.size()==2)
+        {
+            m_de_factors.m_shape_smoothing[0] = shape_smoothing[0];
+            m_de_factors.m_shape_smoothing[1] = shape_smoothing[1];
+        }
         //options
         SessionOptions options;
         //session

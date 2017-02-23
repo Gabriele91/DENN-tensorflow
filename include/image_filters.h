@@ -11,6 +11,8 @@ namespace tensorflow
         int height = shape.dim_size(0);
         int width  = shape.dim_size(1);
         int k_size = shape.dim_size(2);
+
+        // MSG_DEBUG(height << " " << width << " " << k_size)
         //get data
         value_t* in_matrix = (value_t*)inout_image.tensor_data().data();
         //output
@@ -50,6 +52,7 @@ namespace tensorflow
             }
             //save
             out_matrix[img_x + img_y * width] = sum / counter;
+            // MSG_DEBUG(in_matrix[img_x + img_y * width] << " -> " << out_matrix[img_x + img_y * width])
             //reset
             sum     = 0;
             counter = 0;

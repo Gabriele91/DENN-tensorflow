@@ -2,12 +2,15 @@
     {
         "name": "mnist_new_test",
         "dataset_file": "../datasets/mnist_d_5perV_4000xB_5s.gz",
-        "TOT_GEN": 100000,
-        "GEN_STEP": 2000,
+        "TOT_GEN": 1000,
+        "GEN_STEP": 100,
         "TYPE": "double",
-        "F": 1.5,
+        "F": 1.9,
         "CR": 0.9,
         "NP": 24,
+        "smoothing": [
+            [28, 28, 3]
+        ],
         "de_types": [
             "rand/1/bin"
         ],
@@ -15,6 +18,7 @@
             "epsilon": 0.02,
             "counter": 2
         },
+        "reinsert_best": true,
         "clamp": {
             "min": -30,
             "max": 30

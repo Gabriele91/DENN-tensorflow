@@ -104,7 +104,7 @@ class Operation(object):
                 DE=self.de_type,
                 f_min=self.job.clamp.min,
                 f_max=self.job.clamp.max,
-                smoothing=self.smoothing
+                smoothing=self.job.smoothing
             )
         elif job.training:
             self._module = tf.load_op_library(path.join(
@@ -132,7 +132,7 @@ class Operation(object):
                 DE=de_type,
                 f_min=self.job.clamp.min,
                 f_max=self.job.clamp.max,
-                smoothing=self.smoothing
+                smoothing=self.job.smoothing
             )
         else:
             self._module = tf.load_op_library(path.join(
@@ -158,7 +158,7 @@ class Operation(object):
                 F=self.job.F,
                 CR=self.job.CR,
                 DE=self.de_type,
-                smoothing=self.smoothing
+                smoothing=self.job.smoothing
             )
 
     def run(self):

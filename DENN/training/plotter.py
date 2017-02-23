@@ -4,6 +4,65 @@ from matplotlib.legend_handler import HandlerLine2D
 from matplotlib.ticker import FuncFormatter
 import numpy as np
 from math import cos, pi
+import json
+
+
+def NN_DE_mnist_loader(filename):
+    with open(filename, "r") as input_file:
+        res = json.load(input_file)
+    return [np.array(res['W']), np.array(res['b'])]
+
+
+def NN_DE_result_loader(filename):
+    with open(filename, "r") as input_file:
+        res = json.load(input_file)
+    return res['results']['rand/1/bin']['best_of']['individual']
+
+
+def NN_to_image(test_result_file, shape, level=0, loader="DE"):
+    if loader == "DE":
+        individual = NN_DE_result_loader(test_result_file)
+        W = np.array(individual[0 + (level * 2)])
+        b = np.array(individual[1 + (level * 2)])
+    elif loader == "gradient":
+        W, b = NN_DE_mnist_loader(test_result_file)
+    else:
+        raise Exception("Error: Unknown loader...")
+
+    W = W + b
+
+    columns = np.hsplit(W, W.shape[-1])
+
+    ##
+    # Reshape
+    images = []
+    for image in columns:
+        # print(image.shape)
+        images.append(image.reshape(shape))
+
+    ##
+    # Normalization
+    for image in images:
+        max_ = np.max(image)
+        min_ = np.min(image)
+        image = image - min_
+        image = image / (max_ - min_)
+        # print(image)
+
+    images = np.array(images)
+    # print(images.shape)
+
+    fig = plt.figure()
+
+    for num, image in enumerate(images):
+        sub_plt = plt.subplot(2, 5, num + 1)
+        sub_plt.set_title(str(num))
+        plt.imshow(image, cmap=plt.cm.Greys,
+                   interpolation='nearest')
+
+    plt.tight_layout()
+    plt.show()
+    plt.close()
 
 
 def my_confusion_matrix(fig, matrix):

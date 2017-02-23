@@ -3,15 +3,61 @@ from os import SEEK_CUR
 import struct
 import gzip
 import binascii
+import json
 from collections import namedtuple
 
 __all__ = ['Dataset', 'calc_confusin_M', 'calc_TF',
            'precision_recall_acc', 'f1_score',
-           'calc_bin_stats']
+           'calc_bin_stats', 'calc_pop_diff']
 
 Batch = namedtuple('Batch', ['data', 'labels'])
 BinClassify = namedtuple('BinClassify', ['TP', 'FP', 'FN', 'TN'])
 
+
+def calc_pop_diff(test_result_file, out_file="distances.json"):
+    with open(test_result_file, "r") as res_file:
+        res = json.load(res_file)['results']
+
+    hem_reduce = {}
+    eu_distance = {}
+
+    hem_distance = lambda x, y: np.fabs(x - y)
+    sq_distance = lambda x, y: np.square(x - y)
+
+    for method in res:
+        best = np.array(res[method]['best_of']['individual'])
+        population = np.array(res[method]['population'])
+
+        total_size = 0
+        for elm in best:
+            total_size += np.array(elm).size
+
+        for type_, pop_type in enumerate(population):
+            for idx, matrix in enumerate(pop_type):
+                cur_matrix = np.array(matrix)
+                sum_ = np.sum([
+                    hem_distance(best[type_], cur_matrix)
+                ])
+                if idx not in hem_reduce:
+                    hem_reduce[idx] = 0
+                hem_reduce[idx] += sum_
+
+                sum_ = np.sum([
+                    sq_distance(best[type_], cur_matrix)
+                ])
+                if idx not in eu_distance:
+                    eu_distance[idx] = 0
+                eu_distance[idx] += sum_
+
+        for key in eu_distance:
+            eu_distance[key] = float(np.sqrt(eu_distance[key]))
+
+    output = [(idx, [elm, eu_distance[idx], elm / total_size,
+                     eu_distance[idx]/total_size]) for idx, elm in hem_reduce.items()]
+
+    with open(out_file, "w") as out_file:
+        json.dump(
+            list(reversed(sorted(output, key=lambda elm: elm[1][0]))), out_file, indent=2)
 
 def calc_confusin_M(labels, cur_y):
     size = labels.shape[-1]

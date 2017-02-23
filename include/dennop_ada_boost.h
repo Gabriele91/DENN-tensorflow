@@ -48,18 +48,8 @@ namespace tensorflow
             // get input bach data
             const Tensor& t_bach_features = context->input(2);
             ////////////////////////////////////////////////////////////////////////////
-            // start input w
-            const size_t start_input_weigth = 3;
-            // W
-            TensorList  W_list;
-            // pupulation inputs
-            for(int i=0; i != this->m_space_size; ++i)
-            {
-                W_list.push_back(context->input(start_input_weigth+i));
-            }
-            ////////////////////////////////////////////////////////////////////////////
             // start input population
-            const size_t start_input_population = start_input_weigth + this->m_space_size;
+            const size_t start_input_population = 3;
             // populations
             TensorListList  current_populations_list;        
             // populations inputs
@@ -111,7 +101,6 @@ namespace tensorflow
                   // Input
                   context
                 , num_gen
-                , W_list
                 // Cache
                 , new_populations_list
                 // In/Out
@@ -153,7 +142,6 @@ namespace tensorflow
         * Start differential evolution
         * @param context
         * @param num_gen, number of generation
-        * @param W_list, DE weights
         * @param new_populations_list, (input) cache memory of the last population generated 
         * @param current_populations_list, (input/output) population
         * @param current_eval_result, (input/output) evaluation of population
@@ -162,7 +150,6 @@ namespace tensorflow
         (
             OpKernelContext*  context,
             const int         num_gen,
-            const TensorList& W_list,
             TensorListList&   new_populations_list,
             TensorListList&   current_populations_list,
             Tensor&           current_eval_result
@@ -187,7 +174,6 @@ namespace tensorflow
                     this->m_de_info,
                     this->m_de_factors,
                     NP,
-                    W_list,
                     current_eval_result,
                     current_populations_list,
                     new_populations_list

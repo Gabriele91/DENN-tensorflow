@@ -83,7 +83,6 @@ namespace tensorflow
     (
         const DeInfo&                              info,
         const DeFactors<value_t>&                  factors,
-        const typename TTypes<value_t>::ConstFlat& F,
         const TensorList&                          cur_population,
         typename TTypes<value_t>::Matrix&          new_generation, 
         int                                        elm,
@@ -97,7 +96,7 @@ namespace tensorflow
                 const value_t a = cur_population[randoms_i[0]].flat<value_t>()(elm);
                 const value_t b = cur_population[randoms_i[1]].flat<value_t>()(elm);
                 const value_t c = cur_population[randoms_i[2]].flat<value_t>()(elm);
-                new_generation(elm) = factors.f_clamp( (a-b) * F(elm) + c );
+                new_generation(elm) = factors.f_clamp( (a-b) * factors.m_F + c );
             }
             break;
             case DIFF_TWO:
@@ -105,7 +104,7 @@ namespace tensorflow
                 const value_t first_diff  = cur_population[randoms_i[0]].flat<value_t>()(elm) - cur_population[randoms_i[1]].flat<value_t>()(elm);
                 const value_t second_diff = cur_population[randoms_i[2]].flat<value_t>()(elm) - cur_population[randoms_i[3]].flat<value_t>()(elm);
                 const value_t c = cur_population[randoms_i[4]].flat<value_t>()(elm);
-                new_generation(elm) = factors.f_clamp( (first_diff + second_diff) * F(elm) + c );
+                new_generation(elm) = factors.f_clamp( (first_diff + second_diff) * factors.m_F + c );
             }
             break;
         }
@@ -116,7 +115,6 @@ namespace tensorflow
     (
         const DeInfo&                              info,
         const DeFactors<value_t>&                  factors,
-        const typename TTypes<value_t>::ConstFlat& F,
         const int                                  cur_x,
         const TensorList&                          cur_population,
         typename TTypes<value_t>::Matrix&          new_generation, 
@@ -142,7 +140,7 @@ namespace tensorflow
                     //cases
                     if (do_random && (cross_event || random_index == elm))
                     {
-                        DeMethod< value_t >(info, factors, F, cur_population, new_generation, elm, randoms_i);
+                        DeMethod< value_t >(info, factors, cur_population, new_generation, elm, randoms_i);
                     }
                     else
                     {
@@ -157,7 +155,7 @@ namespace tensorflow
                     //cases
                     if (cross_event || random_index == elm)
                     {
-                        DeMethod< value_t >(info, factors, F, cur_population, new_generation, elm, randoms_i);
+                        DeMethod< value_t >(info, factors, cur_population, new_generation, elm, randoms_i);
                     }
                     else
                     {
@@ -175,7 +173,6 @@ namespace tensorflow
         const DeInfo&                              info,
         const DeFactors<value_t>&                  factors,
         const int                                  NP,
-        const typename TTypes<value_t>::ConstFlat& F,
         const TensorList&                          cur_population,
               TensorList&                          new_population,
         GeneratorRandomVector&                     v_random
@@ -208,7 +205,6 @@ namespace tensorflow
             (
                 info, 
                 factors, 
-                F, 
                 index,
                 cur_population, 
                 ref_new_population, 
@@ -235,7 +231,6 @@ namespace tensorflow
         const DeInfo&             info,
         const DeFactors<value_t>& factors,
         const int                 NP,
-        const TensorList&         F_list,
               Tensor&             cur_populations_eval,
         const TensorListList&     cur_populations_list,
               TensorListList&     new_populations_list
@@ -269,8 +264,6 @@ namespace tensorflow
         //for all populations
         for(size_t p=0; p!=cur_populations_list.size(); ++p)
         {
-            //get values
-            const typename TTypes<value_t>::ConstFlat F = F_list[p].flat<value_t>();
             //ref to population
             const TensorList& cur_population = cur_populations_list[p];
             //ref to new pupulation
@@ -281,7 +274,6 @@ namespace tensorflow
                 info,
                 factors,
                 NP,
-                F,
                 cur_population,
                 new_population,
                 v_random

@@ -48,10 +48,13 @@ public:
         // float params temp
         float
         f_CR,
+        f_F,
         f_f_min,
         f_f_max;
         // get CR
         context->GetAttr("CR", &f_CR);
+        // get F
+        context->GetAttr("F", &f_F);
         // get f min
         context->GetAttr("f_min", &f_f_min);
         // get f max
@@ -75,6 +78,7 @@ public:
         }
         // params float to value_t
         m_de_factors.m_CR     = value_t(f_CR);
+        m_de_factors.m_F      = value_t(f_F);
         m_de_factors.m_f_min  = value_t(f_f_min);
         m_de_factors.m_f_max  = value_t(f_f_max);
         //options
@@ -113,21 +117,13 @@ public:
         ////////////////////////////////////////////////////////////////////////////
         // start input
         const size_t start_input = 4;
-        // W
-        TensorList  W_list;
-        // pupulation inputs
-        for(int i=0; i != m_space_size; ++i)
-        {
-            W_list.push_back(context->input(start_input+i));
-        }
-
         ////////////////////////////////////////////////////////////////////////////
         // populations
         TensorListList  current_populations_list;
         // populations inputs
         for(int i=0; i != m_space_size; ++i)
         {
-            const Tensor& population = context->input(start_input+i+m_space_size);
+            const Tensor& population = context->input(start_input+i);
             current_populations_list.push_back(splitDim0(population));
         }
         //Test sizeof populations
@@ -165,7 +161,6 @@ public:
             // Input
               context
             , num_gen
-            , W_list
             // Cache
             , new_populations_list
             // In/Out
@@ -197,7 +192,6 @@ public:
      * Start differential evolution
      * @param context
      * @param num_gen, number of generation
-     * @param W_list, DE weights
      * @param new_populations_list, (input) cache memory of the last population generated 
      * @param current_populations_list, (input/output) population
      * @param current_eval_result, (input/output) evaluation of population
@@ -206,7 +200,6 @@ public:
     (
         OpKernelContext *context,
         const int num_gen,
-        const TensorList& W_list,
         TensorListList& new_populations_list,
         TensorListList& current_populations_list,
         Tensor& current_eval_result
@@ -226,7 +219,6 @@ public:
                 m_de_info,
                 m_de_factors,
                 NP,
-                W_list,
                 current_eval_result,
                 current_populations_list,
                 new_populations_list

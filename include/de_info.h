@@ -38,6 +38,7 @@ namespace
         value_t                     m_f_max{  1.0 };
         //update factors
         value_t                     m_CR   {  0.5 };
+        value_t                     m_F    {  1.0 };
         /**
         * Clamp DE final value
         * @param t value,

@@ -54,21 +54,12 @@ namespace tensorflow
             //super gen
             const int n_sub_gen = tot_gen / sub_gen;
             ////////////////////////////////////////////////////////////////////////////
-            // W
-            TensorList  W_list;
-            // pupulation inputs
-            for(int i=0; i != this->m_space_size; ++i)
-            {
-                W_list.push_back(context->input(start_input+i));
-            }
-            
-            ////////////////////////////////////////////////////////////////////////////
             // populations
             TensorListList  current_populations_list;
             // populations inputs
             for(int i=0; i != this->m_space_size; ++i)
             {
-                const Tensor& population = context->input(start_input+i+this->m_space_size);
+                const Tensor& population = context->input(start_input+i);
                 current_populations_list.push_back(splitDim0(population));
             }
             //Test sizeof populations
@@ -150,7 +141,6 @@ namespace tensorflow
                  // Input
                    context
                  , sub_gen
-                 , W_list
                  // Cache
                  , new_populations_list
                  // In/Out

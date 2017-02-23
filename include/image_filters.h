@@ -17,14 +17,8 @@ namespace tensorflow
         //new image
         Tensor out_image(data_type<value_t>(), inout_image.shape());
         //get ref
-        #if 0
-        //get data
-        value_t* in_matrix = (value_t*)inout_image.tensor_data().data();
-        value_t* out_matrix = (value_t*)out_image.tensor_data().data();
-        #else 
-        auto in_matrix  = inout_image.flat<value_t>();
-        auto out_matrix = out_image.flat<value_t>();
-        #endif
+        auto in_matrix  = inout_image.flat_inner_dims<value_t>();
+        auto out_matrix = out_image.flat_inner_dims<value_t>();
         //count classes
         auto class_size = inout_image.shape().dim_size(1);
         //size kernel
@@ -55,7 +49,7 @@ namespace tensorflow
                             if( x > -1 && x < width )
                             {
                                 //add
-                                sum += in_matrix(x * class_size + class_offset + y * width);
+                                sum += in_matrix((x + y * width), class_offset);
                                 //count
                                 ++counter;
                             }
@@ -63,7 +57,7 @@ namespace tensorflow
                     }
                 }
                 //save
-                out_matrix(img_x * class_size + class_offset + img_y * width) = sum / counter;
+                out_matrix((img_x  + img_y * width), class_offset) = sum / counter;
                 //reset
                 sum     = 0;
                 counter = 0;

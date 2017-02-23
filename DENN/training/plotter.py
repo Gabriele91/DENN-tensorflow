@@ -13,15 +13,15 @@ def NN_DE_mnist_loader(filename):
     return [np.array(res['W']), np.array(res['b'])]
 
 
-def NN_DE_result_loader(filename):
+def NN_DE_result_loader(filename,method = 'rand/1/bin'):
     with open(filename, "r") as input_file:
         res = json.load(input_file)
-    return res['results']['rand/1/bin']['best_of']['individual']
+    return res['results'][method]['best_of']['individual']
 
 
-def NN_to_image(test_result_file, shape, level=0, loader="DE"):
+def NN_to_image(test_result_file, shape, level=0, loader="DE",method = 'rand/1/bin'):
     if loader == "DE":
-        individual = NN_DE_result_loader(test_result_file)
+        individual = NN_DE_result_loader(test_result_file,method)
         W = np.array(individual[0 + (level * 2)])
         b = np.array(individual[1 + (level * 2)])
     elif loader == "gradient":

@@ -173,6 +173,8 @@ namespace tensorflow
                     context, 
                     this->m_de_info,
                     this->m_de_factors,
+                    i,
+                    num_gen,
                     NP,
                     current_eval_result,
                     current_populations_list,

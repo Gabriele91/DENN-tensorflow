@@ -41,17 +41,29 @@ namespace tensorflow
         //update factors
         value_t                     m_CR   {  0.5 };
         value_t                     m_F    {  1.0 };
-        //smoothing shape
-        std::vector<TensorShapeProto> m_shapes_smoothing;
+        //smoothing factors
+        int                         m_smoothing_n_pass{ 1 }; 
+        std::vector<TensorShape>    m_shapes_smoothing;
+        //add shapes list 
+        void SetShapesSmoothing(const std::vector<TensorShapeProto>& list)
+        {
+            //clear 
+            m_shapes_smoothing.clear();
+            //for all
+            for(TensorShapeProto pshape : list)
+            {
+                m_shapes_smoothing.emplace_back(pshape);
+            }
+        }
         //can execute smooth?
-        bool can_smoothing(int layer) const
+        bool CanSmoothing(int layer) const
         {
             return layer < m_shapes_smoothing.size();
         }
         //get shape 
-        TensorShape get_shape(int layer) const
+        const TensorShape& GetShape(int layer) const
         {
-            return TensorShape(m_shapes_smoothing[layer]);
+            return m_shapes_smoothing[layer];
         }
         /**
         * Clamp DE final value

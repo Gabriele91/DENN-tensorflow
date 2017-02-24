@@ -51,6 +51,10 @@ public:
         f_F,
         f_f_min,
         f_f_max;
+        // int params temp
+        int smoothing_n_pass;
+        //shape param temp
+        std::vector<TensorShapeProto> shapes_smoothing;
         // get CR
         context->GetAttr("CR", &f_CR);
         // get F
@@ -59,9 +63,9 @@ public:
         context->GetAttr("f_min", &f_f_min);
         // get f max
         context->GetAttr("f_max", &f_f_max);
-        // get vector of shape 
-        std::vector<TensorShapeProto> shapes_smoothing;
-        // get smoothing
+        // get smoothing pass
+        context->GetAttr("smoothing_n_pass", &smoothing_n_pass);
+        // get smoothing shapes
         context->GetAttr("smoothing", &shapes_smoothing);
         // get DE
         std::string de_type;
@@ -86,7 +90,8 @@ public:
         m_de_factors.m_f_min  = value_t(f_f_min);
         m_de_factors.m_f_max  = value_t(f_f_max);
         //smoothing
-        m_de_factors.m_shapes_smoothing = shapes_smoothing;
+        m_de_factors.m_smoothing_n_pass = smoothing_n_pass;
+        m_de_factors.SetShapesSmoothing( shapes_smoothing );
         //options
         SessionOptions options;
         //session
@@ -224,6 +229,8 @@ public:
                 context, 
                 m_de_info,
                 m_de_factors,
+                i,
+                num_gen,
                 NP,
                 current_eval_result,
                 current_populations_list,

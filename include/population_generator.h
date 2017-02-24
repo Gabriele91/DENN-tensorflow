@@ -231,6 +231,8 @@ namespace tensorflow
         OpKernelContext*          context,
         const DeInfo&             info,
         const DeFactors<value_t>& factors,
+        const int                 generation_i,
+        const int                 generations,
         const int                 NP,
               Tensor&             cur_populations_eval,
         const TensorListList&     cur_populations_list,
@@ -279,17 +281,39 @@ namespace tensorflow
                 new_population,
                 v_random
             );
-            //smoothing if enable 
-            if(factors.can_smoothing(l_type))
+        }
+        //enable smooting?
+        if NOT( factors.m_smoothing_n_pass ) return;
+        //base case
+        bool do_smoothing = factors.m_smoothing_n_pass == 1;
+        //if not do smoothing in base case
+        if NOT(do_smoothing)
+        {
+            //compute when use smoothing
+            int basket_size   = generations / factors.m_smoothing_n_pass;
+            int mid_basket    = std::ceil(float(basket_size-1) / 2.0f);
+            bool do_smoothing = !basket_size || (generation_i % basket_size) == mid_basket;
+        }
+        //smoothing
+        if(cur_populations_list.size() && do_smoothing)
+        {
+            //types
+            for(size_t l_type=0; l_type!=cur_populations_list.size(); ++l_type)
             {
-            #ifdef ENABLE_PARALLEL_NEW_GEN
-                #pragma omp parallel for
-                for (int index = 0; index < NP; ++index)
-            #else 
-                for (int index = 0; index < NP; ++index)
-            #endif
+                //ref to new pupulation
+                TensorList& new_population = new_populations_list[l_type];
+                //smoothing if enable 
+                if(factors.CanSmoothing(l_type))
                 {
-                    ApplayFilterAVG(new_population[index],factors.get_shape(l_type));
+                #ifdef ENABLE_PARALLEL_NEW_GEN
+                    #pragma omp parallel for
+                    for (int index = 0; index < NP; ++index)
+                #else 
+                    for (int index = 0; index < NP; ++index)
+                #endif
+                    {
+                        ApplayFilterAVG(new_population[index],factors.GetShape(l_type));
+                    }
                 }
             }
         }

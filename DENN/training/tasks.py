@@ -248,6 +248,7 @@ class DETask(object):
         self.num_intra_threads = cur_task.get("NUM_INTRA_THREADS", 4)
         self.num_inter_threads = cur_task.get("NUM_INTER_THREADS", 4)
         self.smoothing = cur_task.get("smoothing", [])
+        self.smoothing_n_pass = cur_task.get("smoothing_n_pass", 0)
 
         ##
         # AdaBoost
@@ -305,6 +306,7 @@ class DETask(object):
 + AdaBoost -> {}
 + Training -> {}
 + Smooth -> {}
++ Smooth n pass -> {}
 + Clamp -> {}
 + levels:\n{}
 +++++""".format(
@@ -323,6 +325,7 @@ class DETask(object):
             self.ada_boost.to_dict() if self.ada_boost is not None else None,
             self.training,
             self.smoothing,
+            self.smoothing_n_pass,
             self.clamp,
             "\n".join([str(level) for level in self.levels])
         )
@@ -653,6 +656,7 @@ class TaskEncoder(json.JSONEncoder):
                 ('training', obj.training),
                 ('clamp', obj.clamp.to_dict()),
                 ('smoothing', obj.smoothing),
+                ('smoothing_n_pass', obj.smoothing_n_pass),
                 ('levels', [level.to_dict() for level in obj.levels])
             ])
 

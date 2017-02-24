@@ -284,16 +284,10 @@ namespace tensorflow
         }
         //enable smooting?
         if NOT( factors.m_smoothing_n_pass ) return;
-        //base case
-        bool do_smoothing = factors.m_smoothing_n_pass == 1;
-        //if not do smoothing in base case
-        if NOT(do_smoothing)
-        {
-            //compute when use smoothing
-            int basket_size   = generations / factors.m_smoothing_n_pass;
-            int mid_basket    = std::ceil(float(basket_size-1) / 2.0f);
-            bool do_smoothing = !basket_size || (generation_i % basket_size) == mid_basket;
-        }
+        //compute when use smoothing
+        int basket_size   = generations / factors.m_smoothing_n_pass;
+        int mid_basket    = std::ceil(float(basket_size-1) / 2.0f);
+        bool do_smoothing = !basket_size || (generation_i % basket_size) == mid_basket;
         //smoothing
         if(cur_populations_list.size() && do_smoothing)
         {

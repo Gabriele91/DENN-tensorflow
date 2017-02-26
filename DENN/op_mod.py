@@ -111,6 +111,9 @@ class Operation(object):
             self._module = tf.load_op_library(path.join(
                 path.dirname(__file__), 'DENNOp_training.so')
             )
+            
+            exists_reset_every = self.job.reset_every != False
+            
             self.denn_op = self._module.denn_training(
                 # input params
                 # [num_gen, step_gen, eval_individual]
@@ -134,7 +137,11 @@ class Operation(object):
                 f_min=self.job.clamp.min,
                 f_max=self.job.clamp.max,
                 smoothing=self.job.smoothing,
-                smoothing_n_pass=self.job.smoothing_n_pass
+                smoothing_n_pass=self.job.smoothing_n_pass,
+                reset_type='execute' if exists_reset_every else 'none',
+                reset_fector=self.job.reset_every['epsilon'] if exists_reset_every else 100.0, 
+                reset_counter=self.job.reset_every['counter'] if exists_reset_every else 1,
+                reset_rand_pop=[tfop.name for tfop in self.net.rand_pop]
             )
         else:
             self._module = tf.load_op_library(path.join(

@@ -7,6 +7,85 @@
 namespace tensorflow
 {
     template< class value_t = double > 
+    class DEReset 
+    {
+        public:
+
+        DEReset()
+        : m_enable(false)
+        , m_factor(100.0)
+        , m_counter(0)
+        , m_current_counter(0)
+        , m_value((value_t)0)
+        {
+            
+        }
+
+        DEReset
+        (
+            bool    enable,
+            value_t factor,
+            int     counter,
+            const NameList& rand_functions
+        )
+        : m_enable(enable)
+        , m_factor(factor)
+        , m_counter(counter)
+        , m_rand_functions(rand_functions)
+        , m_current_counter(0)
+        , m_value((value_t)0)
+        {
+        }
+
+        bool IsEnable() const
+        { 
+            return m_enable;
+        }
+
+        bool CanExecute(value_t value)
+        {
+            if(std::abs(m_value - value) < m_factor)
+            {
+                //dec counter
+                ++m_current_counter;
+                //test 
+                if(m_counter <= m_current_counter)
+                {
+                    //reset 
+                    m_current_counter = 0;
+                    m_value = value;
+                    //return true
+                    return true;
+                }
+            }
+            else 
+            {
+                //reset counter
+                m_current_counter = 0;
+            }
+            //update value 
+            m_value = value;
+            //not reset
+            return false;
+        }
+
+        const NameList& GetRandFunctions() const
+        {
+            return m_rand_functions;
+        }
+
+    protected:
+        //const values
+        bool     m_enable;
+        value_t  m_factor;
+        int      m_counter;   
+        NameList m_rand_functions;         
+        //runtime
+        int     m_current_counter;
+        value_t m_value;
+    };
+
+    template< class value_t = double > 
     class DENNOpTraining : public DENNOp< value_t >
     {
 
@@ -23,6 +102,23 @@ namespace tensorflow
             OP_REQUIRES_OK(context, context->GetAttr("f_name_test", &m_name_test));
             // Get dataset path
             OP_REQUIRES_OK(context, context->GetAttr("dataset", &m_dataset_path));
+            // Get reset
+            std::string reset_type{"none"};
+            float       reset_factor{100.0};
+            int         reset_counter{0};
+            NameList    reset_rand_pop;
+            OP_REQUIRES_OK(context, context->GetAttr("reset_type", &reset_type));
+            OP_REQUIRES_OK(context, context->GetAttr("reset_fector", &reset_factor));
+            OP_REQUIRES_OK(context, context->GetAttr("reset_counter", &reset_counter));
+            OP_REQUIRES_OK(context, context->GetAttr("reset_rand_pop", &reset_rand_pop));
+            //init 
+            new (&m_reset) DEReset<value_t>
+            (
+                  reset_type != "none"
+                , (value_t)reset_factor
+                , reset_counter
+                , reset_rand_pop
+            );
             // Try to openfile
             if NOT(m_dataset.open(m_dataset_path))
             {
@@ -98,6 +194,7 @@ namespace tensorflow
             {
                 //attrs
                 bool m_init{ false };
+                int m_id {-1};
                 value_t m_eval{ 0 };
                 TensorList m_individual;
                 //add 
@@ -116,6 +213,7 @@ namespace tensorflow
                         //set init to true 
                         m_init = true;
                         m_eval = eval;
+                        m_id   = id;
                     }
                 }
             }
@@ -157,6 +255,46 @@ namespace tensorflow
                     value_t eval = ExecuteEvaluateValidation(context, individual_id, current_populations_list);
                     //add 
                     best.test_best(eval, individual_id, current_populations_list);
+                }
+                
+                //reset
+                if(m_reset.IsEnable() && m_reset.CanExecute(best.m_eval))
+                {
+                    //todo
+                    current_populations_list.clear();
+                    //compute random 
+                    {
+                        //output
+                        TensorList output_pop;
+                        //execute
+                        auto
+                        status= this->m_session->Run
+                        (   //input
+                            TensorInputs{},
+                            //function
+                            m_reset.GetRandFunctions(),
+                            //one
+                            NameList{ },
+                            //output
+                            &output_pop
+                        );
+                        //output error
+                        if NOT(status.ok())
+                        {
+                            context->CtxFailure({tensorflow::error::Code::ABORTED,"Run execute random: "+status.ToString()});
+                            return /* fail */;
+                        }
+                        //return population
+                        for(int i=0; i!=this->m_space_size ;++i)
+                        {
+                            current_populations_list.push_back(splitDim0(output_pop[i]));
+                        }
+                    }
+                    //push best
+                    for(int layer_id=0; layer_id!=current_populations_list.size(); ++layer_id)
+                    {
+                        current_populations_list[layer_id][best.m_id] = best.m_individual[layer_id];
+                    }
                 }
 
                 SOCKET_DEBUG(
@@ -352,6 +490,8 @@ namespace tensorflow
         std::string m_name_validation;
         //test function
         std::string m_name_test;
+        //reset 
+        DEReset<value_t> m_reset;
 
     };
 };

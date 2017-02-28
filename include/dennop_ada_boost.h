@@ -146,7 +146,7 @@ namespace tensorflow
         * @param current_populations_list, (input/output) population
         * @param current_eval_result, (input/output) evaluation of population
         */
-        virtual void RunDe
+        virtual bool RunDe
         (
             OpKernelContext*  context,
             const int         num_gen,
@@ -233,7 +233,42 @@ namespace tensorflow
                     value_t  op1 = m_alpha * (value_t(raw_EC_counter(i)) / NP);
                     raw_C(i) = op0 + op1;
                 }
+
+                #if 1
+                SOCKET_DEBUG(
+                    //m_debug.write(i);
+                    this->m_debug.write(1);
+                    //process message
+                    while(this->m_debug.get_n_recv_mgs())
+                    {
+                        MSG_DEBUG("+++ Read message")
+                        /*
+                        MSG_INT,
+                        MSG_FLOAT,
+                        MSG_DOUBLE,
+                        MSG_STRING,
+                        MSG_CLOSE_CONNECTION
+                        */
+                        //get message
+                        debug::socket_messages_server::message_decoder msg( this->m_debug.pop_recv_msg() );
+                        //execute task by type
+                        switch(msg.get_type())
+                        {
+                            //exit case
+                            case debug::socket_messages_server::MSG_CLOSE_CONNECTION:
+                                //exit
+                                return false;
+                            break;
+                            //not used cases
+                            default:
+                            break;
+                        }
+                    }
+                )
+                #endif
             }
+            //continue
+            return true;
         }
  
         /**

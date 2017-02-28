@@ -118,20 +118,22 @@ namespace tensorflow
             //Get np 
             const int NP = current_populations_list[0].size();
             ////////////////////////////////////////////////////////////////////////////
+            bool de_loop = true;
+            ////////////////////////////////////////////////////////////////////////////
             // Execute DE
             for
             (
                 //gen counter
                 size_t i_sub_gen = 0;          
                 //exit case
-                i_sub_gen != n_sub_gen;    
+                i_sub_gen != n_sub_gen && de_loop;    
                 //next    
                 ++i_sub_gen, 
                 LoadNextBach(context) 
             )
             {
                 //execute
-                DENNOp_t::RunDe
+                de_loop = DENNOp_t::RunDe
                 (
                  // Input
                    context
@@ -171,38 +173,6 @@ namespace tensorflow
                 
                 //Execute reset 
                 CheckReset(context,best, current_populations_list);
-
-
-                SOCKET_DEBUG(
-                    //process message
-                    while(this->m_debug.get_n_recv_mgs())
-                    {
-                        MSG_DEBUG("+++ Read message")
-                        /*
-                        msg types
-                        {
-                            MSG_INT,
-                            MSG_FLOAT,
-                            MSG_DOUBLE,
-                            MSG_STRING,
-                            MSG_CLOSE_CONNECTION
-                        };
-                        */
-                        //get message
-                        debug::socket_messages_server::message_decoder msg( this->m_debug.pop_recv_msg() );
-                        //execute task by type
-                        switch(msg.get_type())
-                        {
-                            //exit case
-                            case debug::socket_messages_server::MSG_CLOSE_CONNECTION:
-                                i_sub_gen = n_sub_gen-1;
-                            break;
-                            //not used cases
-                            default:
-                            break;
-                        }
-                    }
-                )
             }
             ////////////////////////////////////////////////////////////////////////////
             int output_id=0;

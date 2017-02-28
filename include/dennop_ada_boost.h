@@ -249,8 +249,10 @@ namespace tensorflow
                         MSG_STRING,
                         MSG_CLOSE_CONNECTION
                         */
-                        //get message
-                        debug::socket_messages_server::message_decoder msg( this->m_debug.pop_recv_msg() );
+                        //get message 
+                        auto raw_msg = this->m_debug.pop_recv_msg();
+                        //parser message
+                        debug::socket_messages_server::message_decoder msg( raw_msg );
                         //execute task by type
                         switch(msg.get_type())
                         {

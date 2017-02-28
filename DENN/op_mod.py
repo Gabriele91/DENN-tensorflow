@@ -345,7 +345,7 @@ class Operation(object):
 
                 ##
                 # Get C, EC, Y of last iteration
-                ada_C, ada_EC, ada_pop_y, first_time = self.    job.get_adaboost_cache(
+                ada_C, ada_EC, ada_pop_y, first_time = self.job.get_adaboost_cache(
                     batch_id,
                     cur_batch
                 )

@@ -3,88 +3,10 @@
 #include "config.h"
 #include "dennop.h"
 #include "dataset_loader.h"
+#include "training_util.h"
 
 namespace tensorflow
 {
-    template< class value_t = double > 
-    class DEReset 
-    {
-        public:
-
-        DEReset()
-        : m_enable(false)
-        , m_factor(100.0)
-        , m_counter(0)
-        , m_current_counter(0)
-        , m_value((value_t)0)
-        {
-            
-        }
-
-        DEReset
-        (
-            bool    enable,
-            value_t factor,
-            int     counter,
-            const NameList& rand_functions
-        )
-        : m_enable(enable)
-        , m_factor(factor)
-        , m_counter(counter)
-        , m_rand_functions(rand_functions)
-        , m_current_counter(0)
-        , m_value((value_t)0)
-        {
-        }
-
-        bool IsEnable() const
-        { 
-            return m_enable;
-        }
-
-        bool CanExecute(value_t value)
-        {
-            if(std::abs(m_value - value) < m_factor)
-            {
-                //dec counter
-                ++m_current_counter;
-                //test 
-                if(m_counter <= m_current_counter)
-                {
-                    //reset 
-                    m_current_counter = 0;
-                    m_value = value;
-                    //return true
-                    return true;
-                }
-            }
-            else 
-            {
-                //reset counter
-                m_current_counter = 0;
-            }
-            //update value 
-            m_value = value;
-            //not reset
-            return false;
-        }
-
-        const NameList& GetRandFunctions() const
-        {
-            return m_rand_functions;
-        }
-
-    protected:
-        //const values
-        bool     m_enable;
-        value_t  m_factor;
-        int      m_counter;   
-        NameList m_rand_functions;         
-        //runtime
-        int     m_current_counter;
-        value_t m_value;
-    };
-
     template< class value_t = double > 
     class DENNOpTraining : public DENNOp< value_t >
     {
@@ -190,34 +112,9 @@ namespace tensorflow
              , current_eval_result
             );
             ////////////////////////////////////////////////////////////////////////////
-            struct CacheBest
-            {
-                //attrs
-                bool m_init{ false };
-                int m_id {-1};
-                value_t m_eval{ 0 };
-                TensorList m_individual;
-                //add 
-                void test_best(value_t eval,int id, const TensorListList& pop)
-                {
-                    //case to copy the individual
-                    if(!m_init || eval > m_eval)
-                    {
-                        //pop all
-                        m_individual.clear();
-                        //copy 
-                        for(const TensorList& layer : pop)
-                        {
-                            m_individual.push_back(layer[id]);
-                        }
-                        //set init to true 
-                        m_init = true;
-                        m_eval = eval;
-                        m_id   = id;
-                    }
-                }
-            }
-            best;
+            CacheBest< value_t > best;
+            std::vector< value_t > list_eval_of_best;
+            std::vector< value_t > list_eval_of_best_of_best;
             //Get np 
             const int NP = current_populations_list[0].size();
             ////////////////////////////////////////////////////////////////////////////
@@ -257,45 +154,24 @@ namespace tensorflow
                     best.test_best(eval, individual_id, current_populations_list);
                 }
                 
-                //reset
-                if(m_reset.IsEnable() && m_reset.CanExecute(best.m_eval))
-                {
-                    //todo
-                    current_populations_list.clear();
-                    //compute random 
-                    {
-                        //output
-                        TensorList output_pop;
-                        //execute
-                        auto
-                        status= this->m_session->Run
-                        (   //input
-                            TensorInputs{},
-                            //function
-                            m_reset.GetRandFunctions(),
-                            //one
-                            NameList{ },
-                            //output
-                            &output_pop
-                        );
-                        //output error
-                        if NOT(status.ok())
-                        {
-                            context->CtxFailure({tensorflow::error::Code::ABORTED,"Run execute random: "+status.ToString()});
-                            return /* fail */;
-                        }
-                        //return population
-                        for(int i=0; i!=this->m_space_size ;++i)
-                        {
-                            current_populations_list.push_back(splitDim0(output_pop[i]));
-                        }
-                    }
-                    //push best
-                    for(int layer_id=0; layer_id!=current_populations_list.size(); ++layer_id)
-                    {
-                        current_populations_list[layer_id][best.m_id] = best.m_individual[layer_id];
-                    }
-                }
+                //find best
+                int cur_best_id;
+                value_t cur_best_eval;
+                FindBest(context, current_populations_list,cur_best_id,cur_best_eval);
+                
+                //test 
+                value_t cur_test_eval = ExecuteEvaluateTest(context, cur_best_id, current_populations_list);
+
+                //update best 
+                best.test_best(cur_best_eval,cur_best_id,current_populations_list);
+
+                //add into vector
+                list_eval_of_best.push_back(cur_test_eval);
+                list_eval_of_best_of_best.push_back(best.m_eval);
+                
+                //Execute reset 
+                CheckReset(context,best, current_populations_list);
+
 
                 SOCKET_DEBUG(
                     //process message
@@ -329,6 +205,12 @@ namespace tensorflow
                 )
             }
             ////////////////////////////////////////////////////////////////////////////
+            int output_id=0;
+            ////////////////////////////////////////////////////////////////////////////
+            // Output list_eval_of_best and list_eval_of_best_of_best
+            OutputVector(context,output_id++,list_eval_of_best);
+            OutputVector(context,output_id++,list_eval_of_best_of_best);
+            ////////////////////////////////////////////////////////////////////////////
             // Output best pop
             for(int i=0; i != this->m_space_size; ++i)
             {
@@ -337,9 +219,18 @@ namespace tensorflow
                 //Get output tensor
                 const Tensor& best_population = best.m_individual[i];
                 //Alloc
-                OP_REQUIRES_OK(context, context->allocate_output(i, best_population.shape(), &new_generation_tensor));
+                OP_REQUIRES_OK(context, context->allocate_output(output_id++, best_population.shape(), &new_generation_tensor));
                 //copy tensor
                 (*new_generation_tensor) = best_population;
+            }
+            ////////////////////////////////////////////////////////////////////////////
+            // Output populations
+            for(int i=0; i != this->m_space_size; ++i)
+            {
+                Tensor* new_generation_tensor = nullptr;
+                Tensor current_pop = concatDim0(current_populations_list[i]);
+                OP_REQUIRES_OK(context, context->allocate_output(output_id++, current_pop.shape(), &new_generation_tensor));
+                (*new_generation_tensor) = current_pop;
             }
 
         }
@@ -371,38 +262,113 @@ namespace tensorflow
             return true;
         }
 
+        
         /**
-         * Find best population in populations
-         * @param Context
-         * @param current_populations_list, list of populations
-         * @return population index
-         */
-        int FindBest
-        (
-            OpKernelContext *context,
-            const TensorListList& current_populations_list
-        ) const
+        * Execute a reset if necessary
+        * @param Context
+        * @param Cache Best
+        * @param populations, list of populations
+        */
+        void CheckReset(OpKernelContext *context,
+                        const CacheBest<value_t>& best,
+                        TensorListList& populations)
         {
-            //Get np 
-            const int NP = current_populations_list[0].size();
-            //Change input 
-            SetValidationDataInCacheInputs();
-            //First eval
-            value_t val_best= ExecuteEvaluateValidation(context, 0, current_populations_list);
-            int     id_best = 0;
-            //search best
-            for(int index = 1; index < NP ;++index)
+            //reset
+            if(m_reset.IsEnable() && m_reset.CanExecute(best.m_eval))
             {
-                //eval
-                value_t eval_cur = ExecuteEvaluateValidation(context, index, current_populations_list);
-                //best? (the accuracy is increased)
-                if(val_best < eval_cur)
+                //todo
+                populations.clear();
+                //compute random 
                 {
-                    val_best= eval_cur;
-                    id_best = index;
+                    //output
+                    TensorList output_pop;
+                    //execute
+                    auto
+                    status= this->m_session->Run
+                    (   //input
+                        TensorInputs{},
+                        //function
+                        m_reset.GetRandFunctions(),
+                        //one
+                        NameList{ },
+                        //output
+                        &output_pop
+                    );
+                    //output error
+                    if NOT(status.ok())
+                    {
+                        context->CtxFailure({tensorflow::error::Code::ABORTED,"Run execute random: "+status.ToString()});
+                        return /* fail */;
+                    }
+                    //return population
+                    for(int i=0; i!=this->m_space_size ;++i)
+                    {
+                        populations.push_back(splitDim0(output_pop[i]));
+                    }
+                }
+                //push best
+                for(int layer_id=0; layer_id!=populations.size(); ++layer_id)
+                {
+                    populations[layer_id][best.m_id] = best.m_individual[layer_id];
                 }
             }
-            return id_best;
+        }
+
+        /**
+        * copy vector to tensor as output
+        */
+        void OutputVector(OpKernelContext *context, int output, std::vector < value_t >& list_values)
+        {
+            //Output ptr
+            Tensor* new_generation_tensor = nullptr;
+            //alloc
+            OP_REQUIRES_OK(context, context->allocate_output(output, TensorShape({int64(list_values.size())}), &new_generation_tensor));
+            //copy
+            auto output_ptr = new_generation_tensor->flat<value_t>();
+            //copy all
+            for(int i = 0; i!= (int)list_values.size(); ++i)
+            {
+                output_ptr(i) = list_values[i];
+            }
+        }
+
+
+        /**
+         * Find best individual in populations
+         * @param Context
+         * @param populations, list of populations
+         * @param output id 
+         * @param output eval
+         * @return population index
+         */
+        void FindBest(OpKernelContext *context,
+                      const TensorListList& populations,
+                      int&    best_id,
+                      value_t& best_eval
+                      )
+        {          
+            //Get np 
+            const int NP = populations[0].size();
+            //Change input 
+            SetValidationDataInCacheInputs();
+            //set id best
+            best_id = 0;  
+            //execute evaluation
+            best_eval = ExecuteEvaluateValidation(context, best_id, populations);
+            //Execute validation test to all pop
+            for(int individual_id = 1; individual_id < NP; ++individual_id)
+            {         
+                //Change input 
+                SetValidationDataInCacheInputs();
+                //execute evaluation
+                value_t eval = ExecuteEvaluateValidation(context, individual_id, populations);
+                //is the best?
+                if(best_eval < eval)
+                {
+                    best_id   = individual_id;
+                    best_eval = eval;
+                }
+            }
         }
 
         /**

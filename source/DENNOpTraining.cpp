@@ -42,7 +42,10 @@ REGISTER_OP("DennTraining")
 .Input("info: int32") //[ NUM_GEN, NUM_GEN_STEP, CALC_FIRST_EVAL ]
 .Input("population_first_eval: T")
 .Input("populations_list: space * T")
-.Output("best_population: space * T")
+.Output("final_eval_of_best: T")
+.Output("final_eval_of_best_of_best: T")
+.Output("final_best: space * T")
+.Output("final_populations: space * T")
 ;
 
 REGISTER_KERNEL_BUILDER(Name("DennTraining").Device(DEVICE_CPU).TypeConstraint<float>("T"), DENNOpTraining<float>);

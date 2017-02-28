@@ -32,6 +32,8 @@ class OpListener(object):
         print("++ DebugListener: stop to listen and exit", end='\r')
         # stop process
         self.db_listener.join(2.)
+        if self.db_listener.pbar is not None:
+            self.db_listener.pbar.close()
         # remove
         #del self.db_listener
         #self.db_listener = None
@@ -49,6 +51,7 @@ class DebugListener(Process):
         self._connected = False
         self._exit = Event()
         self._tot_steps = tot_steps
+        self.pbar = None
 
         self.host = host
         self.port = port
@@ -118,9 +121,9 @@ class DebugListener(Process):
         # print("++ DebugListener: start main loop")
         # print(CURSOR_UP_ONE + ERASE_LINE, end='\r')
 
-        pbar = None
+        
         if self._tot_steps is not None:
-            pbar = tqdm(total=self._tot_steps)
+            self.pbar = tqdm(total=self._tot_steps)
         
         while not self._exit.is_set() and self._connected and not self._int_evt.is_set():
             try:
@@ -145,7 +148,7 @@ class DebugListener(Process):
                                 )
                             else:
                                 if type(msg) == int:
-                                    pbar.update(msg)
+                                    self.pbar.update(msg)
 
             except KeyboardInterrupt:
                 print("\r+ INTERRUPTED!!!")
@@ -153,8 +156,8 @@ class DebugListener(Process):
                     print(
                         "+ Close message status: {}".format("OK!" if self.send_close_message() else "ERROR!"))
         
-        if pbar is not None:
-                pbar.close()
+        if self.pbar is not None:
+            self.pbar.close()
         # else:
         #     print("\r+ INTERRUPTED!!!")
         #     if self.trap:

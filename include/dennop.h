@@ -285,9 +285,9 @@ public:
                 }
             )
             #endif
-            //continue
-            return true;
         }
+        //continue
+        return true;
     }
  
     /**

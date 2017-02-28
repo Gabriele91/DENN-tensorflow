@@ -225,30 +225,29 @@ def main():
                                                                      time() - time_start_dataset))
         print("+ Save results for {}".format(job.name))
 
-        if not job.training:
-            description = "NP: {}  F: {}  CR: {}".format(
-                job.NP,
-                job.F,
-                job.CR
-            )
+        description = "NP: {}  F: {}  CR: {}".format(
+            job.NP,
+            job.F,
+            job.CR
+        )
 
-            job.time = time() - time_start_test
+        job.time = time() - time_start_test
 
-            write_results_time = datetime.now(timezone('Europe/Rome'))
+        write_results_time = datetime.now(timezone('Europe/Rome'))
 
-            DENN.training.export_results(test_results, int(
-                job.GEN_STEP / job.GEN_SAMPLES),
-                job.name, out_options,
-                folderByTime=write_results_time
-            )
+        DENN.training.export_results(test_results, int(
+            job.GEN_STEP / job.GEN_SAMPLES),
+            job.name, out_options,
+            folderByTime=write_results_time
+        )
 
-            DENN.training.expand_results(
-                test_results, int(job.GEN_STEP / job.GEN_SAMPLES), job.de_types)
+        DENN.training.expand_results(
+            test_results, int(job.GEN_STEP / job.GEN_SAMPLES), job.de_types)
 
-            DENN.training.write_all_results(
-                job.name, test_results, description, out_options,
-                folderByTime=write_results_time
-            )
+        DENN.training.write_all_results(
+            job.name, test_results, description, out_options,
+            folderByTime=write_results_time
+        )
 
         tf.reset_default_graph()
 

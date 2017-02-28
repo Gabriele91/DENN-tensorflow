@@ -111,9 +111,9 @@ class Operation(object):
             self._module = tf.load_op_library(path.join(
                 path.dirname(__file__), 'DENNOp_training.so')
             )
-            
+
             exists_reset_every = self.job.reset_every != False
-            
+
             self.denn_op = self._module.denn_training(
                 # input params
                 # [num_gen, step_gen, eval_individual]
@@ -139,8 +139,10 @@ class Operation(object):
                 smoothing=self.job.smoothing,
                 smoothing_n_pass=self.job.smoothing_n_pass,
                 reset_type='execute' if exists_reset_every else 'none',
-                reset_fector=self.job.reset_every['epsilon'] if exists_reset_every else 100.0, 
-                reset_counter=self.job.reset_every['counter'] if exists_reset_every else 1,
+                reset_fector=self.job.reset_every[
+                    'epsilon'] if exists_reset_every else 100.0,
+                reset_counter=self.job.reset_every[
+                    'counter'] if exists_reset_every else 1,
                 reset_rand_pop=[tfop.name for tfop in self.net.rand_pop]
             )
         else:
@@ -550,13 +552,15 @@ class Operation(object):
             # time
             time_start_gen = time()
             # session run
-            current_result = sess.run(self.denn_op, feed_dict=dict(
+            op_result = sess.run(self.denn_op, feed_dict=dict(
                 [
                     (pop_ref, cur_pop[num])
                     for num, pop_ref in enumerate(self.net.populations)
                 ]
             ))
 
+            print(op_result.final_eval_of_best_of_best)
+            # print(dir(op_result))
             run_time = time() - time_start_gen
             print("++ Op time {}".format(run_time))
 
@@ -565,7 +569,7 @@ class Operation(object):
             # test result
             cur_accuracy = sess.run(self.net.accuracy, feed_dict=dict(
                 [
-                    (target, current_result[num])
+                    (target, op_result.final_best[num])
                     for num, target in enumerate(self.net.targets)
                 ]
                 +
@@ -577,9 +581,19 @@ class Operation(object):
             test_time = time() - time_test
             print(
                 "++ Test {}, result {}".format(test_time, cur_accuracy))
+            
+            ##
+            # Extract population values
+            test_results[self.de_type].values = op_result.final_eval_of_best
+            test_results[self.de_type].population = op_result.final_populations
+            ##
+            # Extract best values
+            test_results[self.de_type].best_of['accuracy'] = op_result.final_eval_of_best_of_best
+            test_results[self.de_type].best_of['individual'] = op_result.final_best
+            self.job.best['accuracy'] = op_result.final_eval_of_best_of_best
+            self.job.best['individual'] = op_result.final_best
 
-            test_results[self.de_type].best_of['individual'] = current_result
-            result_y = self.__eval_individual(sess, current_result)
+            result_y = self.__eval_individual(sess, op_result.final_best)
 
             self.job.confusionM[self.de_type] = calc_confusin_M(
                 self.dataset.test_labels, result_y)
@@ -593,14 +607,7 @@ class Operation(object):
 
             self.job.times[self.de_type] = run_time + test_time
             self.job.accuracy[self.de_type] = cur_accuracy
-            self.job.best[self.de_type] = current_result
-
-            ##
-            # Save for any DE (Safe)
-            out_file = "{}.json".format(self.job.name)
-            self.job.time = time() - start_job
-            with open(path.join(OUT_FOLDER, out_file), "w") as out_file:
-                out_file.write(task_dumps(self.job))
+            self.job.best[self.de_type] = op_result
 
     def standard_run(self, sess, prev_NN, test_results, options={}):
         """Run for standard jobs."""

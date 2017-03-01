@@ -328,18 +328,6 @@ public:
         {
             context->CtxFailure({tensorflow::error::Code::ABORTED,"Run evaluate: error to set inputs"});
         }
-        #if 0
-        //values
-        for (auto t : m_inputs_tensor_cache)
-        {
-            std::cout 
-            << "Input[" 
-            << t.first 
-            << "] = NDIM "
-            << t.second.shape().dims()
-            << std::endl;
-        }
-        #endif
         //execute
         auto
         status= m_session->Run(//input

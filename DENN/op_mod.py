@@ -51,7 +51,7 @@ class Operation(object):
         job = args[1]
         if job.ada_boost is not None and job.training:
             cls.run = cls.training_run
-        if job.ada_boost is not None:
+        elif job.ada_boost is not None:
             cls.run = cls.adaboost_run
         elif job.training:
             cls.run = cls.training_run
@@ -74,7 +74,7 @@ class Operation(object):
         self.net = net
         self.de_type = de_type
         self._module = None
-
+        
         if job.ada_boost is not None and job.training:
             self._module = tf.load_op_library(path.join(
                 path.dirname(__file__), 'DENNOp_ada_training.so')
@@ -82,26 +82,31 @@ class Operation(object):
             
             exists_reset_every = self.job.reset_every != False
 
-            self.denn_op = self._module.denn_training(
+            self.denn_op = self._module.denn_ada_training(
                 # input params
-                # [num_gen, step_gen, eval_individual]
-                [self.job.TOT_GEN, self.job.GEN_STEP, False],
-                np.array([], dtype=np.float64 if self.job.TYPE ==
-                         "double" else np.float32),  # FIRST EVAL
-                self.net.populations,  # POPULATIONS
+                # [num_gen, step_gen ]
+                [self.job.TOT_GEN, self.job.GEN_STEP],
+                # POPULATIONS
+                self.net.populations, 
                 # attributes
                 graph=get_graph_proto(
                     self.net.graph.as_graph_def()),
                 dataset=self.job.dataset_file,
+                #NET
                 f_name_execute_net=self.net.nn_exec.name,
                 f_inputs=[elm.name for elm in self.net.targets],
                 f_input_labels=self.net.label_placeholder.name,
                 f_input_features=self.net.input_placeholder.name,
                 f_input_correct_predition=self.net.y_placeholder.name,
                 f_correct_predition=self.net.ada_label_diff.name,
+                #CROSS
                 f_cross_entropy=self.net.cross_entropy.name,
                 f_input_cross_entropy_y=self.net.y_placeholder.name,
                 f_input_cross_entropy_c=self.net.ada_C_placeholder.name,
+                #VALIDATION
+                f_name_validation=self.net.accuracy.name,
+                f_name_test=self.net.accuracy.name,
+                #ADA
                 ada_boost_alpha=self.job.ada_boost.alpha,
                 ada_boost_c=self.job.ada_boost.C,
                 F=self.job.F,
@@ -165,19 +170,21 @@ class Operation(object):
                 # input params
                 # [num_gen, step_gen, eval_individual]
                 [self.job.TOT_GEN, self.job.GEN_STEP, False],
-                np.array([], dtype=np.float64 if self.job.TYPE ==
-                         "double" else np.float32),  # FIRST EVAL
+                np.array([], dtype=np.float64 if self.job.TYPE == "double" else np.float32),  # FIRST EVAL [] void
                 self.net.populations,  # POPULATIONS
                 # attributes
                 graph=get_graph_proto(
                     self.net.graph.as_graph_def()),
                 dataset=self.job.dataset_file,
+                #NET
                 f_name_execute_net=self.net.cross_entropy.name,
-                f_name_validation=self.net.accuracy.name,
-                f_name_test=self.net.accuracy.name,
                 f_inputs=[elm.name for elm in self.net.targets],
                 f_input_labels=self.net.label_placeholder.name,
                 f_input_features=self.net.input_placeholder.name,
+                #VALIDATION
+                f_name_validation=self.net.accuracy.name,
+                f_name_test=self.net.accuracy.name,
+                #
                 F=self.job.F,
                 CR=self.job.CR,
                 DE=de_type,
@@ -278,7 +285,7 @@ class Operation(object):
             ]
         ))
 
-    def __eval_pop(self, sess, cur_pop, ada_C=None):
+    def __eval_pop(self, sess, cur_pop):
         """Calculates accuracy on validation set for each individual.
 
         Params:
@@ -289,15 +296,6 @@ class Operation(object):
             numpy.ndarray: the accuracy for each individual
         """
         evaluations = []
-
-        options = [
-                    (self.net.label_placeholder, self.dataset.validation_labels),
-                    (self.net.input_placeholder, self.dataset.validation_data),
-                ]
-        
-        if ada_C is not None:
-            option.append((self.net.ada_C_placeholder, ada_C))
-
         for idx in range(self.job.NP):
             cur_evaluation = sess.run(self.net.accuracy, feed_dict=dict(
                 [
@@ -305,7 +303,10 @@ class Operation(object):
                     for num, target in enumerate(self.net.targets)
                 ]
                 +
-                options
+                [
+                    (self.net.label_placeholder, self.dataset.validation_labels),
+                    (self.net.input_placeholder, self.dataset.validation_data),
+                ]
             ))
             evaluations.append(cur_evaluation)
 
@@ -457,7 +458,8 @@ class Operation(object):
 
                 # time_valutation = time()
 
-                evaluations = self.__eval_pop(sess, cur_pop, results.final_c)
+                #accuracy test (not cross entropy)
+                evaluations = self.__eval_pop(sess, cur_pop)
 
                 # print(evaluations)
                 # print(

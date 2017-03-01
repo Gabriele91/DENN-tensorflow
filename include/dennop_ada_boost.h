@@ -63,7 +63,8 @@ namespace tensorflow
 
             // Get name of execute function
             OP_REQUIRES_OK(context, context->GetAttr("f_cross_entropy", &m_name_cross_entropy));
-            OP_REQUIRES_OK(context, context->GetAttr("f_input_cross_entropy", &m_name_input_cross_entropy));
+            OP_REQUIRES_OK(context, context->GetAttr("f_input_cross_entropy_c", &m_name_input_cross_entropy_c));
+            OP_REQUIRES_OK(context, context->GetAttr("f_input_cross_entropy_y", &m_name_input_cross_entropy_y));
         }
 
 
@@ -99,15 +100,14 @@ namespace tensorflow
             // start input of C / EC / Y
             const size_t start_input_C_EC_Y = start_input_population + m_space_size;
             // Take C [ start input + W + population ]
-            m_C      = context->input(start_input_C_EC_Y);
+            Tensor C  = context->input(start_input_C_EC_Y);
             // C errors count list
-            m_EC     = splitDim0(context->input(start_input_C_EC_Y+1));
+            TensorList EC = splitDim0(context->input(start_input_C_EC_Y+1));
             // C errors list
-            m_pop_Y = splitDim0(context->input(start_input_C_EC_Y+2));
+            TensorList pop_Y = splitDim0(context->input(start_input_C_EC_Y+2));
             ////////////////////////////////////////////////////////////////////////////
             //Temp of new gen of populations
             TensorListList new_populations_list;
-            
             ////////////////////////////////////////////////////////////////////////////
             //Alloc temp vector of populations
             GenCachePopulation(current_populations_list,new_populations_list); 
@@ -122,7 +122,7 @@ namespace tensorflow
             // init evaluation
             if(calc_first_eval)
             {
-                ComputePopY(context, current_populations_list);
+                ComputePopY(context, current_populations_list, pop_Y, EC);
             }
             //Get np 
             const int NP = current_populations_list[0].size();
@@ -143,6 +143,9 @@ namespace tensorflow
                 // In/Out
                 , current_populations_list
                 , current_eval_result
+                , C
+                , EC 
+                , pop_Y
             );
             ////////////////////////////////////////////////////////////////////////////
             // Output counter
@@ -158,19 +161,19 @@ namespace tensorflow
             //return C
             {
                 Tensor* new_generation_tensor = nullptr;
-                OP_REQUIRES_OK(context, context->allocate_output(output_id++, m_C.shape(), &new_generation_tensor));
-                (*new_generation_tensor) = m_C;
+                OP_REQUIRES_OK(context, context->allocate_output(output_id++,  C.shape(), &new_generation_tensor));
+                (*new_generation_tensor) = C;
             }
             //return EC
             {
-                const Tensor& all_EC = concatDim0(m_EC);
+                const Tensor& all_EC = concatDim0(EC);
                 Tensor* new_generation_tensor = nullptr;
                 OP_REQUIRES_OK(context, context->allocate_output(output_id++, all_EC.shape(), &new_generation_tensor));
                 (*new_generation_tensor) = all_EC;
             }
             //return pop Y
             {
-                const Tensor& all_pop_Y = concatDim0(m_pop_Y);
+                const Tensor& all_pop_Y = concatDim0(pop_Y);
                 Tensor* new_generation_tensor = nullptr;
                 OP_REQUIRES_OK(context, context->allocate_output(output_id++, all_pop_Y.shape(), &new_generation_tensor));
                 (*new_generation_tensor) = all_pop_Y;
@@ -191,7 +194,10 @@ namespace tensorflow
             const int         num_gen,
             TensorListList&   new_populations_list,
             TensorListList&   current_populations_list,
-            Tensor&           current_eval_result
+            Tensor&           current_eval_result,
+            Tensor&           C,
+            TensorList&       EC,
+            TensorList&       pop_Y
         )
         {
             //Get np 
@@ -201,7 +207,7 @@ namespace tensorflow
             //evaluete all population 
             for(size_t NP_i = 0; NP_i != NP; ++NP_i)
             {
-                ref_current_eval_result(NP_i) = ExecuteEvaluateAdaBoost(  context, m_pop_Y[NP_i] );
+                ref_current_eval_result(NP_i) = ExecuteEvaluateAdaBoost(  context, pop_Y[NP_i], C );
             }
             //loop
             for(int i=0;i!=num_gen;++i)
@@ -227,7 +233,7 @@ namespace tensorflow
                     Tensor ec;
                     ComputeYAndEC(context, index, new_populations_list, y, ec);
                     //execute cross
-                    value_t new_eval = ExecuteEvaluateAdaBoost(context, y);
+                    value_t new_eval = ExecuteEvaluateAdaBoost(context, y, C);
                     //Choice
                     if(new_eval < ref_current_eval_result(index))
                     {
@@ -235,9 +241,9 @@ namespace tensorflow
                         for(int p=0; p!=current_populations_list.size(); ++p)
                             current_populations_list[p][index] = new_populations_list[p][index];
                         //save EC 
-                        m_EC[index] = ec; 
+                        EC[index] = ec; 
                         //save Y
-                        m_pop_Y[index] = y;
+                        pop_Y[index] = y;
                         //save Eval
                         ref_current_eval_result(index) = new_eval;
                     }
@@ -247,16 +253,16 @@ namespace tensorflow
                 // C(gen+1) = (1-alpha) * C(gen) + alpha * (Ni / Np)
                 //////////////////////////////////////////////////////////////
                 //alloc counter of all ec
-                Tensor ec_counter(data_type<int>(),m_C.shape());
+                Tensor ec_counter(data_type<int>(), C.shape());
                 //all to 0
                 fill<int>(ec_counter,0);
                 //get pointer
                 auto raw_EC_counter = ec_counter.template flat<int>();
                 //for all errors
-                for(size_t i = 0; i!=m_EC.size(); ++i)
+                for(size_t i = 0; i!=EC.size(); ++i)
                 {
                     //get ec
-                    auto raw_ec_i = m_EC[i].template flat<bool>();
+                    auto raw_ec_i = EC[i].template flat<bool>();
                     //for all ec
                     for(size_t j=0; j!=ec_counter.dim_size(0); ++j)
                     {
@@ -264,9 +270,9 @@ namespace tensorflow
                     }
                 }
                 //get values
-                auto raw_C = m_C.flat<value_t>();
+                auto raw_C = C.flat<value_t>();
                 //new c
-                for(size_t i = 0; i!=m_C.shape().dim_size(0); ++i)
+                for(size_t i = 0; i!= C.shape().dim_size(0); ++i)
                 {
                     value_t  op0 = (value_t(1.0)-m_alpha) * raw_C(i);
                     value_t  op1 = m_alpha * (value_t(raw_EC_counter(i)) / NP);
@@ -319,14 +325,16 @@ namespace tensorflow
         virtual void ComputePopY
         (
             OpKernelContext *context,
-            const TensorListList& populations_list
+            const TensorListList& populations_list,
+            TensorList& pop_Y,
+            TensorList& EC
         )
         {
             //Get np 
             const int NP = populations_list[0].size();
             //execute
             for(size_t NP_i=0; NP_i!=NP; ++NP_i)
-                ComputeYAndEC(context, NP_i, populations_list, m_pop_Y[NP_i], m_EC[NP_i]);
+                ComputeYAndEC(context, NP_i, populations_list, pop_Y[NP_i], EC[NP_i]);
         }
 
         /**
@@ -357,19 +365,19 @@ namespace tensorflow
             //execute network
             {
                 auto
-                status= this->m_session->Run
-                                    (   //input
-                                        this->m_inputs_tensor_cache,
-                                        //function
-                                        NameList
-                                        {
-                                            this->m_name_execute_net
-                                        },
-                                        //one
-                                        NameList{ },
-                                        //output
-                                        &output_y
-                                    );
+                status= m_session->Run
+                (   //input
+                    m_inputs_tensor_cache,
+                    //function
+                    NameList
+                    {
+                        this->m_name_execute_net
+                    },
+                    //one
+                    NameList{ },
+                    //output
+                    &output_y
+                );
                 //output error
                 if NOT(status.ok())
                 {
@@ -414,31 +422,26 @@ namespace tensorflow
         (
             OpKernelContext* context,
             //input
-            const Tensor& nn_Y
+            const Tensor& nn_Y,
+            const Tensor& C
         )
         {
+            #if 0
+            MSG_DEBUG("pop_Y_i dim0: "  << nn_Y.shape().dim_size(0))
+            MSG_DEBUG("C dim0: "  << C.shape().dim_size(0))
+            MSG_DEBUG("m_labels dim0: "  << m_labels.shape().dim_size(0))
+            #endif
             //Output
             TensorList  cross_value;
-            //Temp Y*C 
-            Tensor tmp_Y_C(nn_Y.dtype(),nn_Y.shape());
-            //Compute Y*C            
-            auto  raw_y_c  = tmp_Y_C.template flat_inner_dims<value_t>();
-            auto  raw_y    = nn_Y.template flat_inner_dims<value_t>();
-            auto  raw_c    = m_C.template flat<value_t>();
-            //for all values
-            for(size_t i = 0; i != tmp_Y_C.shape().dim_size(0); ++i)
-            for(size_t j = 0; j != tmp_Y_C.shape().dim_size(1); ++j)
-            {
-                raw_y_c(i,j) = raw_y(i,j) * raw_c(i);
-            }
             //compure cross (Y*C)
             {   
                 auto
                 status= this->m_session->Run( //input
                                         TensorInputs
                                         {
-                                            { this->m_name_input_cross_entropy ,  tmp_Y_C  },  // y * c
-                                            { this->m_input_labels,               m_labels }   // y_
+                                            { this->m_name_input_cross_entropy_c ,  C        },  // c
+                                            { this->m_name_input_cross_entropy_y ,  nn_Y     },  // y
+                                            { this->m_input_labels,                 m_labels }   // y_
                                         },
                                         //function
                                         NameList
@@ -455,6 +458,7 @@ namespace tensorflow
                 if NOT(status.ok())
                 {
                     context->CtxFailure({tensorflow::error::Code::ABORTED,"Run cross eval: "+status.ToString()});
+                    assert(0);
                     return value_t(-1);
                 }
             }
@@ -492,13 +496,13 @@ namespace tensorflow
         virtual bool AllocCacheInputs(const TensorListList& populations_list) const 
         {
             //resize
-            this->m_inputs_tensor_cache.resize(populations_list.size()+1);
+            m_inputs_tensor_cache.resize(populations_list.size()+1);
             //add all names
             for(size_t p=0; p!=populations_list.size(); ++p)
             {
-                this->m_inputs_tensor_cache[p].first = this->m_inputs_names[p];
+                m_inputs_tensor_cache[p].first = this->m_inputs_names[p];
             }
-            this->m_inputs_tensor_cache[this->m_inputs_tensor_cache.size()-1].first = this->m_input_features;
+            m_inputs_tensor_cache[m_inputs_tensor_cache.size()-1].first = this->m_input_features;
             return true;
         }
 
@@ -514,11 +518,11 @@ namespace tensorflow
         ) const
         {
             //test size
-            if(this->m_inputs_tensor_cache.size() != (populations_list.size()+1)) return false;
+            if(m_inputs_tensor_cache.size() != (populations_list.size()+1)) return false;
             //add all Tensor
             for(size_t p=0; p!=populations_list.size(); ++p)
             {
-                this->m_inputs_tensor_cache[p].second = populations_list[p][NP_i];
+                m_inputs_tensor_cache[p].second = populations_list[p][NP_i];
             }
             return true;
         }
@@ -535,9 +539,9 @@ namespace tensorflow
         ) const
         {
             //test size
-            if(this->m_inputs_tensor_cache.size() < 2) return false;
+            if(m_inputs_tensor_cache.size() < 2) return false;
             //add dataset in input
-            this->m_inputs_tensor_cache[this->m_inputs_tensor_cache.size()-1].second  = features;
+            m_inputs_tensor_cache[m_inputs_tensor_cache.size()-1].second  = features;
             //add ref to tensor
             m_labels = labels;
             //ok
@@ -569,14 +573,12 @@ namespace tensorflow
         std::string m_name_input_correct_predition; //name of : Y
         std::string m_name_correct_predition;       //F(Y,Y_) -> C_ : where Y_ is labels and C_ is a vector of booleans
 
-        std::string m_name_input_cross_entropy;    //name of Y*C
+        std::string m_name_input_cross_entropy_c;  //name of Y
+        std::string m_name_input_cross_entropy_y;  //name of C
         std::string m_name_cross_entropy;          //name of : F(Y*C) -> cross(Y) 
 
         //ada boost factor 
-        value_t m_alpha;
-        Tensor  m_C;
-        TensorList  m_EC;
-        TensorList  m_pop_Y;
+        value_t      m_alpha;
 
         //:D
         mutable Tensor m_labels;

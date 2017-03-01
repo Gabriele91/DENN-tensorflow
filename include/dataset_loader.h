@@ -137,6 +137,11 @@ namespace tensorflow
             return false;
         }
         
+        const DataSetHeader& get_main_header_info() const
+        {
+            return m_header;
+        }
+
         const DataSetTrainHeader& get_last_bach_info() const
         {
             return m_train_header;

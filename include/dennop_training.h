@@ -101,7 +101,15 @@ namespace tensorflow
             m_dataset.start_read_bach();
             // Load first bach
             if NOT(LoadNextBach(context)) return ;//false;
-
+            //Set batch in input
+            if( !SetBachInCacheInputs() )
+            {
+                context->CtxFailure({
+                    tensorflow::error::Code::ABORTED,
+                    "Error add batch data in inputs"
+                });
+                return;
+            }
             ////////////////////////////////////////////////////////////////////////////
             // Tensor of first evaluation of all populations
             Tensor current_eval_result;
@@ -163,6 +171,15 @@ namespace tensorflow
                 LoadNextBach(context) 
             )
             {
+                //Set batch in input
+                if( !SetBachInCacheInputs() )
+                {
+                    context->CtxFailure({
+                        tensorflow::error::Code::ABORTED,
+                        "Error add batch data in inputs"
+                    });
+                    return;
+                }
                 //execute
                 de_loop = this->RunDe
                 (
@@ -256,16 +273,6 @@ namespace tensorflow
                 context->CtxFailure({
                     tensorflow::error::Code::ABORTED,
                     "Error stream dataset: can't read ["+std::to_string(m_dataset.get_last_bach_info().m_bach_id)+"] bach' "
-                });
-                return false;
-            }
-
-            //Set bach in input
-            if( !SetBachInCacheInputs() )
-            {
-                context->CtxFailure({
-                    tensorflow::error::Code::ABORTED,
-                    "Error add bach data in inputs"
                 });
                 return false;
             }

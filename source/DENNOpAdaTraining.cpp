@@ -2,7 +2,7 @@
 
 using namespace tensorflow;
 
-REGISTER_OP("DennAdanTraining")
+REGISTER_OP("DennAdaTraining")
 .Attr("T: {float, double}")
 .Attr("space: int")
 .Attr("graph: string")
@@ -39,20 +39,21 @@ REGISTER_OP("DennAdanTraining")
 .Attr("f_input_features: string = 'x'")
 .Attr("f_inputs: list(string)")
 .Attr("f_name_execute_net: string = 'cross_entropy:0'")
-.Attr("f_name_validation: string = 'accuracy:0'")
-.Attr("f_name_test: string = 'accuracy:0'")
 //EXECUTE COMPARATION Y and Y_
 .Attr("f_input_correct_predition: string = 'x'")
 .Attr("f_correct_predition: string = 'ada_label_diff:0'")
 //EXECUTE CROSS ENTROPY
-.Attr("f_input_cross_entropy: string = 'cross_entropy:0'")
+.Attr("f_input_cross_entropy_c: string = 'cross_entropy_x:0'")
+.Attr("f_input_cross_entropy_y: string = 'cross_entropy_y:0'")
 .Attr("f_cross_entropy: string = 'cross_entropy:0'")
+//Validation and Test fn
+.Attr("f_name_validation: string = 'accuracy:0'")
+.Attr("f_name_test: string = 'accuracy:0'")
 //ADA 
 .Attr("ada_boost_alpha: float = 0.5")
 .Attr("ada_boost_c: float = 1.0")
 //inputs 
-.Input("info: int32") //[ NUM_GEN, NUM_GEN_STEP, CALC_FIRST_EVAL ]
-.Input("population_first_eval: T")
+.Input("info: int32") //[ NUM_GEN, NUM_GEN_STEP ]
 .Input("populations_list: space * T")
 .Output("final_eval_of_best: T")
 .Output("final_eval_of_best_of_best: T")

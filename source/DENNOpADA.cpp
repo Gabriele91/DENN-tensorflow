@@ -23,7 +23,8 @@ REGISTER_OP("DennAda")
 .Attr("f_input_correct_predition: string = 'x'")
 .Attr("f_correct_predition: string = 'ada_label_diff:0'")
 //EXECUTE CROSS ENTROPY
-.Attr("f_input_cross_entropy: string = 'cross_entropy:0'")
+.Attr("f_input_cross_entropy_c: string = 'cross_entropy_x:0'")
+.Attr("f_input_cross_entropy_y: string = 'cross_entropy_y:0'")
 .Attr("f_cross_entropy: string = 'cross_entropy:0'")
 //
 .Attr("DE: {"

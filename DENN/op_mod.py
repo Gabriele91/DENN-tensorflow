@@ -143,7 +143,8 @@ class Operation(object):
                     'epsilon'] if exists_reset_every else 100.0,
                 reset_counter=self.job.reset_every[
                     'counter'] if exists_reset_every else 1,
-                reset_rand_pop=[tfop.name for tfop in self.net.rand_pop]
+                reset_rand_pop=[tfop.name for tfop in self.net.rand_pop],
+                reinsert_best=self.job.reinsert_best 
             )
         else:
             self._module = tf.load_op_library(path.join(

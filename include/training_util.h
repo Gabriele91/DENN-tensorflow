@@ -85,8 +85,14 @@ namespace tensorflow
     class CacheBest
     {
     public:
-        //add 
-        bool test_best(value_t eval,int id, const TensorListList& pop)
+        /*
+        * Copy a individual if pass the test 
+        * @param accuracy
+        * @param index of individual in population
+        * @param population 
+        * @return true if test is passed  
+        **/
+        bool test_best(value_t eval, int id, const TensorListList& pop)
         {
             //case to copy the individual
             if(!m_init || eval > m_eval)
@@ -102,7 +108,7 @@ namespace tensorflow
                 m_init = true;
                 m_eval = eval;
                 m_id   = id;
-                //is chanced
+                //is changed
                 return true;
             }
             return false;

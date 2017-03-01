@@ -41,6 +41,9 @@ namespace tensorflow
                 , reset_counter
                 , reset_rand_pop
             );
+            //reinsert best 
+            OP_REQUIRES_OK(context, context->GetAttr("reinsert_best", &m_reinsert_best));
+            
             // Try to openfile
             if NOT(m_dataset.open(m_dataset_path))
             {
@@ -115,6 +118,34 @@ namespace tensorflow
             CacheBest< value_t > best;
             std::vector< value_t > list_eval_of_best;
             std::vector< value_t > list_eval_of_best_of_best;
+            value_t cur_test_eval = 0.0;
+            value_t best_test_eval = 0.0;
+            ////////////////////////////////////////////////////////////////////////////
+            // The start state
+            {
+                //find best
+                int     cur_best_id;
+                value_t cur_best_eval;
+                int     cur_worst_id;
+                value_t cur_worst_eval;
+                FindBestAndWorst
+                (
+                    context, 
+                    current_populations_list,
+                    cur_best_id,
+                    cur_best_eval,
+                    cur_worst_id,
+                    cur_worst_eval
+                );
+                //test best 
+                best.test_best(cur_best_eval,cur_best_id,current_populations_list);
+                //Test 
+                cur_test_eval  = 
+                best_test_eval = ExecuteEvaluateTest(context, cur_best_id, current_populations_list);
+                //add results into vector
+                list_eval_of_best.push_back(cur_test_eval);
+                list_eval_of_best_of_best.push_back(best_test_eval);
+            }
             //Get np 
             const int NP = current_populations_list[0].size();
             ////////////////////////////////////////////////////////////////////////////
@@ -133,7 +164,7 @@ namespace tensorflow
             )
             {
                 //execute
-                de_loop = DENNOp_t::RunDe
+                de_loop = this->RunDe
                 (
                  // Input
                    context
@@ -145,34 +176,44 @@ namespace tensorflow
                  , current_eval_result
                 );
 
-                //Execute validation test 
-                for(int individual_id = 0; individual_id != NP; ++individual_id)
-                {         
-                    //Change input 
-                    SetValidationDataInCacheInputs();
-                    //execute evaluation
-                    value_t eval = ExecuteEvaluateValidation(context, individual_id, current_populations_list);
-                    //add 
-                    best.test_best(eval, individual_id, current_populations_list);
-                }
-                
                 //find best
-                int cur_best_id;
+                int     cur_best_id;
                 value_t cur_best_eval;
-                FindBest(context, current_populations_list,cur_best_id,cur_best_eval);
-                
+                int     cur_worst_id;
+                value_t cur_worst_eval;
+                FindBestAndWorst
+                (
+                    context, 
+                    current_populations_list,
+                    cur_best_id,
+                    cur_best_eval,
+                    cur_worst_id,
+                    cur_worst_eval
+                );
+
                 //test 
-                value_t cur_test_eval = ExecuteEvaluateTest(context, cur_best_id, current_populations_list);
+                cur_test_eval = ExecuteEvaluateTest(context, cur_best_id, current_populations_list);
 
                 //update best 
-                best.test_best(cur_best_eval,cur_best_id,current_populations_list);
+                if( best.test_best(cur_best_eval, cur_best_id, current_populations_list) )
+                {
+                   best_test_eval = cur_test_eval;
+                }
+                else if(m_reinsert_best)
+                {
+                    //replace wrost
+                    for(int layer_id=0; layer_id!=current_populations_list.size(); ++layer_id)
+                    {
+                        current_populations_list[layer_id][cur_worst_id] = best.m_individual[layer_id];
+                    }
+                }
 
                 //add into vector
                 list_eval_of_best.push_back(cur_test_eval);
-                list_eval_of_best_of_best.push_back(best.m_eval);
+                list_eval_of_best_of_best.push_back(best_test_eval);
                 
                 //Execute reset 
-                CheckReset(context,best, current_populations_list);
+                CheckReset(context, best, current_populations_list);
             }
             ////////////////////////////////////////////////////////////////////////////
             int output_id=0;
@@ -202,7 +243,6 @@ namespace tensorflow
                 OP_REQUIRES_OK(context, context->allocate_output(output_id++, current_pop.shape(), &new_generation_tensor));
                 (*new_generation_tensor) = current_pop;
             }
-
         }
 
         /**
@@ -311,20 +351,24 @@ namespace tensorflow
          * @param output eval
          * @return population index
          */
-        void FindBest(OpKernelContext *context,
-                      const TensorListList& populations,
-                      int&    best_id,
-                      value_t& best_eval
-                      )
+        void FindBestAndWorst
+        (
+            OpKernelContext *context,
+            const TensorListList& populations,
+            int&     best_id,
+            value_t& best_eval,
+            int&     worst_id,
+            value_t& worst_eval
+        )
         {          
             //Get np 
             const int NP = populations[0].size();
             //Change input 
             SetValidationDataInCacheInputs();
             //set id best
-            best_id = 0;  
+            worst_id = best_id = 0;  
             //execute evaluation
-            best_eval = ExecuteEvaluateValidation(context, best_id, populations);
+            worst_eval = best_eval = ExecuteEvaluateValidation(context, best_id, populations);
             //Execute validation test to all pop
             for(int individual_id = 1; individual_id < NP; ++individual_id)
             {         
@@ -337,6 +381,12 @@ namespace tensorflow
                 {
                     best_id   = individual_id;
                     best_eval = eval;
+                }
+                //is the worst?
+                if(eval < worst_eval)
+                {
+                    worst_id   = individual_id;
+                    worst_eval = eval;
                 }
             }
         }
@@ -428,6 +478,8 @@ namespace tensorflow
         std::string m_name_test;
         //reset 
         DEReset<value_t> m_reset;
+        //reinsert best 
+        bool m_reinsert_best{ false };
 
     };
 };

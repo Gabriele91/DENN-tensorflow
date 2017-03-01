@@ -29,6 +29,8 @@ REGISTER_OP("DennTraining")
 .Attr("reset_fector: float = 100.0")
 .Attr("reset_counter: int  = 0")
 .Attr("reset_rand_pop: list(string)")
+//insert best 
+.Attr("reinsert_best: bool = false")
 //NN
 .Attr("f_min: float = -1.0")
 .Attr("f_max: float = +1.0")

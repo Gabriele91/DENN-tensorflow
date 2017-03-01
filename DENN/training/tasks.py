@@ -506,7 +506,12 @@ class DETask(object):
                             )
                             cross_entropy = tf.reduce_mean(
                                 cur_level.fx(
-                                    y_placeholder, label_placeholder
+                                    tf.transpose(
+                                        tf.multiply(
+                                            tf.transpose(y_placeholder), 
+                                            ada_C_placeholder
+                                        )
+                                    ), label_placeholder
                                 ),
                                 name="cross_entropy"
                             )

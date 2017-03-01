@@ -100,7 +100,8 @@ class Operation(object):
                 f_input_correct_predition=self.net.y_placeholder.name,
                 f_correct_predition=self.net.ada_label_diff.name,
                 f_cross_entropy=self.net.cross_entropy.name,
-                f_input_cross_entropy=self.net.y_placeholder.name,
+                f_input_cross_entropy_y=self.net.y_placeholder.name,
+                f_input_cross_entropy_c=self.net.ada_C_placeholder.name,
                 ada_boost_alpha=self.job.ada_boost.alpha,
                 ada_boost_c=self.job.ada_boost.C,
                 F=self.job.F,
@@ -142,7 +143,8 @@ class Operation(object):
                 f_input_correct_predition=self.net.y_placeholder.name,
                 f_correct_predition=self.net.ada_label_diff.name,
                 f_cross_entropy=self.net.cross_entropy.name,
-                f_input_cross_entropy=self.net.y_placeholder.name,
+                f_input_cross_entropy_y=self.net.y_placeholder.name,
+                f_input_cross_entropy_c=self.net.ada_C_placeholder.name,
                 ada_boost_alpha=self.job.ada_boost.alpha,
                 F=self.job.F,
                 CR=self.job.CR,
@@ -276,7 +278,7 @@ class Operation(object):
             ]
         ))
 
-    def __eval_pop(self, sess, cur_pop):
+    def __eval_pop(self, sess, cur_pop, ada_C=None):
         """Calculates accuracy on validation set for each individual.
 
         Params:
@@ -288,6 +290,14 @@ class Operation(object):
         """
         evaluations = []
 
+        options = [
+                    (self.net.label_placeholder, self.dataset.validation_labels),
+                    (self.net.input_placeholder, self.dataset.validation_data),
+                ]
+        
+        if ada_C is not None:
+            option.append((self.net.ada_C_placeholder, ada_C))
+
         for idx in range(self.job.NP):
             cur_evaluation = sess.run(self.net.accuracy, feed_dict=dict(
                 [
@@ -295,10 +305,7 @@ class Operation(object):
                     for num, target in enumerate(self.net.targets)
                 ]
                 +
-                [
-                    (self.net.label_placeholder, self.dataset.validation_labels),
-                    (self.net.input_placeholder, self.dataset.validation_data)
-                ]
+                options
             ))
             evaluations.append(cur_evaluation)
 
@@ -450,7 +457,7 @@ class Operation(object):
 
                 # time_valutation = time()
 
-                evaluations = self.__eval_pop(sess, cur_pop)
+                evaluations = self.__eval_pop(sess, cur_pop, results.final_c)
 
                 # print(evaluations)
                 # print(

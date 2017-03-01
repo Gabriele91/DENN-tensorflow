@@ -2,6 +2,7 @@
 #pragma once
 #include "config.h"
 #include "de_info.h"
+#include "denn_util.h"
 #include "tensorflow_alias.h"
 #include "population_generator.h"
 #include <string>
@@ -10,7 +11,6 @@
 #include <cmath>
 #include <algorithm>
 #include <typeinfo>
-#define NOT(x) (!(x))
 
 namespace tensorflow
 {
@@ -28,10 +28,6 @@ public:
     {
         // Space size
         OP_REQUIRES_OK(context, context->GetAttr("space", &m_space_size));
-        // Get graph path
-        std::string graph_proto_string;
-        // Get the index of the value to preserve
-        OP_REQUIRES_OK(context, context->GetAttr("graph", &graph_proto_string));
         // Get names of eval inputs
         OP_REQUIRES_OK(context, context->GetAttr("f_inputs", &m_inputs_names));
         // Get dataset path
@@ -43,68 +39,18 @@ public:
         // Test size == sizeof(names)
         if( m_space_size != m_inputs_names.size() )
         {
-            context->CtxFailure({tensorflow::error::Code::ABORTED,"Attribute error: sizeof(names) != sizeof(populations) "});
+            context->CtxFailure({tensorflow::error::Code::ABORTED,"Attribute error: sizeof(inputs names) != sizeof(populations) "});
         }
-        // float params temp
-        float
-        f_CR,
-        f_F,
-        f_f_min,
-        f_f_max;
-        // int params temp
-        int smoothing_n_pass;
-        //shape param temp
-        std::vector<TensorShapeProto> shapes_smoothing;
-        // get CR
-        context->GetAttr("CR", &f_CR);
-        // get F
-        context->GetAttr("F", &f_F);
-        // get f min
-        context->GetAttr("f_min", &f_f_min);
-        // get f max
-        context->GetAttr("f_max", &f_f_max);
-        // get smoothing pass
-        context->GetAttr("smoothing_n_pass", &smoothing_n_pass);
-        // get smoothing shapes
-        context->GetAttr("smoothing", &shapes_smoothing);
-        // get DE
-        std::string de_type;
-        context->GetAttr("DE", &de_type);
-        //parsing
-        std::istringstream stream_de_type{de_type};
-        string type_elm;
-        //get values
-        while (getline(stream_de_type, type_elm, '/'))
-        {
-                 if (type_elm == "rand")           m_de_info.m_pert_vector = PV_RANDOM;
-            else if (type_elm == "best")           m_de_info.m_pert_vector = PV_BEST;
-            else if (type_elm == "rand-to-best")   m_de_info.m_pert_vector = PV_RAND_TO_BEST;
-            else if (type_elm == "1")              m_de_info.m_diff_vector = DIFF_ONE;
-            else if (type_elm == "2")              m_de_info.m_diff_vector = DIFF_TWO;
-            else if (type_elm == "bin")            m_de_info.m_cr_type = CR_BIN;
-            else if (type_elm == "exp")            m_de_info.m_cr_type = CR_EXP;
-        }
-        // params float to value_t
-        m_de_factors.m_CR     = value_t(f_CR);
-        m_de_factors.m_F      = value_t(f_F);
-        m_de_factors.m_f_min  = value_t(f_f_min);
-        m_de_factors.m_f_max  = value_t(f_f_max);
-        //smoothing
-        m_de_factors.m_smoothing_n_pass = smoothing_n_pass;
-        m_de_factors.SetShapesSmoothing( shapes_smoothing );
-        //options
-        SessionOptions options;
-        //session
-        m_session = std::unique_ptr< Session >(tensorflow::NewSession(options));
-        //read operation
-        GraphDef graph_def;
-        /**
-         * REF
-         * https://github.com/tensorflow/tensorflow/blob/c8a45a8e236776bed1d14fd71f3b6755bd63cc58/tensorflow/core/platform/env.cc#L316
-         */
-        ::tensorflow::protobuf::TextFormat::ParseFromString(graph_proto_string, &graph_def);
-        //create graph
-        m_session->Create(graph_def);
+        
+        // Get factors
+        ParserAttr(context, m_de_factors);
+        
+        // Get DE type
+        ParserAttr(context, m_de_info);
+
+        // Create session from graph 
+        ParserAttr(context, m_session);
+
     }
     
     //star execution from python
@@ -349,31 +295,6 @@ public:
             }
         }
 
-    }
-
-    /**
-     * Test if size of all populations is correct
-     * @param current_populations_list, (input) population 
-     * @return true if is correct
-     */
-    bool TestPopulationSize
-    (
-         OpKernelContext *context,
-         const TensorListList& current_populations_list 
-    ) const
-    {
-        //Size of population
-        const size_t NP = current_populations_list[0].size();
-        //Test NP
-        for(size_t i = 1; i < current_populations_list.size(); ++i)
-        {
-            if( current_populations_list[i].size() != NP )
-            {
-                context->CtxFailure({tensorflow::error::Code::ABORTED,"Input error: sizeof(populations["+std::to_string(i)+"]) != NP "});
-                return false;
-            }
-        }
-        return true;
     }
 
 

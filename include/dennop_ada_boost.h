@@ -1,31 +1,66 @@
 #pragma once 
-#define DENN_USE_SOCKET_DEBUG 
 #include "config.h"
-#include "dennop.h"
-#include "dataset_loader.h"
+#include "de_info.h"
+#include "denn_util.h"
+#include "tensorflow_alias.h"
+#include "population_generator.h"
+#include <string>
+#include <iostream>
+#include <memory>
+#include <cmath>
+#include <algorithm>
+#include <typeinfo>
+
 
 
 namespace tensorflow
 {
     template< class value_t = double > 
-    class DENNOpAdaBoost : public DENNOp< value_t >
+    class DENNOpAdaBoost : public OpKernel 
     {
-
-        using DENNOp_t = DENNOp< value_t >;
 
     public:
 
         //init DENN from param
-        explicit DENNOpAdaBoost(OpKernelConstruction *context) : DENNOp< value_t >(context)
-        {
+        explicit DENNOpAdaBoost(OpKernelConstruction *context) : OpKernel(context)
+        {        
+            // Space size
+            OP_REQUIRES_OK(context, context->GetAttr("space", &m_space_size));
+
+            // Get names of eval inputs
+            OP_REQUIRES_OK(context, context->GetAttr("f_inputs", &m_inputs_names));
+            // Get dataset path
+            OP_REQUIRES_OK(context, context->GetAttr("f_input_labels", &m_input_labels));
+            // Get dataset path
+            OP_REQUIRES_OK(context, context->GetAttr("f_input_features", &m_input_features));
+            // Get name of eval function
+            OP_REQUIRES_OK(context, context->GetAttr("f_name_execute_net", &m_name_execute_net));
+
+            // Test size == sizeof(names)
+            if( m_space_size != m_inputs_names.size() )
+            {
+                context->CtxFailure({tensorflow::error::Code::ABORTED,"Attribute error: sizeof(inputs names) != sizeof(populations) "});
+            }
+            
+            // Get factors
+            ParserAttr(context, m_de_factors);
+            
+            // Get DE type
+            ParserAttr(context, m_de_info);
+
+            // Create session from graph 
+            ParserAttr(context, m_session);
+
             //get alpha in float
             float alpha = 0.5f;
             OP_REQUIRES_OK(context, context->GetAttr("ada_boost_alpha", &alpha));
             //cast alpha to value_t alpha 
             m_alpha = value_t(alpha);
+
             // Get name of function of test execution
             OP_REQUIRES_OK(context, context->GetAttr("f_input_correct_predition", &m_name_input_correct_predition));
             OP_REQUIRES_OK(context, context->GetAttr("f_correct_predition", &m_name_correct_predition));
+
             // Get name of execute function
             OP_REQUIRES_OK(context, context->GetAttr("f_cross_entropy", &m_name_cross_entropy));
             OP_REQUIRES_OK(context, context->GetAttr("f_input_cross_entropy", &m_name_input_cross_entropy));
@@ -53,16 +88,16 @@ namespace tensorflow
             // populations
             TensorListList  current_populations_list;        
             // populations inputs
-            for(int i=0; i != this->m_space_size; ++i)
+            for(int i=0; i != m_space_size; ++i)
             {
                 const Tensor& population = context->input(start_input_population+i);
                 current_populations_list.push_back(splitDim0(population));
             }
             //Test sizeof populations
-            if NOT(DENNOp_t::TestPopulationSize(context,current_populations_list)) return;
+            if NOT(TestPopulationSize(context,current_populations_list)) return;
             ////////////////////////////////////////////////////////////////////////////
             // start input of C / EC / Y
-            const size_t start_input_C_EC_Y = start_input_population + this->m_space_size;
+            const size_t start_input_C_EC_Y = start_input_population + m_space_size;
             // Take C [ start input + W + population ]
             m_C      = context->input(start_input_C_EC_Y);
             // C errors list
@@ -75,12 +110,13 @@ namespace tensorflow
             
             ////////////////////////////////////////////////////////////////////////////
             //Alloc temp vector of populations
-            this->GenCachePopulation(current_populations_list,new_populations_list); 
+            GenCachePopulation(current_populations_list,new_populations_list); 
+
             ////////////////////////////////////////////////////////////////////////////
             //Alloc input 
-            this->AllocCacheInputs(current_populations_list);
+            AllocCacheInputs(current_populations_list);
             //Copy bach in input
-            this->SetDatasetInCacheInputs(t_bach_labels,t_bach_features);
+            SetDatasetInCacheInputs(t_bach_labels,t_bach_features);
 
             ////////////////////////////////////////////////////////////////////////////
             // init evaluation
@@ -94,6 +130,7 @@ namespace tensorflow
             Tensor current_eval_result(data_type<value_t>(),TensorShape({int64(NP)}));
             //fill all to 0
             fill<value_t>(current_eval_result,0);
+
             ////////////////////////////////////////////////////////////////////////////
             // Execute DE
             RunDe
@@ -108,32 +145,34 @@ namespace tensorflow
                 , current_eval_result
             );
             ////////////////////////////////////////////////////////////////////////////
+            // Output counter
+            int output_id=0;
             // Output populations
-            for(int i=0; i != this->m_space_size; ++i)
+            for(int i=0; i != m_space_size; ++i)
             {
                 Tensor* new_generation_tensor = nullptr;
                 Tensor current_pop = concatDim0(current_populations_list[i]);
-                OP_REQUIRES_OK(context, context->allocate_output(i, current_pop.shape(), &new_generation_tensor));
+                OP_REQUIRES_OK(context, context->allocate_output(output_id++, current_pop.shape(), &new_generation_tensor));
                 (*new_generation_tensor) = current_pop;
             }
             //return C
             {
                 Tensor* new_generation_tensor = nullptr;
-                OP_REQUIRES_OK(context, context->allocate_output(this->m_space_size, m_C.shape(), &new_generation_tensor));
+                OP_REQUIRES_OK(context, context->allocate_output(output_id++, m_C.shape(), &new_generation_tensor));
                 (*new_generation_tensor) = m_C;
             }
             //return EC
             {
                 const Tensor& all_EC = concatDim0(m_EC);
                 Tensor* new_generation_tensor = nullptr;
-                OP_REQUIRES_OK(context, context->allocate_output(this->m_space_size+1, all_EC.shape(), &new_generation_tensor));
+                OP_REQUIRES_OK(context, context->allocate_output(output_id++, all_EC.shape(), &new_generation_tensor));
                 (*new_generation_tensor) = all_EC;
             }
             //return pop Y
             {
                 const Tensor& all_pop_Y = concatDim0(m_pop_Y);
                 Tensor* new_generation_tensor = nullptr;
-                OP_REQUIRES_OK(context, context->allocate_output(this->m_space_size+2, all_pop_Y.shape(), &new_generation_tensor));
+                OP_REQUIRES_OK(context, context->allocate_output(output_id++, all_pop_Y.shape(), &new_generation_tensor));
                 (*new_generation_tensor) = all_pop_Y;
             }
         }
@@ -425,6 +464,26 @@ namespace tensorflow
             return cross_res;
         }
 
+        /**
+        * Alloc cache populations
+        * @param context
+        * @param current_populations_list, (input) population
+        * @param new_populations_list, (output) cache of new population
+        */
+        void GenCachePopulation
+        (
+            const TensorListList& current_populations_list,
+            TensorListList& new_populations_list
+        ) const
+        {
+            //new pupulations
+            new_populations_list.resize(m_space_size);
+            // pupulation inputs
+            for(int i=0; i != m_space_size; ++i)
+            {
+                new_populations_list[i].resize(current_populations_list[i].size());
+            }
+        }
 
         /**
         * Alloc m_inputs_tensor_cache
@@ -487,19 +546,45 @@ namespace tensorflow
 
     protected:
 
+        //session
+        std::unique_ptr< Session > m_session;
+
+        //de info
+        DeInfo                m_de_info;
+        DeFactors< value_t >  m_de_factors;
+
+        // population variables
+        int                        m_space_size{ 1 };
+
+        //bach inputs
+        std::string m_input_labels;
+        std::string m_input_features;
+
+        //execute network names and inputs
+        std::string                m_name_execute_net;
+        NameList                   m_inputs_names;
+        mutable TensorInputs       m_inputs_tensor_cache;
+
         //names of functions
         std::string m_name_input_correct_predition; //name of : Y
         std::string m_name_correct_predition;       //F(Y,Y_) -> C_ : where Y_ is labels and C_ is a vector of booleans
 
         std::string m_name_input_cross_entropy;    //name of Y*C
         std::string m_name_cross_entropy;          //name of : F(Y*C) -> cross(Y) 
+
         //ada boost factor 
         value_t m_alpha;
         Tensor  m_C;
         TensorList  m_EC;
         TensorList  m_pop_Y;
+
         //:D
         mutable Tensor m_labels;
+
+        //debug
+        SOCKET_DEBUG(
+            debug::socket_messages_server m_debug;
+        )
 
     };
 }

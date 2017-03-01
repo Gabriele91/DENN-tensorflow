@@ -111,7 +111,7 @@ class Operation(object):
             self._module = tf.load_op_library(path.join(
                 path.dirname(__file__), 'DENNOp_training.so')
             )
-
+            
             exists_reset_every = self.job.reset_every != False
 
             self.denn_op = self._module.denn_training(

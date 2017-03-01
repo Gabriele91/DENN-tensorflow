@@ -1,22 +1,22 @@
 #pragma once 
 #define DENN_USE_SOCKET_DEBUG 
 #include "config.h"
-#include "dennop.h"
+#include "dennop_ada_boost.h"
 #include "dataset_loader.h"
 #include "training_util.h"
 
 namespace tensorflow
 {
     template< class value_t = double > 
-    class DENNOpTraining : public DENNOp< value_t >
+    class DENNOpAdaBoostTraining : public DENNOpAdaBoost< value_t >
     {
 
-        using DENNOp_t = DENNOp< value_t >;
+        using DENNOpAdaBoost_t = DENNOpAdaBoost< value_t >;
 
     public:
 
         //init DENN from param
-        explicit DENNOpTraining(OpKernelConstruction *context) : DENNOp< value_t >(context)
+        explicit DENNOpAdaBoostTraining(OpKernelConstruction *context) : DENNOpAdaBoost< value_t >(context)
         {
             // Get validation function
             OP_REQUIRES_OK(context, context->GetAttr("f_name_validation", &m_name_validation));
@@ -49,9 +49,21 @@ namespace tensorflow
             {
                 context->CtxFailure({tensorflow::error::Code::ABORTED,"Attribute error: can't open dataset' "});
             }
+
             //Load dataset
             m_dataset.read_test(m_test);
             m_dataset.read_validation(m_validation);
+
+            /* todo get ADA C INIT */
+            #error get ada c
+            #if 0
+            //Get ada attributes 
+            m_C      = context->input(start_input_C_EC_Y);
+            // C errors list
+            m_EC     = splitDim0(context->input(start_input_C_EC_Y+1));
+            // C errors list
+            m_pop_Y = splitDim0(context->input(start_input_C_EC_Y+2));
+            #endif
         }
 
         //star execution from python
@@ -90,11 +102,11 @@ namespace tensorflow
             //Temp of new gen of populations
             TensorListList new_populations_list;
             //Alloc temp vector of populations
-            DENNOp_t::GenCachePopulation(current_populations_list,new_populations_list);            
+            this->GenCachePopulation(current_populations_list,new_populations_list);            
             
             ////////////////////////////////////////////////////////////////////////////
             //Alloc input 
-            DENNOp_t::AllocCacheInputs(current_populations_list);
+            this->AllocCacheInputs(current_populations_list);
 
             ////////////////////////////////////////////////////////////////////////////
             // START STREAM
@@ -103,23 +115,12 @@ namespace tensorflow
             if NOT(LoadNextBach(context)) return ;//false;
 
             ////////////////////////////////////////////////////////////////////////////
-            // Tensor of first evaluation of all populations
-            Tensor current_eval_result;
-            // init evaluation
-            DENNOp_t::DoFirstEvaluationIfRequired
-            (
-               context
-             , calc_first_eval
-             , current_populations_list
-             , population_first_eval 
-             , current_eval_result
-            );
-            ////////////////////////////////////////////////////////////////////////////
             CacheBest< value_t > best;
             std::vector< value_t > list_eval_of_best;
             std::vector< value_t > list_eval_of_best_of_best;
             value_t cur_test_eval = 0.0;
             value_t best_test_eval = 0.0;
+
             ////////////////////////////////////////////////////////////////////////////
             // The start state
             {
@@ -146,9 +147,16 @@ namespace tensorflow
                 list_eval_of_best.push_back(cur_test_eval);
                 list_eval_of_best_of_best.push_back(best_test_eval);
             }
-            //Get np 
-            const int NP = current_populations_list[0].size();
             ////////////////////////////////////////////////////////////////////////////
+            //Get np 
+            const int NP = current_populations_list[0].size(); 
+            
+            // Tensor first evaluation of all populations
+            Tensor current_eval_result(data_type<value_t>(),TensorShape({int64(NP)}));
+            //fill all to 0
+            fill<value_t>(current_eval_result,0);
+
+            //loop    
             bool de_loop = true;
             ////////////////////////////////////////////////////////////////////////////
             // Execute DE
@@ -419,7 +427,7 @@ namespace tensorflow
             NameList function{ 
                 m_name_validation //+":0"
             };
-            return DENNOp_t::ExecuteEvaluate(context, NP_i, populations_list, function);
+            return this->ExecuteEvaluateAdaBoost(context, NP_i, populations_list, function);
         }
 
         //execute evaluate test function (tensorflow function)   
@@ -433,7 +441,7 @@ namespace tensorflow
             NameList function{
                  m_name_test //+":0" 
             };
-            return DENNOp_t::ExecuteEvaluate(context, NP_i, populations_list, function);
+            return this->ExecuteEvaluateAdaBoost(context, NP_i, populations_list, function);
         }
 
     protected:
@@ -442,7 +450,7 @@ namespace tensorflow
         */
         virtual bool SetBachInCacheInputs() const
         {
-            return DENNOp_t::SetDatasetInCacheInputs( m_bach.m_labels, m_bach.m_features);
+            return DENNOpAdaBoost_t::SetDatasetInCacheInputs( m_bach.m_labels, m_bach.m_features);
         }
 
         /**
@@ -450,7 +458,7 @@ namespace tensorflow
         */
         virtual bool SetValidationDataInCacheInputs() const
         {
-            return DENNOp_t::SetDatasetInCacheInputs( m_validation.m_labels, m_validation.m_features);
+            return DENNOpAdaBoost_t::SetDatasetInCacheInputs( m_validation.m_labels, m_validation.m_features);
         }
 
         /**
@@ -458,7 +466,7 @@ namespace tensorflow
         */
         virtual bool SetTestDataInCacheInputs() const
         { 
-            return DENNOp_t::SetDatasetInCacheInputs(m_test.m_labels, m_test.m_features);
+            return DENNOpAdaBoost_t::SetDatasetInCacheInputs(m_test.m_labels, m_test.m_features);
         }
 
 

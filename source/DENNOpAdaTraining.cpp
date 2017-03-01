@@ -1,8 +1,8 @@
-#include <dennop_training.h>
+#include <dennop_ada_boost_training.h>
 
 using namespace tensorflow;
 
-REGISTER_OP("DennTraining")
+REGISTER_OP("DennAdanTraining")
 .Attr("T: {float, double}")
 .Attr("space: int")
 .Attr("graph: string")
@@ -41,7 +41,16 @@ REGISTER_OP("DennTraining")
 .Attr("f_name_execute_net: string = 'cross_entropy:0'")
 .Attr("f_name_validation: string = 'accuracy:0'")
 .Attr("f_name_test: string = 'accuracy:0'")
-
+//EXECUTE COMPARATION Y and Y_
+.Attr("f_input_correct_predition: string = 'x'")
+.Attr("f_correct_predition: string = 'ada_label_diff:0'")
+//EXECUTE CROSS ENTROPY
+.Attr("f_input_cross_entropy: string = 'cross_entropy:0'")
+.Attr("f_cross_entropy: string = 'cross_entropy:0'")
+//ADA 
+.Attr("ada_boost_alpha: float = 0.5")
+.Attr("ada_boost_c: float = 1.0")
+//inputs 
 .Input("info: int32") //[ NUM_GEN, NUM_GEN_STEP, CALC_FIRST_EVAL ]
 .Input("population_first_eval: T")
 .Input("populations_list: space * T")
@@ -51,5 +60,5 @@ REGISTER_OP("DennTraining")
 .Output("final_populations: space * T")
 ;
 
-REGISTER_KERNEL_BUILDER(Name("DennTraining").Device(DEVICE_CPU).TypeConstraint<float>("T"), DENNOpTraining<float>);
-REGISTER_KERNEL_BUILDER(Name("DennTraining").Device(DEVICE_CPU).TypeConstraint<double>("T"), DENNOpTraining<double>);
+REGISTER_KERNEL_BUILDER(Name("DennAdaTraining").Device(DEVICE_CPU).TypeConstraint<float>("T"), DENNOpAdaBoostTraining<float>);
+REGISTER_KERNEL_BUILDER(Name("DennAdaTraining").Device(DEVICE_CPU).TypeConstraint<double>("T"), DENNOpAdaBoostTraining<double>);

@@ -14,6 +14,7 @@ TF_INCLUDE = $(PYTHON_PATH)/lib/python3.5/site-packages/tensorflow/include
 OUT_FILE_NAME_DENNOP = DENNOp
 OUT_FILE_NAME_DENNOP_TRAINING = DENNOp_training
 OUT_FILE_NAME_DENNOP_ADA = DENNOp_ada
+OUT_FILE_NAME_DENNOP_ADA_TRAINING = DENNOp_ada_training
 #project dirs
 S_DIR  = $(TOP)/source
 S_INC  = $(TOP)/include
@@ -70,9 +71,12 @@ SOURCE_TRAINING_OBJS = $(addprefix $(O_DIR)/,$(notdir $(SOURCE_TRAINING_FILES:.c
 
 SOURCE_ADA_FILES = $(S_DIR)/DENNOpADA.cpp
 SOURCE_ADA_OBJS = $(addprefix $(O_DIR)/,$(notdir $(SOURCE_ADA_FILES:.cpp=.o)))
+
+SOURCE_ADA_TRAINING_FILES = $(S_DIR)/DENNOpAdaTraining.cpp
+SOURCE_ADA_TRAINING_OBJS = $(addprefix $(O_DIR)/,$(notdir $(SOURCE_ADA_TRAINING_FILES:.cpp=.o)))
 #########################################################################
 
-all: make_denn_op make_denn_traning_op make_denn_ada_op
+all: make_denn_op make_denn_traning_op make_denn_ada_op make_denn_ada_traning_op
 
 #create plugin
 make_denn_op: directories $(SOURCE_OBJS)
@@ -83,6 +87,9 @@ make_denn_traning_op: directories $(SOURCE_TRAINING_OBJS)
 
 make_denn_ada_op: directories $(SOURCE_ADA_OBJS)
 	$(CC) $(C_FLAGS) $(CPP_FLAGS) -shared -o $(TOP)/$(MODULE_FOLDER)/$(OUT_FILE_NAME_DENNOP_ADA).so $(SOURCE_ADA_OBJS) $(LIKNER_FLAGS)
+
+make_denn_ada_traning_op: directories $(SOURCE_ADA_TRAINING_OBJS)
+	$(CC) $(C_FLAGS) $(CPP_FLAGS) -shared -o $(TOP)/$(MODULE_FOLDER)/$(OUT_FILE_NAME_DENNOP_ADA_TRAINING).so $(SOURCE_ADA_TRAINING_OBJS) $(LIKNER_FLAGS)
 #required directories
 directories: ${O_DIR}
 

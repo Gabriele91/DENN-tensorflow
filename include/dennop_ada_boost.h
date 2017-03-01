@@ -100,10 +100,10 @@ namespace tensorflow
             const size_t start_input_C_EC_Y = start_input_population + m_space_size;
             // Take C [ start input + W + population ]
             m_C      = context->input(start_input_C_EC_Y);
-            // C errors list
+            // C errors count list
             m_EC     = splitDim0(context->input(start_input_C_EC_Y+1));
             // C errors list
-             m_pop_Y = splitDim0(context->input(start_input_C_EC_Y+2));
+            m_pop_Y = splitDim0(context->input(start_input_C_EC_Y+2));
             ////////////////////////////////////////////////////////////////////////////
             //Temp of new gen of populations
             TensorListList new_populations_list;
@@ -126,7 +126,7 @@ namespace tensorflow
             }
             //Get np 
             const int NP = current_populations_list[0].size();
-            //Tensor first evaluation of all ppopulations
+            //Tensor first evaluation of all populations
             Tensor current_eval_result(data_type<value_t>(),TensorShape({int64(NP)}));
             //fill all to 0
             fill<value_t>(current_eval_result,0);

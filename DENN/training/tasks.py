@@ -279,12 +279,18 @@ class DETask(object):
     def get_adaboost_cache(self, idx, batch):
         if idx not in self.__ada_boost_cache:
             self.__ada_boost_cache[idx] = (
+                ##
+                # C vector: size[len(batch)]
                 np.full(
                     [len(batch.data)], self.ada_boost.C, dtype=batch.data.dtype
                 ),
+                ##
+                # EC vector: size[len(pop), len(batch)]
                 np.full(
                     [self.NP, len(batch.data)], 0, dtype=np.bool
                 ),
+                ##
+                # y vector: size[len(pop), len(batch), len(classes)]
                 np.full(
                     [self.NP, len(batch.data), batch.labels.shape[-1]],
                     0.0,

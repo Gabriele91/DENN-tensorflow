@@ -1,5 +1,6 @@
 #include "config.h"
-
+#include <string>
+#include <sstream>
 namespace tensorflow
 {
     //type of CR
@@ -30,6 +31,24 @@ namespace tensorflow
         CRType           m_cr_type    { CR_BIN    };
         DifferenceVector m_diff_vector{ DIFF_ONE  };
         PerturbedVector  m_pert_vector{ PV_RANDOM };
+        //parser
+        void SetTypeFromString(const std::string& str_de_type)
+        {
+            //parsing
+            std::istringstream stream_de_type{str_de_type};
+            string type_elm;
+            //get values
+            while (std::getline(stream_de_type, type_elm, '/'))
+            {
+                    if (type_elm == "rand")            m_pert_vector = PV_RANDOM;
+                else if (type_elm == "best")           m_pert_vector = PV_BEST;
+                else if (type_elm == "rand-to-best")   m_pert_vector = PV_RAND_TO_BEST;
+                else if (type_elm == "1")              m_diff_vector = DIFF_ONE;
+                else if (type_elm == "2")              m_diff_vector = DIFF_TWO;
+                else if (type_elm == "bin")            m_cr_type = CR_BIN;
+                else if (type_elm == "exp")            m_cr_type = CR_EXP;
+            }
+        }
     };
 
     template < class value_t > 

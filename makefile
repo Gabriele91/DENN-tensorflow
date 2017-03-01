@@ -5,11 +5,10 @@ CC          ?= g++
 MKDIR_P     ?= mkdir -p
 MODULE_FOLDER ?= DENN
 TOP         ?= $(shell pwd)
-PYTHON_PATH ?= $(HOME)/.virtualenvs/TensorFlow/
 USE_DEBUG   ?= false
 OFFICIAL_BINARY ?= true
 #include list
-TF_INCLUDE = $(PYTHON_PATH)/lib/python3.5/site-packages/tensorflow/include
+TF_INCLUDE = $(shell python -c 'import tensorflow as tf; print(tf.sysconfig.get_include())')
 #Output name
 OUT_FILE_NAME_DENNOP = DENNOp
 OUT_FILE_NAME_DENNOP_TRAINING = DENNOp_training

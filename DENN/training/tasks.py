@@ -61,9 +61,16 @@ class TFFx(object):
         for string in self.name:
             tmp = getattr(tmp, string)
 
-        cur_args = list(args) + self.args
-        cur_kwargs = self.kwargs.copy()
-        cur_kwargs.update(kwargs)
+        if self.name[-1] == "softmax_cross_entropy_with_logits":
+            cur_kwargs = self.kwargs.copy()
+            cur_kwargs.update(kwargs)
+            cur_kwargs['logits'] = args[0]
+            cur_kwargs['labels'] = args[1]
+            cur_args = []
+        else:
+            cur_args = list(args) + self.args
+            cur_kwargs = self.kwargs.copy()
+            cur_kwargs.update(kwargs)
 
         return tmp(*cur_args, **cur_kwargs)
 

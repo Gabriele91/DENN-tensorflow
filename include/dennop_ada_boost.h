@@ -360,6 +360,7 @@ namespace tensorflow
             if NOT(this->SetCacheInputs(populations_list, NP_i))
             {
                 context->CtxFailure({tensorflow::error::Code::ABORTED,"Run evaluate: error to set inputs"});
+                assert(0);
                 return false;
             }
             //execute network
@@ -382,6 +383,7 @@ namespace tensorflow
                 if NOT(status.ok())
                 {
                     context->CtxFailure({tensorflow::error::Code::ABORTED,"Run execute network: "+status.ToString()});
+                    assert(0);
                     return false;
                 }
                 //return Y
@@ -458,6 +460,7 @@ namespace tensorflow
                 if NOT(status.ok())
                 {
                     context->CtxFailure({tensorflow::error::Code::ABORTED,"Run cross eval: "+status.ToString()});
+                    MSG_DEBUG("Run cross eval: " << status.ToString());
                     assert(0);
                     return value_t(-1);
                 }

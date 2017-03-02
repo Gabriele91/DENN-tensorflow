@@ -148,6 +148,7 @@ namespace tensorflow
                 //test best 
                 best.test_best(cur_best_eval,cur_best_id,current_populations_list);
                 //Test 
+                SetTestDataInCacheInputs();
                 cur_test_eval  = 
                 best_test_eval = ExecuteEvaluateTest(context, cur_best_id, current_populations_list);
                 //add results into vector
@@ -209,6 +210,7 @@ namespace tensorflow
                 );
 
                 //test 
+                SetTestDataInCacheInputs();
                 cur_test_eval = ExecuteEvaluateTest(context, cur_best_id, current_populations_list);
 
                 //update best 
@@ -379,8 +381,6 @@ namespace tensorflow
             //Execute validation test to all pop
             for(int individual_id = 1; individual_id < NP; ++individual_id)
             {         
-                //Change input 
-                SetValidationDataInCacheInputs();
                 //execute evaluation
                 value_t eval = ExecuteEvaluateValidation(context, individual_id, populations);
                 //is the best?
@@ -397,23 +397,6 @@ namespace tensorflow
                 }
             }
         }
-
-        /**
-         * Test best population
-         * @param Context
-         * @param current_populations_list, list of populations
-         * @param population index
-         */
-        value_t TestBest
-        (
-            OpKernelContext *context,
-            const TensorListList& current_populations_list,
-            int best_index
-        ) const
-        {
-            return ExecuteEvaluateTest(context, best_index, current_populations_list);
-        }
-
 
         //execute evaluate validation function (tensorflow function)   
         virtual value_t ExecuteEvaluateValidation

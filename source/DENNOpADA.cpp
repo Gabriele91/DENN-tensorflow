@@ -38,8 +38,8 @@ REGISTER_OP("DennAda")
       "'best/2/exp'  "
       "} = 'rand/1/bin'")
 .Input("info: int32") //[ NUM_GEN, CALC_FIRST_EVAL ]
-.Input("bach_labels: T")
-.Input("bach_data: T")
+.Input("batch_labels: T")
+.Input("batch_data: T")
 .Input("populations_list: space * T")
 .Input("c: T")
 .Input("ec: bool")

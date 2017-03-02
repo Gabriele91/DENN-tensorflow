@@ -79,10 +79,10 @@ namespace tensorflow
             //info 2; (COMPUTE FIRST VALUTATION OF POPULATION)
             const int calc_first_eval = t_metainfo_i.flat<int>()(1);
             ////////////////////////////////////////////////////////////////////////////
-            // get input bach labels
-            const Tensor& t_bach_labels = context->input(1);
-            // get input bach data
-            const Tensor& t_bach_features = context->input(2);
+            // get input batch labels
+            const Tensor& t_batch_labels = context->input(1);
+            // get input batch data
+            const Tensor& t_batch_features = context->input(2);
             ////////////////////////////////////////////////////////////////////////////
             // start input population
             const size_t start_input_population = 3;
@@ -115,8 +115,8 @@ namespace tensorflow
             ////////////////////////////////////////////////////////////////////////////
             //Alloc input 
             AllocCacheInputs(current_populations_list);
-            //Copy bach in input
-            SetDatasetInCacheInputs(t_bach_labels,t_bach_features);
+            //Copy batch in input
+            SetDatasetInCacheInputs(t_batch_labels,t_batch_features);
 
             ////////////////////////////////////////////////////////////////////////////
             // init evaluation
@@ -560,7 +560,7 @@ namespace tensorflow
         // population variables
         int                        m_space_size{ 1 };
 
-        //bach inputs
+        //batch inputs
         std::string m_input_labels;
         std::string m_input_features;
 

@@ -111,15 +111,15 @@ namespace tensorflow
 
             ////////////////////////////////////////////////////////////////////////////
             // START STREAM
-            m_dataset.start_read_bach();
-            // Load first bach
-            if NOT(LoadNextBach(context, NP)) return ;//false;
+            m_dataset.start_read_batch();
+            // Load first batch
+            if NOT(LoadNextBatch(context, NP)) return ;//false;
             //Set batch in input
-            if( !SetBachInCacheInputs() )
+            if( !SetBatchInCacheInputs() )
             {
                 context->CtxFailure({
                     tensorflow::error::Code::ABORTED,
-                    "Error add bach data in inputs"
+                    "Error add batch data in inputs"
                 });
                 return;
             }
@@ -174,11 +174,11 @@ namespace tensorflow
                 i_sub_gen != n_sub_gen && de_loop;    
                 //next    
                 ++i_sub_gen, 
-                LoadNextBach(context, NP) 
+                LoadNextBatch(context, NP) 
             )
             {
                 //Set batch in input
-                if( !SetBachInCacheInputs() )
+                if( !SetBatchInCacheInputs() )
                 {
                     context->CtxFailure({
                         tensorflow::error::Code::ABORTED,
@@ -275,30 +275,30 @@ namespace tensorflow
         }
 
         /**
-        * Load next bach
+        * Load next batch
         */
-        bool LoadNextBach(OpKernelContext *context, int NP)
+        bool LoadNextBatch(OpKernelContext *context, int NP)
         {
-            //Load bach
-            if( !m_dataset.read_bach(m_bach) )
+            //Load batch
+            if( !m_dataset.read_batch(m_batch) )
             {
                 context->CtxFailure({
                     tensorflow::error::Code::ABORTED,
-                    "Error stream dataset: can't read ["+std::to_string(m_dataset.get_last_bach_info().m_bach_id)+"] bach' "
+                    "Error stream dataset: can't read ["+std::to_string(m_dataset.get_last_batch_info().m_batch_id)+"] batch' "
                 });
                 return false;
             }
 
             #if 0
-            MSG_DEBUG("batch id: "  << m_dataset.get_last_bach_info().m_bach_id )
-            MSG_DEBUG("batch rows dim0: "  << m_dataset.get_last_bach_info().m_n_row )
+            MSG_DEBUG("batch id: "  << m_dataset.get_last_batch_info().m_batch_id )
+            MSG_DEBUG("batch rows dim0: "  << m_dataset.get_last_batch_info().m_n_row )
             MSG_DEBUG("nclass of batch class "  << m_dataset.get_main_header_info().m_n_classes )
             #endif
             //Init ada values
             InitAdaBatchValuesIfRequired
             (
-                  m_dataset.get_last_bach_info().m_bach_id
-                , m_dataset.get_last_bach_info().m_n_row
+                  m_dataset.get_last_batch_info().m_batch_id
+                , m_dataset.get_last_batch_info().m_n_row
                 , NP
                 , m_dataset.get_main_header_info().m_n_classes
             );
@@ -521,9 +521,9 @@ namespace tensorflow
         /**
         * Set dataset in m_inputs_tensor_cache
         */
-        virtual bool SetBachInCacheInputs() const
+        virtual bool SetBatchInCacheInputs() const
         {
-            return DENNOpAdaBoost_t::SetDatasetInCacheInputs( m_bach.m_labels, m_bach.m_features);
+            return DENNOpAdaBoost_t::SetDatasetInCacheInputs( m_batch.m_labels, m_batch.m_features);
         }
 
 
@@ -587,7 +587,7 @@ namespace tensorflow
 
         BatchValuesAda& GetLastAdaBatchValues()
         {
-            return  GetAdaBatchValues(m_dataset.get_last_bach_info().m_bach_id);
+            return  GetAdaBatchValues(m_dataset.get_last_batch_info().m_batch_id);
         }
 
 
@@ -599,8 +599,8 @@ namespace tensorflow
         value_t m_ada_C_init_value{ 1.0 };
         //dataset
         DataSetLoader< io_wrapper::zlib_file<> > m_dataset;
-        //Bach
-        DataSetRaw m_bach;
+        //Batch
+        DataSetRaw m_batch;
         DataSetRaw m_validation;
         DataSetRaw m_test;
         //dataset path

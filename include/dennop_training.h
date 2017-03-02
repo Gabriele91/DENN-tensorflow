@@ -98,11 +98,11 @@ namespace tensorflow
 
             ////////////////////////////////////////////////////////////////////////////
             // START STREAM
-            m_dataset.start_read_bach();
-            // Load first bach
-            if NOT(LoadNextBach(context)) return ;//false;
+            m_dataset.start_read_batch();
+            // Load first batch
+            if NOT(LoadNextBatch(context)) return ;//false;
             //Set batch in input
-            if( !SetBachInCacheInputs() )
+            if( !SetBatchInCacheInputs() )
             {
                 context->CtxFailure({
                     tensorflow::error::Code::ABORTED,
@@ -168,11 +168,11 @@ namespace tensorflow
                 i_sub_gen != n_sub_gen && de_loop;    
                 //next    
                 ++i_sub_gen, 
-                LoadNextBach(context) 
+                LoadNextBatch(context) 
             )
             {
                 //Set batch in input
-                if( !SetBachInCacheInputs() )
+                if( !SetBatchInCacheInputs() )
                 {
                     context->CtxFailure({
                         tensorflow::error::Code::ABORTED,
@@ -263,16 +263,16 @@ namespace tensorflow
         }
 
         /**
-        * Load next bach
+        * Load next batch
         */
-        bool LoadNextBach(OpKernelContext *context)
+        bool LoadNextBatch(OpKernelContext *context)
         {
-            //Load bach
-            if( !m_dataset.read_bach(m_bach) )
+            //Load batch
+            if( !m_dataset.read_batch(m_batch) )
             {
                 context->CtxFailure({
                     tensorflow::error::Code::ABORTED,
-                    "Error stream dataset: can't read ["+std::to_string(m_dataset.get_last_bach_info().m_bach_id)+"] bach' "
+                    "Error stream dataset: can't read ["+std::to_string(m_dataset.get_last_batch_info().m_batch_id)+"] batch' "
                 });
                 return false;
             }
@@ -447,9 +447,9 @@ namespace tensorflow
         /**
         * Set dataset in m_inputs_tensor_cache
         */
-        virtual bool SetBachInCacheInputs() const
+        virtual bool SetBatchInCacheInputs() const
         {
-            return DENNOp_t::SetDatasetInCacheInputs( m_bach.m_labels, m_bach.m_features);
+            return DENNOp_t::SetDatasetInCacheInputs( m_batch.m_labels, m_batch.m_features);
         }
 
         /**
@@ -473,8 +473,8 @@ namespace tensorflow
 
         //dataset
         DataSetLoader< io_wrapper::zlib_file<> > m_dataset;
-        //Bach
-        DataSetRaw m_bach;
+        //Batch
+        DataSetRaw m_batch;
         DataSetRaw m_validation;
         DataSetRaw m_test;
         //dataset path

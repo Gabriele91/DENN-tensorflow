@@ -614,7 +614,7 @@ class Operation(object):
                 ]
             ))
 
-            print(op_result.final_eval_of_best_of_best)
+            # print(op_result.final_eval_of_best_of_best)
             # print(dir(op_result))
             run_time = time() - time_start_gen
             print("++ Op time {}".format(run_time))

@@ -6,7 +6,6 @@ MKDIR_P     ?= mkdir -p
 MODULE_FOLDER ?= DENN
 TOP         ?= $(shell pwd)
 USE_DEBUG   ?= false
-OFFICIAL_BINARY ?= true
 #include list
 TF_INCLUDE = $(shell python -c 'import tensorflow as tf; print(tf.sysconfig.get_include())')
 #Output name
@@ -32,9 +31,6 @@ ifeq ($(shell uname -s),Linux)
 	LIKNER_FLAGS += -L$(TOP)/tf_static/linux/ -lprotobuf.pic
 	LIKNER_FLAGS += -L$(TOP)/tf_static/linux/ -lprotobuf_lite.pic
 	LIKNER_FLAGS += -L$(TOP)/tf_static/linux/ -lc_api.pic
-	ifeq ($(OFFICIAL_BINARY),true)
-		LIKNER_FLAGS += -L$(TOP)/tf_static/linux/ -lloader.pic # Needed only with official binary package
-	endif
 	# LIKNER_FLAGS += -L$(TOP)/tf_static/ -lpng_custom
 	LIKNER_FLAGS += -Wl,--no-whole-archive
 endif

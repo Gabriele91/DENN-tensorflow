@@ -5,11 +5,9 @@ CC          ?= g++
 MKDIR_P     ?= mkdir -p
 MODULE_FOLDER ?= DENN
 TOP         ?= $(shell pwd)
-PYTHON_PATH ?= $(HOME)/.virtualenvs/TensorFlow/
 USE_DEBUG   ?= false
-OFFICIAL_BINARY ?= true
 #include list
-TF_INCLUDE = $(PYTHON_PATH)/lib/python3.5/site-packages/tensorflow/include
+TF_INCLUDE = $(shell python -c 'import tensorflow as tf; print(tf.sysconfig.get_include())')
 #Output name
 OUT_FILE_NAME_DENNOP = DENNOp
 OUT_FILE_NAME_DENNOP_TRAINING = DENNOp_training
@@ -33,9 +31,6 @@ ifeq ($(shell uname -s),Linux)
 	LIKNER_FLAGS += -L$(TOP)/tf_static/linux/ -lprotobuf.pic
 	LIKNER_FLAGS += -L$(TOP)/tf_static/linux/ -lprotobuf_lite.pic
 	LIKNER_FLAGS += -L$(TOP)/tf_static/linux/ -lc_api.pic
-	ifeq ($(OFFICIAL_BINARY),true)
-		LIKNER_FLAGS += -L$(TOP)/tf_static/linux/ -lloader.pic # Needed only with official binary package
-	endif
 	# LIKNER_FLAGS += -L$(TOP)/tf_static/ -lpng_custom
 	LIKNER_FLAGS += -Wl,--no-whole-archive
 endif

@@ -7,6 +7,7 @@ import platform
 import psutil
 import telepot
 import signal
+import re
 
 signal.siginterrupt(signal.SIGHUP, False)
 
@@ -205,6 +206,8 @@ workon TensorFlow && """
                 msg.text.find("tail") != -1:
             try:
                 command, filename = msg.text.split(" ")
+                is_tail = command.find('tail') != -1
+                command =  command + ' -n 2' if is_tail else command
                 op_ret, res = self.__bash_call(
                     msg,
                     "cd ./scripts/logs && {} {}".format(
@@ -214,10 +217,14 @@ workon TensorFlow && """
                     "+ FILE {} with {}".format(filename, command)
                 )
                 if op_ret:
+                    text = (res+b'\0').decode('utf-8',errors='ignore')
+                    text = re.sub(r"([^\r]*)\r","",text) if is_tail else text
+                    #print(text)
                     self.bot.sendMessage(
                         msg.chat.id,
-                        res.decode("utf-8") if len(res) != 0 else "Empty file..."
+                        text.encode('utf-8') if len(res) != 0 else "Empty file..."
                     )
+                    #self.bot.sendDocument(msg.chat.id, document=text.encode('utf-8'))
             except:
                 self.bot.sendMessage(
                     msg.chat.id,
@@ -278,7 +285,6 @@ workon TensorFlow && """
 
 
 def main():
-
     bot = TFBot()
     print('Listening ...')
     # Keep the program running.

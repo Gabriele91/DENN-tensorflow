@@ -1,8 +1,8 @@
 // Place your settings in this file to overwrite default and user settings.
 {
-    "python.pythonPath": "/home/ocrim/.virtualenvs/TensorFlow/bin/python",
+    "python.pythonPath": "/home/gabriele/.virtualenvs/TensorFlow/bin/python",
     "files.associations": {
-        "*h*h*h*h*hnew": "cpp",
+        "new": "cpp",
         "exception": "cpp",
         "typeinfo": "cpp"
     }

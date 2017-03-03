@@ -57,7 +57,7 @@ namespace tensorflow
 
     ASPACKED(struct DataSetTrainHeader
     {
-        unsigned int m_bach_id;
+        unsigned int m_batch_id;
         unsigned int m_n_row;
     });
 
@@ -137,12 +137,17 @@ namespace tensorflow
             return false;
         }
         
-        const DataSetTrainHeader& get_last_bach_info() const
+        const DataSetHeader& get_main_header_info() const
+        {
+            return m_header;
+        }
+
+        const DataSetTrainHeader& get_last_batch_info() const
         {
             return m_train_header;
         }
 
-        bool start_read_bach()
+        bool start_read_batch()
         {
             if(is_open())
             {
@@ -154,7 +159,7 @@ namespace tensorflow
             return false;
         }
 
-        bool read_bach(DataSetRaw& t_out,bool loop = true)
+        bool read_batch(DataSetRaw& t_out,bool loop = true)
         {
             if(is_open())
             {
@@ -162,12 +167,12 @@ namespace tensorflow
                 m_file.read(&m_train_header,sizeof(DataSetTrainHeader),1);
                 //read data
                 bool status = read_raw(t_out, m_train_header.m_n_row);
-                //if loop enable and bach is the last
+                //if loop enable and batch is the last
                 if(loop  
-                &&(m_train_header.m_bach_id+1) == m_header.m_n_batch)
+                &&(m_train_header.m_batch_id+1) == m_header.m_n_batch)
                 {
                     //restart
-                    start_read_bach();
+                    start_read_batch();
                 }
                 return status;
             }

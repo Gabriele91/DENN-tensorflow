@@ -1,0 +1,204 @@
+[
+    {
+      "name": "03_03_small_mnist_L1_boost_smoothing_3",
+      "TYPE": "double",
+      "dataset_file": "../datasets/mnist_d_5699x53_5s.gz",
+      "TOT_GEN": 300000,
+      "GEN_STEP": 15,
+      "GEN_SAMPLES": 1,
+      "F": 2.0,
+      "NP": 25,
+      "CR": 0.9,
+      "de_types": [
+        "rand/1/bin"
+      ],
+      "reset_every": {
+        "epsilon": 0.015,
+        "counter": 3
+      },
+      "reinsert_best": true,
+      "NUM_INTRA_THREADS": 4,
+      "NUM_INTER_THREADS": 4,
+      "AdaBoost": {
+        "C": 1.0,
+        "alpha": 1.0
+      },
+      "training": true,
+      "clamp": {
+        "max": 30,
+        "min": -30
+      },
+      "smoothing": [
+        [
+          28,
+          28,
+          3
+        ]
+      ],
+      "smoothing_n_pass": 3,
+      "levels": [
+        {
+          "fx": {
+            "kwargs": {},
+            "name": "nn.softmax_cross_entropy_with_logits",
+            "args": []
+          },
+          "shape": [
+            [
+              784,
+              10
+            ],
+            [
+              10
+            ]
+          ],
+          "preferred_device": "CPU",
+          "start": [],
+          "init": [
+            {
+              "fx": {
+                "kwargs": {
+                  "minval": -15.0,
+                  "maxval": 15.0,
+                  "seed": 1
+                },
+                "name": "random_uniform",
+                "args": []
+              }
+            },
+            {
+              "fx": {
+                "kwargs": {
+                  "minval": -15.0,
+                  "maxval": 15.0,
+                  "seed": 1
+                },
+                "name": "random_uniform",
+                "args": []
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+        "name": "03_03_big_mnist_L1_boost",
+        "dataset_file": "../datasets/mnist_d_5perV_4000xB_5s.gz",
+        "TOT_GEN": 300000,
+        "GEN_STEP": 2000,
+        "TYPE": "double",
+        "F": 1.9,
+        "CR": 0.9,
+        "NP": 24,
+        "de_types": [
+            "rand/1/bin"
+        ],
+        "reset_every": {
+            "epsilon": 0.02,
+            "counter": 2
+        },
+        "reinsert_best": true,
+        "clamp": {
+            "min": -30,
+            "max": 30
+        },
+        "training": true,
+        "AdaBoost": {
+            "alpha": 1.0,
+            "C": 1.0
+        },
+        "levels": [
+            {
+                "shape": [[784,10], [10]],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits" 
+                },
+                "init": [
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -15.0, 
+                                "maxval": 15.0
+                            }
+                        }
+                    },
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -15.0, 
+                                "maxval": 15.0
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "name": "03_03_big_mnist_L1_boost_smoothing_8",
+        "dataset_file": "../datasets/mnist_d_5perV_4000xB_5s.gz",
+        "TOT_GEN": 300000,
+        "GEN_STEP": 2000,
+        "TYPE": "double",
+        "F": 1.9,
+        "CR": 0.9,
+        "NP": 24,
+        "de_types": [
+            "rand/1/bin"
+        ],
+        "smoothing_n_pass": 8,
+        "smoothing": [
+            [28, 28, 3]
+        ],
+        "reset_every": {
+            "epsilon": 0.02,
+            "counter": 2
+        },
+        "reinsert_best": true,
+        "clamp": {
+            "min": -30,
+            "max": 30
+        },
+        "training": true,
+        "AdaBoost": {
+            "alpha": 1.0,
+            "C": 1.0
+        },
+        "levels": [
+            {
+                "shape": [[784,10], [10]],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits" 
+                },
+                "init": [
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -15.0, 
+                                "maxval": 15.0
+                            }
+                        }
+                    },
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -15.0, 
+                                "maxval": 15.0
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+]

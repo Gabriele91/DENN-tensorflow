@@ -4,6 +4,7 @@
 #include "dennop_ada_boost.h"
 #include "dataset_loader.h"
 #include "training_util.h"
+#include <assert.h>
 
 namespace tensorflow
 {
@@ -12,6 +13,15 @@ namespace tensorflow
     {
 
         using DENNOpAdaBoost_t = DENNOpAdaBoost< value_t >;
+
+        //Struct of additional data of a batch
+        struct BatchValuesAda
+        {
+            bool       m_init = false;
+            Tensor     m_C;
+            TensorList m_EC;
+            TensorList m_pop_Y;
+        };
 
     public:
 
@@ -54,16 +64,11 @@ namespace tensorflow
             m_dataset.read_test(m_test);
             m_dataset.read_validation(m_validation);
 
-            /* todo get ADA C INIT */
-            #error get ada c
-            #if 0
-            //Get ada attributes 
-            m_C      = context->input(start_input_C_EC_Y);
-            // C errors list
-            m_EC     = splitDim0(context->input(start_input_C_EC_Y+1));
-            // C errors list
-            m_pop_Y = splitDim0(context->input(start_input_C_EC_Y+2));
-            #endif
+            /* get ADA C INIT value */
+            float ada_boost_c = 0.0;
+            OP_REQUIRES_OK(context, context->GetAttr("ada_boost_c",&ada_boost_c));
+            //cast C value
+            m_ada_C_init_value = value_t(ada_boost_c);
         }
 
         //star execution from python
@@ -76,14 +81,9 @@ namespace tensorflow
             const int tot_gen = t_metainfo_i.flat<int>()(0);
             //info 2: (STEP GEN)
             const int sub_gen = t_metainfo_i.flat<int>()(1);
-            //info 3; (COMPUTE FIRST VALUTATION OF POPULATION)
-            const int calc_first_eval = t_metainfo_i.flat<int>()(2);
-            ////////////////////////////////////////////////////////////////////////////
-            //get population first eval
-            const Tensor& population_first_eval = context->input(1);
             ////////////////////////////////////////////////////////////////////////////
             // start input
-            const size_t start_input = 2;
+            const size_t start_input = 1;
             //super gen
             const int n_sub_gen = tot_gen / sub_gen;
             ////////////////////////////////////////////////////////////////////////////
@@ -97,7 +97,8 @@ namespace tensorflow
             }
             //Test sizeof populations
             if NOT(TestPopulationSize(context,current_populations_list)) return;
-            
+            //Get np 
+            const int NP = current_populations_list[0].size(); 
             ////////////////////////////////////////////////////////////////////////////
             //Temp of new gen of populations
             TensorListList new_populations_list;
@@ -110,10 +111,18 @@ namespace tensorflow
 
             ////////////////////////////////////////////////////////////////////////////
             // START STREAM
-            m_dataset.start_read_bach();
-            // Load first bach
-            if NOT(LoadNextBach(context)) return ;//false;
-
+            m_dataset.start_read_batch();
+            // Load first batch
+            if NOT(LoadNextBatch(context, current_populations_list)) return ;//false;
+            //Set batch in input
+            if( !SetBatchInCacheInputs() )
+            {
+                context->CtxFailure({
+                    tensorflow::error::Code::ABORTED,
+                    "Error add batch data in inputs"
+                });
+                return;
+            }
             ////////////////////////////////////////////////////////////////////////////
             CacheBest< value_t > best;
             std::vector< value_t > list_eval_of_best;
@@ -136,11 +145,13 @@ namespace tensorflow
                     cur_best_id,
                     cur_best_eval,
                     cur_worst_id,
-                    cur_worst_eval
+                    cur_worst_eval,
+                    GetLastAdaBatchValues()
                 );
                 //test best 
                 best.test_best(cur_best_eval,cur_best_id,current_populations_list);
                 //Test 
+                SetTestDataInCacheInputs();
                 cur_test_eval  = 
                 best_test_eval = ExecuteEvaluateTest(context, cur_best_id, current_populations_list);
                 //add results into vector
@@ -148,14 +159,10 @@ namespace tensorflow
                 list_eval_of_best_of_best.push_back(best_test_eval);
             }
             ////////////////////////////////////////////////////////////////////////////
-            //Get np 
-            const int NP = current_populations_list[0].size(); 
-            
             // Tensor first evaluation of all populations
             Tensor current_eval_result(data_type<value_t>(),TensorShape({int64(NP)}));
             //fill all to 0
             fill<value_t>(current_eval_result,0);
-
             //loop    
             bool de_loop = true;
             ////////////////////////////////////////////////////////////////////////////
@@ -168,9 +175,20 @@ namespace tensorflow
                 i_sub_gen != n_sub_gen && de_loop;    
                 //next    
                 ++i_sub_gen, 
-                LoadNextBach(context) 
+                LoadNextBatch(context, current_populations_list) 
             )
             {
+                //Set batch in input
+                if( !SetBatchInCacheInputs() )
+                {
+                    context->CtxFailure({
+                        tensorflow::error::Code::ABORTED,
+                        "Error add batch data in inputs"
+                    });
+                    return;
+                }
+                //Get current ada values 
+                BatchValuesAda& ada_batch_values = GetLastAdaBatchValues();
                 //execute
                 de_loop = this->RunDe
                 (
@@ -182,6 +200,9 @@ namespace tensorflow
                  // In/Out
                  , current_populations_list
                  , current_eval_result
+                 , ada_batch_values.m_C 
+                 , ada_batch_values.m_EC
+                 , ada_batch_values.m_pop_Y
                 );
 
                 //find best
@@ -196,10 +217,12 @@ namespace tensorflow
                     cur_best_id,
                     cur_best_eval,
                     cur_worst_id,
-                    cur_worst_eval
+                    cur_worst_eval,
+                    ada_batch_values
                 );
 
                 //test 
+                SetTestDataInCacheInputs();
                 cur_test_eval = ExecuteEvaluateTest(context, cur_best_id, current_populations_list);
 
                 //update best 
@@ -254,29 +277,36 @@ namespace tensorflow
         }
 
         /**
-        * Load next bach
+        * Load next batch
         */
-        bool LoadNextBach(OpKernelContext *context)
+        bool LoadNextBatch(OpKernelContext *context,
+                           const TensorListList& populations)
         {
-            //Load bach
-            if( !m_dataset.read_bach(m_bach) )
+            //Load batch
+            if( !m_dataset.read_batch(m_batch) )
             {
                 context->CtxFailure({
                     tensorflow::error::Code::ABORTED,
-                    "Error stream dataset: can't read ["+std::to_string(m_dataset.get_last_bach_info().m_bach_id)+"] bach' "
+                    "Error stream dataset: can't read ["+std::to_string(m_dataset.get_last_batch_info().m_batch_id)+"] batch' "
                 });
                 return false;
             }
 
-            //Set bach in input
-            if( !SetBachInCacheInputs() )
-            {
-                context->CtxFailure({
-                    tensorflow::error::Code::ABORTED,
-                    "Error add bach data in inputs"
-                });
-                return false;
-            }
+            #if 0
+            MSG_DEBUG("batch id: "  << m_dataset.get_last_batch_info().m_batch_id )
+            MSG_DEBUG("batch rows dim0: "  << m_dataset.get_last_batch_info().m_n_row )
+            MSG_DEBUG("nclass of batch class "  << m_dataset.get_main_header_info().m_n_classes )
+            #endif
+            //Init ada values
+            InitAdaBatchValuesIfRequired
+            (
+                  context
+                , populations
+                , m_dataset.get_last_batch_info().m_batch_id
+                , m_dataset.get_last_batch_info().m_n_row
+                , m_dataset.get_main_header_info().m_n_classes
+            );
+
             return true;
         }
 
@@ -366,7 +396,8 @@ namespace tensorflow
             int&     best_id,
             value_t& best_eval,
             int&     worst_id,
-            value_t& worst_eval
+            value_t& worst_eval,
+            BatchValuesAda& ada_values
         )
         {          
             //Get np 
@@ -380,8 +411,6 @@ namespace tensorflow
             //Execute validation test to all pop
             for(int individual_id = 1; individual_id < NP; ++individual_id)
             {         
-                //Change input 
-                SetValidationDataInCacheInputs();
                 //execute evaluation
                 value_t eval = ExecuteEvaluateValidation(context, individual_id, populations);
                 //is the best?
@@ -427,7 +456,7 @@ namespace tensorflow
             NameList function{ 
                 m_name_validation //+":0"
             };
-            return this->ExecuteEvaluateAdaBoost(context, NP_i, populations_list, function);
+            return ExecuteEvaluate(context, NP_i, populations_list, function);
         }
 
         //execute evaluate test function (tensorflow function)   
@@ -441,17 +470,64 @@ namespace tensorflow
             NameList function{
                  m_name_test //+":0" 
             };
-            return this->ExecuteEvaluateAdaBoost(context, NP_i, populations_list, function);
+            return ExecuteEvaluate(context, NP_i, populations_list, function);
+        }
+
+        //execute evaluate function (tensorflow function)
+        virtual value_t ExecuteEvaluate
+        (
+            OpKernelContext* context,
+            const int NP_i,
+            const TensorListList& populations_list,
+            const NameList& functions_list
+        ) const
+        {
+            //Output
+            TensorList f_on_values;
+            //Set input
+            if NOT(this->SetCacheInputs(populations_list, NP_i))
+            {
+                context->CtxFailure({tensorflow::error::Code::ABORTED,"Run evaluate: error to set inputs"});
+                assert(0);
+                return -1.0;
+            }
+            //add labels 
+            this->m_inputs_tensor_cache.push_back({ this->m_input_labels, this->m_labels });
+            //execute
+            auto
+            status= this->m_session->Run
+            (
+                //input
+                this->m_inputs_tensor_cache,
+                //function
+                functions_list,
+                //one
+                NameList{ },
+                //output
+                &f_on_values
+            );
+            //remove m_input_labels
+            this->m_inputs_tensor_cache.pop_back();
+            //output error
+            if NOT(status.ok())
+            {
+                context->CtxFailure({tensorflow::error::Code::ABORTED,"Run evaluate: "+status.ToString()});
+                assert(0);
+                return -1.0;
+            }
+            //results
+            return f_on_values.size() ? f_on_values[0].flat<value_t>()(0) : 0.0;
         }
 
     protected:
         /**
         * Set dataset in m_inputs_tensor_cache
         */
-        virtual bool SetBachInCacheInputs() const
+        virtual bool SetBatchInCacheInputs() const
         {
-            return DENNOpAdaBoost_t::SetDatasetInCacheInputs( m_bach.m_labels, m_bach.m_features);
+            return DENNOpAdaBoost_t::SetDatasetInCacheInputs( m_batch.m_labels, m_batch.m_features);
         }
+
 
         /**
         * Set validation data in m_inputs_tensor_cache
@@ -469,13 +545,84 @@ namespace tensorflow
             return DENNOpAdaBoost_t::SetDatasetInCacheInputs(m_test.m_labels, m_test.m_features);
         }
 
+        /**
+        * Alloc no C, EC, Y is required
+        * @param populations
+        * @param batch id 
+        * @param batch size
+        * @param number of classes 
+        */ 
+        BatchValuesAda& InitAdaBatchValuesIfRequired
+        (
+            OpKernelContext *context,
+            const TensorListList& populations,
+            int id_batch, 
+            int len_batch,
+            int len_class
+        )
+        {
+            //alloc vector
+            if(m_cache_ada.size() <= id_batch) m_cache_ada.resize(id_batch+1);
+            //alloc variables
+            if NOT(m_cache_ada[id_batch].m_init)
+            {
+                //NP 
+                const int NP = populations[0].size();
+                //init
+                m_cache_ada[id_batch].m_init = true;
+                //alloc C 
+                m_cache_ada[id_batch].m_C = Tensor(data_type<value_t>(), TensorShape({int64(len_batch)}));
+                fill<value_t>(m_cache_ada[id_batch].m_C, m_ada_C_init_value);
+                //alloc EC 
+                for(int i=0; i!=NP; ++i)
+                {
+                    m_cache_ada[id_batch].m_EC.push_back(Tensor(data_type<bool>(), TensorShape({int64(len_batch)})));
+                    fill<bool>(m_cache_ada[id_batch].m_EC[i], false);
+                }
+                //alloc pop Y 
+                for(int i=0; i!=NP; ++i)
+                {
+                    value_t const_y_init = 0;
+                    m_cache_ada[id_batch].m_pop_Y.push_back(Tensor(data_type<value_t>(), TensorShape({int64(len_batch), int64(len_class)})));
+                    fill<value_t>(m_cache_ada[id_batch].m_pop_Y[i], const_y_init);
+                }
+                //Set batch in input
+                SetBatchInCacheInputs();
+                //compute Pop Y & EC
+                this->ComputePopY
+                (
+                      context
+                    , populations
+                    , m_cache_ada[id_batch].m_pop_Y
+                    , m_cache_ada[id_batch].m_EC
+                );
+            }
+            return m_cache_ada[id_batch];
+        }
+
+        BatchValuesAda& GetAdaBatchValues(int id_batch)
+        {
+            assert(id_batch < m_cache_ada.size());
+            return m_cache_ada[id_batch];
+        }
+
+
+        BatchValuesAda& GetLastAdaBatchValues()
+        {
+            return  GetAdaBatchValues(m_dataset.get_last_batch_info().m_batch_id);
+        }
+
 
     protected:
 
+        //ada boost data on batchs
+        std::vector < BatchValuesAda > m_cache_ada;
+        //ada init C
+        value_t m_ada_C_init_value{ 1.0 };
         //dataset
         DataSetLoader< io_wrapper::zlib_file<> > m_dataset;
-        //Bach
-        DataSetRaw m_bach;
+        //Batch
+        DataSetRaw m_batch;
         DataSetRaw m_validation;
         DataSetRaw m_test;
         //dataset path

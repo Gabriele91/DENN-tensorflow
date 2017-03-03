@@ -28,8 +28,8 @@ REGISTER_OP("DENN")
       "'best/2/exp'  "
       "} = 'rand/1/bin'")
 .Input("info: int32") //[ NUM_GEN, CALC_FIRST_EVAL ]
-.Input("bach_labels: T")
-.Input("bach_data: T")
+.Input("batch_labels: T")
+.Input("batch_data: T")
 .Input("population_first_eval: T")
 .Input("populations_list: space * T")
 .Output("final_populations: space * T")

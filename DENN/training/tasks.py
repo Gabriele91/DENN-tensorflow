@@ -260,9 +260,9 @@ class DETask(object):
         ##
         # AdaBoost
         tmp = cur_task.get("AdaBoost", None)
-        if self.training and tmp:
-            raise Exception(
-                "You can't use AdaBoost and training at the same time...")
+        #if self.training and tmp:
+        #    raise Exception(
+        #        "You can't use AdaBoost and training at the same time...")
         self.ada_boost = AdaBoost(tmp) if tmp is not None else tmp
         self.__ada_boost_cache = {}
 
@@ -517,9 +517,27 @@ class DETask(object):
                                 tf.argmax(label_placeholder, 1),
                                 name="ada_label_diff"
                             )
+                            #
+                            # y   # |BATCH| x |CLASS|
+                            # c   # |BATCH| x 1
+                            # --------------------------
+                            # y^t   # |CLASS| x |BATCH|
+                            # brodcast  multiply
+                            # c     #           |BATCH|
+                            # out^t # |CLASS| x |BATCH|
+                            # out   # |BATCH| x |CLASS|
+                            # --------------------------
+                            # (y^t * c )^t
+                            # 
+                            # https://docs.scipy.org/doc/numpy/user/basics.broadcasting.html
                             cross_entropy = tf.reduce_mean(
                                 cur_level.fx(
-                                    y_placeholder, label_placeholder
+                                    tf.transpose(
+                                        tf.multiply(
+                                            tf.transpose(y_placeholder), 
+                                            ada_C_placeholder
+                                        )
+                                    ), label_placeholder
                                 ),
                                 name="cross_entropy"
                             )

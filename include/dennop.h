@@ -64,10 +64,10 @@ public:
         //info 2; (COMPUTE FIRST VALUTATION OF POPULATION)
         const int calc_first_eval = t_metainfo_i.flat<int>()(1);
         ////////////////////////////////////////////////////////////////////////////
-        // get input bach labels
-        const Tensor& t_bach_labels = context->input(1);
-        // get input bach data
-        const Tensor& t_bach_features = context->input(2);
+        // get input batch labels
+        const Tensor& t_batch_labels = context->input(1);
+        // get input batch data
+        const Tensor& t_batch_features = context->input(2);
         ////////////////////////////////////////////////////////////////////////////
         //get population first eval
         const Tensor& population_first_eval = context->input(3);
@@ -95,8 +95,8 @@ public:
         ////////////////////////////////////////////////////////////////////////////
         //Alloc input 
         AllocCacheInputs(current_populations_list);
-        //Copy bach in input
-        SetDatasetInCacheInputs(t_bach_labels,t_bach_features);
+        //Copy batch in input
+        SetDatasetInCacheInputs(t_batch_labels,t_batch_features);
 
         ////////////////////////////////////////////////////////////////////////////
         //Tensor first evaluation of all ppopulations
@@ -328,18 +328,6 @@ public:
         {
             context->CtxFailure({tensorflow::error::Code::ABORTED,"Run evaluate: error to set inputs"});
         }
-        #if 0
-        //values
-        for (auto t : m_inputs_tensor_cache)
-        {
-            std::cout 
-            << "Input[" 
-            << t.first 
-            << "] = NDIM "
-            << t.second.shape().dims()
-            << std::endl;
-        }
-        #endif
         //execute
         auto
         status= m_session->Run(//input
@@ -448,7 +436,7 @@ protected:
     std::string                m_name_execute_net;
     NameList                   m_inputs_names;
     mutable TensorInputs       m_inputs_tensor_cache;
-    //bach inputs
+    //batch inputs
     std::string m_input_labels;
     std::string m_input_features;
     //debug

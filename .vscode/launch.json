@@ -5,16 +5,16 @@
             "name": "C++ Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${config.python.pythonPath}",
+            "program": "${config:python.pythonPath}",
             "args": [
-                "${workspaceRoot}/scripts/benchmark_ada.py",
+                "${workspaceRoot}/scripts/benchmark.py",
                 "${file}"
             ],
             //"stopAtEntry": true,
             "cwd": "${workspaceRoot}/scripts/",
             "environment": [],
-            // "externalConsole": true,
-            // "additionalSOLibSearchPath": "${workspaceRoot}/DENN;${workspaceRoot}/DENN/obj",
+            //"externalConsole": true,
+            "additionalSOLibSearchPath": "${workspaceRoot}/DENN;${workspaceRoot}/DENN/obj",
             "logging": {
                 "moduleLoad": true
                 //,  "trace": true
@@ -59,7 +59,7 @@
             "type": "python",
             "request": "launch",
             "stopOnEntry": true,
-            "pythonPath": "${config.python.pythonPath}",
+            "pythonPath": "${config:python.pythonPath}",
             "program": "${file}",
             "debugOptions": [
                 "WaitOnAbnormalExit",

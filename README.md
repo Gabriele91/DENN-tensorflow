@@ -15,6 +15,8 @@ objdump -t DENN/DENNOp.so
 objdump -t DENN/DENNOp.so | grep CheckOpMessageBuilder
 # demangling
 objdump -t DENN/DENNOp.so | grep CheckOpMessageBuilder | c++filt
+# Search in whole folder
+find -name '*.a' | xargs -t -n 1 objdump -t | grep something
 ```
 
 ## Build notes

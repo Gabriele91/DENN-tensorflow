@@ -61,9 +61,16 @@ class TFFx(object):
         for string in self.name:
             tmp = getattr(tmp, string)
 
-        cur_args = list(args) + self.args
-        cur_kwargs = self.kwargs.copy()
-        cur_kwargs.update(kwargs)
+        if self.name[-1] == "softmax_cross_entropy_with_logits":
+            cur_kwargs = self.kwargs.copy()
+            cur_kwargs.update(kwargs)
+            cur_kwargs['logits'] = args[0]
+            cur_kwargs['labels'] = args[1]
+            cur_args = []
+        else:
+            cur_args = list(args) + self.args
+            cur_kwargs = self.kwargs.copy()
+            cur_kwargs.update(kwargs)
 
         return tmp(*cur_args, **cur_kwargs)
 
@@ -272,12 +279,18 @@ class DETask(object):
     def get_adaboost_cache(self, idx, batch):
         if idx not in self.__ada_boost_cache:
             self.__ada_boost_cache[idx] = (
+                ##
+                # C vector: size[len(batch)]
                 np.full(
                     [len(batch.data)], self.ada_boost.C, dtype=batch.data.dtype
                 ),
+                ##
+                # EC vector: size[len(pop), len(batch)]
                 np.full(
                     [self.NP, len(batch.data)], 0, dtype=np.bool
                 ),
+                ##
+                # y vector: size[len(pop), len(batch), len(classes)]
                 np.full(
                     [self.NP, len(batch.data), batch.labels.shape[-1]],
                     0.0,

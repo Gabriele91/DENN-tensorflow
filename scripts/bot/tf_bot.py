@@ -110,6 +110,7 @@ workon TensorFlow && """
                 "- results (show results folder)\n"
                 "- configs (show config files)\n"
                 "- logs (show log files)\n"
+                "- dataests (show datasets)\n"
                 "- zip name (create a zip of results and send it)\n"
                 "- run name (run a configured DENN, only file name)\n"
                 "- cat log_name (cat on a log file)\n"
@@ -185,14 +186,17 @@ workon TensorFlow && """
             )
         elif msg.text == "results" or\
                 msg.text == "configs" or\
+                msg.text == "datasets" or\
                 msg.text == "logs":
             ls_folder = None
             if msg.text == "results":
                 ls_folder = "ls -ltr ./scripts/benchmark_results"
             elif msg.text == "configs":
-                ls_folder = "ls -ltr ./scripts/config"
+                ls_folder = "ls -ltr ./scripts/config/*.json"
             elif msg.text == "logs":
-                ls_folder = "ls -ltr ./scripts/logs"
+                ls_folder = "ls -ltr ./scripts/logs/*.out"
+            elif msg.text == "datasets":
+                ls_folder = "ls -ltr ./datasets/*.gz"
             op_ret, res = self.__bash_call(
                 msg,
                 ls_folder,
@@ -234,15 +238,22 @@ workon TensorFlow && """
         elif msg.text.find("zip") != -1:
             try:
                 _, filename = msg.text.split(" ")
+                try:
+                    os.makedirs("./scripts/benchmark_results/bot_zip")
+                except OSError as err:
+                    if err.errno == 17:
+                        pass
+                    else:
+                        raise
                 op_ret, res = self.__bash_call(
                     msg,
-                    "cd ./scripts/benchmark_results && rm -f -R {0}.zip && zip -r {0}.zip {0}".format(
+                    "cd ./scripts/benchmark_results && rm -f -R bot_zip/{0}.zip && zip -r bot_zip/{0}.zip {0}".format(
                         filename
                     ),
                     "Result zipped!"
                 )
                 if op_ret:
-                    with open("../benchmark_results/{0}.zip".format(filename), "rb") as zip_file:
+                    with open("../benchmark_results/bot_zip/{0}.zip".format(filename), "rb") as zip_file:
                         self.bot.sendDocument(
                             msg.chat.id,
                             zip_file

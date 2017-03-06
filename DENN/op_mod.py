@@ -693,8 +693,7 @@ class Operation(object):
             gen = int(self.job.GEN_STEP / self.job.GEN_SAMPLES)
 
             cur_batch = self.dataset[batch_counter]
-            batch_counter = (
-                batch_counter + 1) % self.dataset.num_batches
+            batch_counter += 1
 
             for sample in range(self.job.GEN_SAMPLES):
 

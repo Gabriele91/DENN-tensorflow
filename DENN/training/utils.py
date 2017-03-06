@@ -368,6 +368,9 @@ class Dataset(object):
                 yield Batch(data, labels)
 
     def __getitem__(self, index):
+        if index > self.num_batches - 1:
+            index %= self.num_batches
+
         with gzip.GzipFile(self.__file_name, mode='rb') as gz_file:
             gz_file.seek(self.stats.train_offset)
 

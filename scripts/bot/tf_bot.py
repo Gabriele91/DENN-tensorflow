@@ -238,16 +238,9 @@ workon TensorFlow && """
         elif msg.text.find("zip") != -1:
             try:
                 _, filename = msg.text.split(" ")
-                try:
-                    os.makedirs("./scripts/benchmark_results/bot_zip")
-                except OSError as err:
-                    if err.errno == 17:
-                        pass
-                    else:
-                        raise
                 op_ret, res = self.__bash_call(
                     msg,
-                    "cd ./scripts/benchmark_results && rm -f -R bot_zip/{0}.zip && zip -r bot_zip/{0}.zip {0}".format(
+                    "cd ./scripts/benchmark_results && mkdir -p bot_zip && rm -f -R bot_zip/{0}.zip && zip -r bot_zip/{0}.zip {0}".format(
                         filename
                     ),
                     "Result zipped!"

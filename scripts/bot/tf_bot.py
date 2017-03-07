@@ -140,7 +140,7 @@ workon TensorFlow && """
                         self.__bash_call(
                             msg,
                             "kill -9 {}".format(pinfo['pid']),
-                            "+ killed python processes with pid {}!".format(pinfo[
+                            "+ Killed python processes with pid {}!".format(pinfo[
                                                                             'pid'])
                         )
         elif msg.text.find("timeout") != -1:
@@ -149,7 +149,7 @@ workon TensorFlow && """
                 self.__bash_timeout = int(timeout.strip())
                 self.bot.sendMessage(
                     msg.chat.id,
-                    "Set timout {}".format(self.__bash_timeout)
+                    "+ Timeout -> {}".format(self.__bash_timeout)
                 )
             except:
                 self.bot.sendMessage(
@@ -165,24 +165,24 @@ workon TensorFlow && """
             self.__bash_call(
                 msg,
                 "git pull",
-                "+ git pull"
+                "+ Git pull done!"
             )
             self.__bash_call(
                 msg,
                 "cd datasets && git pull origin master",
-                "+ git pull datasets"
+                "+ Git pull datasets done!"
             )
         elif msg.text == "make clean":
             self.__bash_call(
                 msg,
                 "make clean",
-                "Clean done!"
+                "+ Clean done!"
             )
         elif msg.text == "make":
             self.__bash_call(
                 msg,
                 self.__tfenv + "make",
-                "Made all libs!"
+                "+ Made all libs!"
             )
         elif msg.text == "results" or\
                 msg.text == "configs" or\
@@ -243,7 +243,7 @@ workon TensorFlow && """
                     "cd ./scripts/benchmark_results && mkdir -p bot_zip && rm -f -R bot_zip/{0}.zip && zip -r bot_zip/{0}.zip {0}".format(
                         filename
                     ),
-                    "Result zipped!"
+                    "+ Result zipped!"
                 )
                 if op_ret:
                     with open("../benchmark_results/bot_zip/{0}.zip".format(filename), "rb") as zip_file:

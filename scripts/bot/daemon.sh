@@ -1,5 +1,6 @@
 #!/bin/bash
 
+touch daemon.pid ;
 PID=$(cat daemon.pid);
 
 if [[ $1 == "status" ]]; then

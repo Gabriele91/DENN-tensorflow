@@ -160,7 +160,7 @@ workon TensorFlow && """
             self.__bash_call(
                 msg,
                 "git reset --hard HEAD",
-                "+ git reset HEAD"
+                "+ Git reset to HEAD"
             )
             self.__bash_call(
                 msg,

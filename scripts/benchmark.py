@@ -145,9 +145,17 @@ def main():
                     ##
                     # Initial population insertion
                     for level in job.levels:
+                        for elm_idx, elem in enumerate(level.start_transposed):
+                            for ind_pos, individual_elm in enumerate(elem):
+                                cur_pop[elm_idx][ind_pos] = np.array(individual_elm)
+
+                    ##
+                    # Initial population insertion (individuals)
+                    for level in job.levels:
                         for ind_pos, individual in enumerate(level.start):
                             for elm_idx, elem in enumerate(individual):
                                 cur_pop[elm_idx][ind_pos] = np.array(elem)
+
 
                     prev_NN[de_type] = cur_pop
 

@@ -116,6 +116,7 @@ class Level(object):
         self.fx = TFFx(cur_lvl.get("fx"))
         self.init = cur_lvl.get("init", [])
         self.start = cur_lvl.get("start", [])
+        self.start_transposed = cur_lvl.get("start_transposed", [])
         ##
         # init parse
         if len(self.init) > 0 and len(self.init) != len(self.shape):
@@ -174,7 +175,8 @@ class Level(object):
             'fx': ...,
             'preferred_device': ...,
             'init': ...,
-            'start': ...
+            'start': ...,
+            'start_transposed': ..            
         }
         """
         return {
@@ -182,7 +184,8 @@ class Level(object):
             'fx': self.fx.to_dict(),
             'preferred_device': self.preferred_device,
             'init': self.__get_init_dict(),
-            'start': self.start
+            'start': self.start,
+            'start_transposed': self.start_transposed
         }
 
 

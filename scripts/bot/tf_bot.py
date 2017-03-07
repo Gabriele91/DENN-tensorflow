@@ -93,9 +93,9 @@ workon TensorFlow && """
 
     @staticmethod
     def __ls_filter(res):
-        files = res.decode("utf-8").split("\n")[1:]
+        files = [elm for elm in res.decode("utf-8").split("\n") if len(elm) > 1]
         files = ["- " + file_.split(" ")[-1]
-                 for file_ in reversed(files) if file_ != '']
+                 for file_ in reversed(files)]
         return "\n".join(files) if len(files) > 0 else "Folder empty..."
 
     def parse_message(self, msg):

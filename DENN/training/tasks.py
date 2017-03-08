@@ -12,7 +12,7 @@ __all__ = ["open_task_list", "task_dumps", "TaskEncoder"]
 def open_task_list(name):
     """Load as a python object a task list file."""
     with open(name, 'r') as task_list:
-        return json.load(task_list, cls=TaskDecoder)
+        return json.load(task_list, cls=TaskDecoder, file_name=name)
 
 
 def task_dumps(task, indent=4):
@@ -263,7 +263,7 @@ class DETask(object):
         ##
         # AdaBoost
         tmp = cur_task.get("AdaBoost", None)
-        #if self.training and tmp:
+        # if self.training and tmp:
         #    raise Exception(
         #        "You can't use AdaBoost and training at the same time...")
         self.ada_boost = AdaBoost(tmp) if tmp is not None else tmp
@@ -479,7 +479,7 @@ class DETask(object):
                                 tmp_init.append(
                                     tf.constant(
                                         np.array([init_elm.copy()
-                                         for _ in range(self.NP)]),
+                                                  for _ in range(self.NP)]),
                                         shape=[self.NP] + sizes[idx],
                                         dtype=cur_type
                                     )
@@ -531,13 +531,13 @@ class DETask(object):
                             # out   # |BATCH| x |CLASS|
                             # --------------------------
                             # (y^t * c )^t
-                            # 
+                            #
                             # https://docs.scipy.org/doc/numpy/user/basics.broadcasting.html
                             cross_entropy = tf.reduce_mean(
                                 cur_level.fx(
                                     tf.transpose(
                                         tf.multiply(
-                                            tf.transpose(y_placeholder), 
+                                            tf.transpose(y_placeholder),
                                             ada_C_placeholder
                                         )
                                     ), label_placeholder
@@ -729,10 +729,24 @@ class TaskDecoder(json.JSONDecoder):
             6 -> start end comment
 
         """
-        super(TaskDecoder, self).__init__(*args, **kwargs)
+        self.__file_name = kwargs.get("file_name")
+        del kwargs["file_name"]
+        self.__base_folder = path.dirname(path.abspath(self.__file_name))
         self.__state = 0
+        super(TaskDecoder, self).__init__(*args, **kwargs, object_pairs_hook=self.object_pairs_hook)
 
-    def decode(self, json_string):
+    def object_pairs_hook(self, list_):
+        for idx, (key, value) in enumerate(list_):
+            if type(value) == str:
+                if value[:6] == "import" and value[-1] == ";":
+                    file_to_import = value.split(" ")[1][:-1]
+                    file_path = path.join(self.__base_folder, file_to_import)
+                    with open(file_path, "r") as imported_file:
+                        res = self.decode(imported_file.read(), sub_json=True)
+                    list_[idx] = (key, res)
+        return dict(list_)
+
+    def decode(self, json_string, sub_json=False):
         """Decode properly a DE task list.
 
         Params:
@@ -815,8 +829,11 @@ class TaskDecoder(json.JSONDecoder):
 
         # print(final_string)
 
-        task_list = super(TaskDecoder, self).decode(final_string)
+        decoded_string = super(TaskDecoder, self).decode(final_string)
 
-        # print(task_list)
+        # print(decoded_string)
 
-        return DETaskList(task_list)
+        if not sub_json:
+            return DETaskList(decoded_string)
+        else:
+            return decoded_string

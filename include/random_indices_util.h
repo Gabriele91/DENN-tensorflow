@@ -11,6 +11,12 @@ namespace random_indices
         return std::rand() % size;
     }
     
+    //random value in flooting point [0,1]
+    inline double random0to1()
+    {
+        return ((double)std::rand()/(double)RAND_MAX);
+    }
+
     //(start to start) in range of [0,size]
     inline int randRangeCircleDiffFrom(int size, int diff)
     {

@@ -22,11 +22,15 @@ namespace tensorflow
             bool    enable,
             value_t factor,
             int     counter,
+            const std::string& reset_f,
+            const std::string& reset_cr,
             const NameList& rand_functions
         )
         : m_enable(enable)
         , m_factor(factor)
         , m_counter(counter)
+        , m_reset_F({reset_f})
+        , m_reset_CR({reset_cr})
         , m_rand_functions(rand_functions)
         , m_current_counter(0)
         , m_value((value_t)0)
@@ -70,11 +74,23 @@ namespace tensorflow
             return m_rand_functions;
         }
 
+        const NameList& GetResetF() const
+        {
+            return m_reset_F;
+        }
+
+        const NameList& GetResetCR() const
+        {
+            return m_reset_CR;
+        }
+
     protected:
         //const values
         bool     m_enable;
         value_t  m_factor;
         int      m_counter;   
+        NameList m_reset_F;
+        NameList m_reset_CR;
         NameList m_rand_functions;         
         //runtime
         int     m_current_counter;

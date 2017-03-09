@@ -38,17 +38,23 @@ namespace tensorflow
             std::string reset_type{"none"};
             float       reset_factor{100.0};
             int         reset_counter{0};
+            std::string reset_f;
+            std::string reset_cr;
             NameList    reset_rand_pop;
             OP_REQUIRES_OK(context, context->GetAttr("reset_type", &reset_type));
             OP_REQUIRES_OK(context, context->GetAttr("reset_fector", &reset_factor));
             OP_REQUIRES_OK(context, context->GetAttr("reset_counter", &reset_counter));
             OP_REQUIRES_OK(context, context->GetAttr("reset_rand_pop", &reset_rand_pop));
+            OP_REQUIRES_OK(context, context->GetAttr("reset_f", &reset_f));
+            OP_REQUIRES_OK(context, context->GetAttr("reset_cr", &reset_cr));
             //init 
             new (&m_reset) DEReset<value_t>
             (
                   reset_type != "none"
                 , (value_t)reset_factor
                 , reset_counter
+                , reset_f
+                , reset_cr
                 , reset_rand_pop
             );
             //reinsert best 
@@ -90,6 +96,10 @@ namespace tensorflow
             current_population_F_CR.emplace_back( context->input(1) );
             // get CR
             current_population_F_CR.emplace_back( context->input(2) );
+            //debug 
+            MSG_DEBUG( "|F,CR|: " << current_population_F_CR.size() )
+            MSG_DEBUG( "|F|: " << current_population_F_CR[0].shape().dim_size(0) )
+            MSG_DEBUG( "|CR|: " << current_population_F_CR[1].shape().dim_size(0) )
             ////////////////////////////////////////////////////////////////////////////
             // start input
             const size_t start_input = 3;
@@ -105,6 +115,8 @@ namespace tensorflow
             if NOT(TestPopulationSize(context,current_population_list)) return;
             //Get np 
             const int NP = current_population_list[0].size(); 
+            //debug 
+            MSG_DEBUG( "NP: " << NP )
             ////////////////////////////////////////////////////////////////////////////
             //Temp of new gen of populations
             TensorList     new_population_F_CR;
@@ -114,7 +126,12 @@ namespace tensorflow
                                current_population_list, 
                                new_population_F_CR,
                                new_population_list);
-
+            MSG_DEBUG( "new|F,CR|: " << new_population_F_CR.size() )
+            MSG_DEBUG( "new|F|: " << new_population_F_CR[0].shape().dim_size(0) )
+            MSG_DEBUG( "new|CR|: " << new_population_F_CR[1].shape().dim_size(0) )
+            MSG_DEBUG( "|new_population_list|: " << new_population_list.size() )
+            MSG_DEBUG( "|new_population_list[0]|: " << new_population_list[0].size() )
+            MSG_DEBUG( "|new_population_list[0][0]|: " << new_population_list[0][0].dim_size(0) )
             ////////////////////////////////////////////////////////////////////////////
             //Alloc input 
             this->AllocCacheInputs(current_population_list);
@@ -250,6 +267,9 @@ namespace tensorflow
                     {
                         current_population_list[layer_id][cur_worst_id] = best.m_individual[layer_id];
                     }
+                    //replace F and CR 
+                    current_population_F_CR[0].flat<value_t>()(cur_worst_id) = best.m_F;
+                    current_population_F_CR[1].flat<value_t>()(cur_worst_id) = best.m_CR;
                 }
 
                 //add into vector
@@ -257,7 +277,7 @@ namespace tensorflow
                 list_eval_of_best_of_best.push_back(best_test_eval);
                 
                 //Execute reset 
-                CheckReset(context, best, current_population_list);
+                CheckReset(context, best, current_population_F_CR, current_population_list);
             }
             ////////////////////////////////////////////////////////////////////////////
             int output_id=0;
@@ -344,6 +364,7 @@ namespace tensorflow
         */
         void CheckReset(OpKernelContext *context,
                         const CacheBest<value_t>& best,
+                        TensorList&     pop_F_CR,
                         TensorListList& populations)
         {
             //reset
@@ -370,7 +391,7 @@ namespace tensorflow
                     //output error
                     if NOT(status.ok())
                     {
-                        context->CtxFailure({tensorflow::error::Code::ABORTED,"Run execute random: "+status.ToString()});
+                        context->CtxFailure({tensorflow::error::Code::ABORTED,"Run execute random population: "+status.ToString()});
                         return /* fail */;
                     }
                     //return population
@@ -379,11 +400,64 @@ namespace tensorflow
                         populations.push_back(splitDim0(output_pop[i]));
                     }
                 }
+                //reset F 
+                {
+                    //output
+                    TensorList f_out;
+                    //execute
+                    auto
+                    status= this->m_session->Run
+                    (   //input
+                        TensorInputs{},
+                        //function
+                        m_reset.GetResetF(),
+                        //one
+                        NameList{ },
+                        //output
+                        &f_out
+                    );
+                    //output error
+                    if NOT(status.ok())
+                    {
+                        context->CtxFailure({tensorflow::error::Code::ABORTED,"Run execute reset F: "+status.ToString()});
+                        return /* fail */;
+                    }
+                    //return population
+                    pop_F_CR[0] = f_out[0];
+                }
+                //reset CR 
+                {
+                    //output
+                    TensorList cr_out;
+                    //execute
+                    auto
+                    status= this->m_session->Run
+                    (   //input
+                        TensorInputs{},
+                        //function
+                        m_reset.GetResetCR(),
+                        //one
+                        NameList{ },
+                        //output
+                        &cr_out
+                    );
+                    //output error
+                    if NOT(status.ok())
+                    {
+                        context->CtxFailure({tensorflow::error::Code::ABORTED,"Run execute reset CR: "+status.ToString()});
+                        return /* fail */;
+                    }
+                    //return population
+                    pop_F_CR[1] = cr_out[0];
+                }
                 //push best
                 for(int layer_id=0; layer_id!=populations.size(); ++layer_id)
                 {
                     populations[layer_id][best.m_id] = best.m_individual[layer_id];
                 }
+                //replace F and CR on best id
+                pop_F_CR[0].flat<value_t>()(best.m_id) = best.m_F;
+                pop_F_CR[1].flat<value_t>()(best.m_id) = best.m_CR;
             }
         }
 

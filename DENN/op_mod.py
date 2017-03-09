@@ -19,7 +19,7 @@ __all__ = ['Operation', 'create', 'update_best_of']
 OUT_FOLDER = "benchmark_results"
 
 
-def update_best_of(de_type, test_results, new_accuracy, new_individual, job):
+def update_best_of(de_type, test_results, new_accuracy, new_f, new_cr, new_individual, job):
     """Tracks the best of the whole evolution.
 
     Params:
@@ -27,14 +27,20 @@ def update_best_of(de_type, test_results, new_accuracy, new_individual, job):
         test_results (dict): container of all results
         new_accuracy (float): the accuracy of the new best individual of
                               the current population
+        new_f (float) : scale factor of new best 
+        new_cr (float) : crossover rate of new best 
         new_individual (numpy.ndarray): the current best individual 
                                         weights and biases
     """
     if test_results[de_type].best_of['accuracy'][-1] < new_accuracy:
         test_results[de_type].best_of['accuracy'].append(new_accuracy)
+        test_results[de_type].best_of['F'] = new_f
+        test_results[de_type].best_of['CR'] = new_cr
         test_results[de_type].best_of['individual'] = new_individual
         job.best['accuracy'] = new_accuracy
         job.best['individual'] = new_individual
+        job.best['F'] = new_f
+        job.best['CR'] = new_cr
         return True
     else:
         last_accuracy = test_results[de_type].best_of['accuracy'][-1]
@@ -76,6 +82,9 @@ class Operation(object):
         self._module = None
         
         if job.ada_boost is not None and job.training:
+            ###########################################
+            # TRAINING DENN ADA BOOST
+            ###########################################
             self._module = tf.load_op_library(path.join(
                 path.dirname(__file__), 'DENNOp_ada_training.so')
             )
@@ -86,8 +95,10 @@ class Operation(object):
                 # input params
                 # [num_gen, step_gen ]
                 [self.job.TOT_GEN, self.job.GEN_STEP],
-                # POPULATIONS
-                self.net.populations, 
+                # POPULATIONS and F and CR
+                self.net.F_placeholder,
+                self.net.CR_placeholder,
+                self.net.populations,
                 # attributes
                 graph=get_graph_proto(
                     self.net.graph.as_graph_def()),
@@ -109,22 +120,27 @@ class Operation(object):
                 #ADA
                 ada_boost_alpha=self.job.ada_boost.alpha,
                 ada_boost_c=self.job.ada_boost.C,
-                F=self.job.F,
-                CR=self.job.CR,
+                JDE=self.job.JDE,
                 DE=de_type,
                 f_min=self.job.clamp.min,
                 f_max=self.job.clamp.max,
                 smoothing=self.job.smoothing,
                 smoothing_n_pass=self.job.smoothing_n_pass,
+                #TRAIN
                 reset_type='execute' if exists_reset_every else 'none',
                 reset_fector=self.job.reset_every[
                     'epsilon'] if exists_reset_every else 100.0,
                 reset_counter=self.job.reset_every[
                     'counter'] if exists_reset_every else 1,
+                reset_f = self.net.F_init.name,
+                reset_cr = self.net.CR_init.name,
                 reset_rand_pop=[tfop.name for tfop in self.net.rand_pop],
                 reinsert_best=self.job.reinsert_best 
             )
         elif job.ada_boost is not None:
+            ###########################################
+            # DENN ADA BOOST
+            ###########################################
             self._module = tf.load_op_library(path.join(
                 path.dirname(__file__), 'DENNOp_ada.so')
             )
@@ -134,7 +150,11 @@ class Operation(object):
                 self.net.cur_gen_options,
                 self.net.label_placeholder,
                 self.net.input_placeholder,
-                self.net.populations,  # POPULATIONS
+                # POPULATIONS and F and CR
+                self.net.F_placeholder,
+                self.net.CR_placeholder,
+                self.net.populations, 
+                # ADA
                 self.net.ada_C_placeholder,
                 self.net.ada_EC_placeholder,
                 self.net.population_y_placeholder,
@@ -151,8 +171,7 @@ class Operation(object):
                 f_input_cross_entropy_y=self.net.y_placeholder.name,
                 f_input_cross_entropy_c=self.net.ada_C_placeholder.name,
                 ada_boost_alpha=self.job.ada_boost.alpha,
-                F=self.job.F,
-                CR=self.job.CR,
+                JDE=self.job.JDE,
                 DE=self.de_type,
                 f_min=self.job.clamp.min,
                 f_max=self.job.clamp.max,
@@ -160,6 +179,9 @@ class Operation(object):
                 smoothing_n_pass=self.job.smoothing_n_pass
             )
         elif job.training:
+            ###########################################
+            # TRAINING DENN standard
+            ###########################################
             self._module = tf.load_op_library(path.join(
                 path.dirname(__file__), 'DENNOp_training.so')
             )
@@ -201,6 +223,9 @@ class Operation(object):
                 reinsert_best=self.job.reinsert_best 
             )
         else:
+            ###########################################
+            # DENN standard
+            ###########################################
             self._module = tf.load_op_library(path.join(
                 path.dirname(__file__), 'DENNOp.so')
             )
@@ -348,8 +373,14 @@ class Operation(object):
             cur_pop[num][idx_worst] = test_results[
                 self.de_type].best_of['individual'][num]
 
-    def __reset_with_1_best(self, sess, cur_pop, best, new_best_pos=0):
+    def __reset_with_1_best(self, sess, cur_pop, best_f, best_cr, best, new_best_pos=0):
         """Reset the whole population and put one best individual."""
+        ##
+        # int new F & CR 
+        cur_f = sess.run(self.net.F_init)
+        cur_cr = sess.run(self.net.CR_init)
+        cur_f[new_best_pos] = best_f
+        cur_cr[new_best_pos] = best_cr
 
         ##
         # Random initialization of the NN
@@ -360,9 +391,9 @@ class Operation(object):
         for elm_idx, elem in enumerate(best):
             cur_pop[elm_idx][new_best_pos] = elem
 
-        return cur_pop
+        return (cur_f, cur_cr, cur_pop)
 
-    def adaboost_run(self, sess, prev_NN, test_results, options={}):
+    def adaboost_run(self, sess, prev_F, prev_CR, prev_NN, test_results, options={}):
         """Run for AdaBoost jobs."""
         ##
         # get options
@@ -423,6 +454,11 @@ class Operation(object):
                     ]
                     +
                     [
+                        (self.net.F_placeholder, prev_F[self.de_type]),
+                        (self.net.CR_placeholder, prev_CR[self.de_type])
+                    ]
+                    +
+                    [
                         (self.net.cur_gen_options, [
                          self.job.GEN_STEP, first_time])
                     ]
@@ -439,6 +475,8 @@ class Operation(object):
                 ##
                 # get output
                 cur_pop = results.final_populations
+                cur_f   = results.final_f
+                cur_cr  = results.final_cr
 
                 # print(results.final_c)
                 # print(results.final_ec)
@@ -521,6 +559,8 @@ class Operation(object):
                     self.de_type,
                     test_results,
                     cur_accuracy,
+                    cur_f[best_idx],
+                    cur_cr[best_idx],
                     [
                         cur_pop[num][best_idx] for num, target in enumerate(self.net.targets)
                     ],
@@ -528,6 +568,8 @@ class Operation(object):
                 )
 
                 test_results[self.de_type].population = cur_pop
+                test_results[self.de_type].F_population = cur_f
+                test_results[self.de_type].CR_population = cur_cr
 
                 if self.job.reinsert_best and not best_changed:
                     self.__reinsert_best(cur_pop, evaluations, test_results)
@@ -540,6 +582,8 @@ class Operation(object):
                 #     )
                 # )
 
+                prev_F[self.de_type] = cur_f
+                prev_CR[self.de_type] = cur_cr
                 prev_NN[self.de_type] = cur_pop
 
                 pbar.update(gen)
@@ -562,11 +606,15 @@ class Operation(object):
                 # Check for new population
                 if reset_counter >= self.job.reset_every['counter']:
                     reset_counter = 0
-                    cur_pop = self.__reset_with_1_best(
+                    cur_f, cur_cr, cur_pop = self.__reset_with_1_best(
                         sess,
                         cur_pop,
+                        test_results[self.de_type].best_of['F'],
+                        test_results[self.de_type].best_of['CR'],
                         test_results[self.de_type].best_of['individual']
                     )
+                    prev_F[self.de_type] = cur_f
+                    prev_CR[self.de_type] = cur_cr
                     prev_NN[self.de_type] = cur_pop
                     ##
                     # TO DO
@@ -590,11 +638,13 @@ class Operation(object):
 
         pbar.close()
 
-    def training_run(self, sess, prev_NN, test_results, options={}):
+    def training_run(self, sess, prev_F, prev_CR, prev_NN, test_results, options={}):
         """Run for training jobs."""
         start_job = options.get('start_job')
 
         cur_pop = prev_NN[self.de_type]
+        cur_f   = prev_F[self.de_type]
+        cur_cr  = prev_CR[self.de_type]
 
         # Soket listener
         with OpListener(tot_steps=self.job.TOT_GEN) as listener:
@@ -611,6 +661,11 @@ class Operation(object):
                 [
                     (pop_ref, cur_pop[num])
                     for num, pop_ref in enumerate(self.net.populations)
+                ]
+                +
+                [
+                    (self.net.F_placeholder, cur_f),
+                    (self.net.CR_placeholder, cur_cr)
                 ]
             ))
 
@@ -641,8 +696,12 @@ class Operation(object):
             # Extract population values
             test_results[self.de_type].values = op_result.final_eval_of_best
             test_results[self.de_type].population = op_result.final_populations
+            test_results[self.de_type].F_population = op_result.final_f
+            test_results[self.de_type].CR_population = op_result.final_cr
             ##
             # Extract best values
+            test_results[self.de_type].best_of['F'] = op_result.final_best_f
+            test_results[self.de_type].best_of['CR'] = op_result.final_best_cr
             test_results[self.de_type].best_of['accuracy'] = op_result.final_eval_of_best_of_best
             test_results[self.de_type].best_of['individual'] = op_result.final_best
             self.job.best['accuracy'] = op_result.final_eval_of_best_of_best
@@ -664,7 +723,7 @@ class Operation(object):
             self.job.accuracy[self.de_type] = cur_accuracy
             self.job.best[self.de_type] = op_result
 
-    def standard_run(self, sess, prev_NN, test_results, options={}):
+    def standard_run(self, sess, prev_F, prev_CR, prev_NN, test_results, options={}):
         """Run for standard jobs."""
         ##
         # get options

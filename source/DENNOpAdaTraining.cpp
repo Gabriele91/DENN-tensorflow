@@ -27,6 +27,8 @@ REGISTER_OP("DennAdaTraining")
 .Attr("reset_type: {'none','execute'} = 'none'")
 .Attr("reset_fector: float = 100.0")
 .Attr("reset_counter: int  = 0")
+.Attr("reset_f: string")
+.Attr("reset_cr: string")
 .Attr("reset_rand_pop: list(string)")
 //insert best 
 .Attr("reinsert_best: bool = false")

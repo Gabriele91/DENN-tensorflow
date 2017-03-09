@@ -48,6 +48,7 @@ namespace tensorflow
         // get smoothing shapes
         context->GetAttr("smoothing", &shapes_smoothing);
         // params float to value_t
+        MSG_DEBUG( "JDE" << f_JDE  << ", min:" << f_f_min << " max:" << f_f_max );
         de_factors.m_JDE    = value_t(f_JDE);
         de_factors.m_f_min  = value_t(f_f_min);
         de_factors.m_f_max  = value_t(f_f_max);

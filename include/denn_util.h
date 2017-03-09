@@ -30,18 +30,15 @@ namespace tensorflow
     { 
         // float params temp
         float
-        f_CR,
-        f_F,
+        f_JDE,
         f_f_min,
         f_f_max;
         // int params temp
         int smoothing_n_pass;
         //shape param temp
         std::vector<TensorShapeProto> shapes_smoothing;
-        // get CR
-        context->GetAttr("CR", &f_CR);
-        // get F
-        context->GetAttr("F", &f_F);
+        // get JDE
+        context->GetAttr("JDE", &f_JDE);
         // get f min
         context->GetAttr("f_min", &f_f_min);
         // get f max
@@ -51,8 +48,7 @@ namespace tensorflow
         // get smoothing shapes
         context->GetAttr("smoothing", &shapes_smoothing);
         // params float to value_t
-        de_factors.m_CR     = value_t(f_CR);
-        de_factors.m_F      = value_t(f_F);
+        de_factors.m_JDE    = value_t(f_JDE);
         de_factors.m_f_min  = value_t(f_f_min);
         de_factors.m_f_max  = value_t(f_f_max);
         //smoothing

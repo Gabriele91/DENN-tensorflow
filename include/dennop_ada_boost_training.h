@@ -81,39 +81,49 @@ namespace tensorflow
             const int tot_gen = t_metainfo_i.flat<int>()(0);
             //info 2: (STEP GEN)
             const int sub_gen = t_metainfo_i.flat<int>()(1);
-            ////////////////////////////////////////////////////////////////////////////
-            // start input
-            const size_t start_input = 1;
             //super gen
             const int n_sub_gen = tot_gen / sub_gen;
             ////////////////////////////////////////////////////////////////////////////
+            // F and CR
+            TensorList  current_population_F_CR;
+            // get F
+            current_population_F_CR.emplace_back( context->input(1) );
+            // get CR
+            current_population_F_CR.emplace_back( context->input(2) );
+            ////////////////////////////////////////////////////////////////////////////
+            // start input
+            const size_t start_input = 3;
             // populations
-            TensorListList  current_populations_list;
+            TensorListList  current_population_list;
             // populations inputs
             for(int i=0; i != this->m_space_size; ++i)
             {
                 const Tensor& population = context->input(start_input+i);
-                current_populations_list.push_back(splitDim0(population));
+                current_population_list.emplace_back(splitDim0(population));
             }
             //Test sizeof populations
-            if NOT(TestPopulationSize(context,current_populations_list)) return;
+            if NOT(TestPopulationSize(context,current_population_list)) return;
             //Get np 
-            const int NP = current_populations_list[0].size(); 
+            const int NP = current_population_list[0].size(); 
             ////////////////////////////////////////////////////////////////////////////
             //Temp of new gen of populations
-            TensorListList new_populations_list;
+            TensorList     new_population_F_CR;
+            TensorListList new_population_list;
             //Alloc temp vector of populations
-            this->GenCachePopulation(current_populations_list,new_populations_list);            
-            
+            AllocNewPopulation(current_population_F_CR,
+                               current_population_list, 
+                               new_population_F_CR,
+                               new_population_list);
+
             ////////////////////////////////////////////////////////////////////////////
             //Alloc input 
-            this->AllocCacheInputs(current_populations_list);
+            this->AllocCacheInputs(current_population_list);
 
             ////////////////////////////////////////////////////////////////////////////
             // START STREAM
             m_dataset.start_read_batch();
             // Load first batch
-            if NOT(LoadNextBatch(context, current_populations_list)) return ;//false;
+            if NOT(LoadNextBatch(context, current_population_list)) return ;//false;
             //Set batch in input
             if( !SetBatchInCacheInputs() )
             {
@@ -141,7 +151,7 @@ namespace tensorflow
                 FindBestAndWorst
                 (
                     context, 
-                    current_populations_list,
+                    current_population_list,
                     cur_best_id,
                     cur_best_eval,
                     cur_worst_id,
@@ -149,11 +159,11 @@ namespace tensorflow
                     GetLastAdaBatchValues()
                 );
                 //test best 
-                best.test_best(cur_best_eval,cur_best_id,current_populations_list);
+                best.TestBest(cur_best_eval, cur_best_id, current_population_F_CR, current_population_list);
                 //Test 
                 SetTestDataInCacheInputs();
                 cur_test_eval  = 
-                best_test_eval = ExecuteEvaluateTest(context, cur_best_id, current_populations_list);
+                best_test_eval = ExecuteEvaluateTest(context, cur_best_id, current_population_list);
                 //add results into vector
                 list_eval_of_best.push_back(cur_test_eval);
                 list_eval_of_best_of_best.push_back(best_test_eval);
@@ -175,7 +185,7 @@ namespace tensorflow
                 i_sub_gen != n_sub_gen && de_loop;    
                 //next    
                 ++i_sub_gen, 
-                LoadNextBatch(context, current_populations_list) 
+                LoadNextBatch(context, current_population_list) 
             )
             {
                 //Set batch in input
@@ -196,10 +206,13 @@ namespace tensorflow
                    context
                  , sub_gen
                  // Cache
-                 , new_populations_list
+                 , new_population_F_CR
+                 , new_population_list
                  // In/Out
-                 , current_populations_list
                  , current_eval_result
+                 , current_population_F_CR
+                 , current_population_list
+                 //ADA
                  , ada_batch_values.m_C 
                  , ada_batch_values.m_EC
                  , ada_batch_values.m_pop_Y
@@ -213,7 +226,7 @@ namespace tensorflow
                 FindBestAndWorst
                 (
                     context, 
-                    current_populations_list,
+                    current_population_list,
                     cur_best_id,
                     cur_best_eval,
                     cur_worst_id,
@@ -223,19 +236,19 @@ namespace tensorflow
 
                 //test 
                 SetTestDataInCacheInputs();
-                cur_test_eval = ExecuteEvaluateTest(context, cur_best_id, current_populations_list);
+                cur_test_eval = ExecuteEvaluateTest(context, cur_best_id, current_population_list);
 
                 //update best 
-                if( best.test_best(cur_best_eval, cur_best_id, current_populations_list) )
+                if( best.TestBest(cur_best_eval, cur_best_id, current_population_F_CR, current_population_list) )
                 {
                    best_test_eval = cur_test_eval;
                 }
                 else if(m_reinsert_best)
                 {
                     //replace wrost
-                    for(int layer_id=0; layer_id!=current_populations_list.size(); ++layer_id)
+                    for(int layer_id=0; layer_id!=current_population_list.size(); ++layer_id)
                     {
-                        current_populations_list[layer_id][cur_worst_id] = best.m_individual[layer_id];
+                        current_population_list[layer_id][cur_worst_id] = best.m_individual[layer_id];
                     }
                 }
 
@@ -244,7 +257,7 @@ namespace tensorflow
                 list_eval_of_best_of_best.push_back(best_test_eval);
                 
                 //Execute reset 
-                CheckReset(context, best, current_populations_list);
+                CheckReset(context, best, current_population_list);
             }
             ////////////////////////////////////////////////////////////////////////////
             int output_id=0;
@@ -253,26 +266,38 @@ namespace tensorflow
             OutputVector(context,output_id++,list_eval_of_best);
             OutputVector(context,output_id++,list_eval_of_best_of_best);
             ////////////////////////////////////////////////////////////////////////////
+            // Output best F value 
+            OutputValue(context,output_id++, best.m_F);
+            // Output best CR value 
+            OutputValue(context,output_id++, best.m_CR);
             // Output best pop
             for(int i=0; i != this->m_space_size; ++i)
             {
                 //Output ptr
-                Tensor* new_generation_tensor = nullptr;
+                Tensor* output_tensor = nullptr;
                 //Get output tensor
-                const Tensor& best_population = best.m_individual[i];
+                const Tensor& best_layer_list = best.m_individual[i];
                 //Alloc
-                OP_REQUIRES_OK(context, context->allocate_output(output_id++, best_population.shape(), &new_generation_tensor));
+                OP_REQUIRES_OK(context, context->allocate_output(output_id++, best_layer_list.shape(), &output_tensor));
                 //copy tensor
-                (*new_generation_tensor) = best_population;
+                (*output_tensor) = best_layer_list;
             }
-            ////////////////////////////////////////////////////////////////////////////
+            ////////////////////////////////////////////////////////////////////////////          
+            // Output F CR
+            for(int i=0; i != current_population_F_CR.size(); ++i)
+            {
+                Tensor* output_tensor = nullptr;
+                Tensor& current_f_or_cr = current_population_F_CR[i];
+                OP_REQUIRES_OK(context, context->allocate_output(output_id++, current_f_or_cr.shape(), &output_tensor));
+                (*output_tensor) = current_f_or_cr;
+            }
             // Output populations
             for(int i=0; i != this->m_space_size; ++i)
             {
-                Tensor* new_generation_tensor = nullptr;
-                Tensor current_pop = concatDim0(current_populations_list[i]);
-                OP_REQUIRES_OK(context, context->allocate_output(output_id++, current_pop.shape(), &new_generation_tensor));
-                (*new_generation_tensor) = current_pop;
+                Tensor* output_tensor = nullptr;
+                Tensor current_pop = concatDim0(current_population_list[i]);
+                OP_REQUIRES_OK(context, context->allocate_output(output_id++, current_pop.shape(), &output_tensor));
+                (*output_tensor) = current_pop;
             }
         }
 
@@ -363,16 +388,16 @@ namespace tensorflow
         }
 
         /**
-        * copy vector to tensor as output
+        * copy vector to output tensor
         */
         void OutputVector(OpKernelContext *context, int output, std::vector < value_t >& list_values)
         {
             //Output ptr
-            Tensor* new_generation_tensor = nullptr;
+            Tensor* output_tensor = nullptr;
             //alloc
-            OP_REQUIRES_OK(context, context->allocate_output(output, TensorShape({int64(list_values.size())}), &new_generation_tensor));
+            OP_REQUIRES_OK(context, context->allocate_output(output, TensorShape({int64(list_values.size())}), &output_tensor));
             //copy
-            auto output_ptr = new_generation_tensor->flat<value_t>();
+            auto output_ptr = output_tensor->flat<value_t>();
             //copy all
             for(int i = 0; i!= (int)list_values.size(); ++i)
             {
@@ -380,6 +405,20 @@ namespace tensorflow
             }
         }
 
+        /**
+        * copy value to output tensor
+        */
+        void OutputValue(OpKernelContext *context, int output, value_t value)
+        {
+            //Output ptr
+            Tensor* output_tensor = nullptr;
+            //alloc
+            OP_REQUIRES_OK(context, context->allocate_output(output, TensorShape({int64(1)}), &output_tensor));
+            //copy
+            auto output_ptr = output_tensor->flat<value_t>();
+            //copy
+            output_ptr(0) = value;
+        }
 
         /**
          * Find best individual in populations
@@ -431,17 +470,17 @@ namespace tensorflow
         /**
          * Test best population
          * @param Context
-         * @param current_populations_list, list of populations
+         * @param current_population_list, list of populations
          * @param population index
          */
         value_t TestBest
         (
             OpKernelContext *context,
-            const TensorListList& current_populations_list,
+            const TensorListList& current_population_list,
             int best_index
         ) const
         {
-            return ExecuteEvaluateTest(context, best_index, current_populations_list);
+            return ExecuteEvaluateTest(context, best_index, current_population_list);
         }
 
 

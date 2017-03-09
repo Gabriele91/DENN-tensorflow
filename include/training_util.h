@@ -85,14 +85,37 @@ namespace tensorflow
     class CacheBest
     {
     public:
+
+
         /*
         * Copy a individual if pass the test 
         * @param accuracy
         * @param index of individual in population
+        * @param CRs and Fs of population 
         * @param population 
         * @return true if test is passed  
         **/
-        bool test_best(value_t eval, int id, const TensorListList& pop)
+        bool TestBest(value_t eval, int id, const TensorList& pop_F_CR, const TensorListList& pop)
+        {
+            return TestBest
+            (
+                  eval
+                , pop_F_CR[0].flat<value_t>()(id)
+                , pop_F_CR[1].flat<value_t>()(id)
+                , id
+                , pop
+            );
+        }
+        /*
+        * Copy a individual if pass the test 
+        * @param accuracy
+        * @param F
+        * @param CR
+        * @param index of individual in population
+        * @param population 
+        * @return true if test is passed  
+        **/
+        bool TestBest(value_t eval, value_t F, value_t CR, int id, const TensorListList& pop)
         {
             //case to copy the individual
             if(!m_init || eval > m_eval)
@@ -107,6 +130,8 @@ namespace tensorflow
                 //set init to true 
                 m_init = true;
                 m_eval = eval;
+                m_F    = F; 
+                m_CR   = CR;
                 m_id   = id;
                 //is changed
                 return true;
@@ -118,6 +143,8 @@ namespace tensorflow
         bool       m_init{ false };
         int        m_id  { -1 };
         value_t    m_eval{  0 };
+        value_t    m_F   {  0 };
+        value_t    m_CR  {  0 };
         TensorList m_individual;
     };
 }

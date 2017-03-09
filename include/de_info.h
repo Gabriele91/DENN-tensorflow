@@ -58,8 +58,7 @@ namespace tensorflow
         value_t                     m_f_min{ -1.0 };
         value_t                     m_f_max{  1.0 };
         //update factors
-        value_t                     m_CR   {  0.5 };
-        value_t                     m_F    {  1.0 };
+        value_t                     m_JDE   { 0.1 };
         //smoothing factors
         int                         m_smoothing_n_pass{ 1 }; 
         std::vector<TensorShape>    m_shapes_smoothing;

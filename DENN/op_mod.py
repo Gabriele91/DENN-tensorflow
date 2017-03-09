@@ -474,9 +474,9 @@ class Operation(object):
 
                 ##
                 # get output
+                cur_f = results.final_f
+                cur_cr = results.final_cr
                 cur_pop = results.final_populations
-                cur_f   = results.final_f
-                cur_cr  = results.final_cr
 
                 # print(results.final_c)
                 # print(results.final_ec)
@@ -567,9 +567,9 @@ class Operation(object):
                     self.job
                 )
 
-                test_results[self.de_type].population = cur_pop
                 test_results[self.de_type].F_population = cur_f
                 test_results[self.de_type].CR_population = cur_cr
+                test_results[self.de_type].population = cur_pop
 
                 if self.job.reinsert_best and not best_changed:
                     self.__reinsert_best(cur_pop, evaluations, test_results)
@@ -704,6 +704,8 @@ class Operation(object):
             test_results[self.de_type].best_of['CR'] = op_result.final_best_cr
             test_results[self.de_type].best_of['accuracy'] = op_result.final_eval_of_best_of_best
             test_results[self.de_type].best_of['individual'] = op_result.final_best
+            self.job.best['F'] = op_result.final_best_f
+            self.job.best['CR'] = op_result.final_best_cr
             self.job.best['accuracy'] = op_result.final_eval_of_best_of_best
             self.job.best['individual'] = op_result.final_best
 

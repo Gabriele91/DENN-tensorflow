@@ -1,0 +1,248 @@
+[
+    {
+        "name": "iris_dataset",
+        "dataset_file": "../datasets/iris_105x6_5s.gz",
+        "TOT_GEN": 1000,
+        "GEN_STEP": 40,
+        "GEN_SAMPLES": 1,
+        "TYPE": "double",
+        "F": 0.6,
+        "NP": 20,
+        "reset_every": {
+            "epsilon": 0.02,
+            "counter": 2
+        },
+        "reinsert_best": true,
+        "de_types": [
+            "rand/1/bin"//,
+            // "best/1/bin"
+        ],
+        "NUM_INTRA_THREADS": 2,
+        "NUM_INTER_THREADS": 2,
+        "CR": 0.8,
+        "clamp": {
+            "min": -10.0,
+            "max": 10.0
+        },
+        "levels": [
+            {
+                "shape": [[4,3], [3]],
+                "init": [
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -1.0, 
+                                "maxval": 1.0
+                            }
+                        }
+                    },
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -1.0, 
+                                "maxval": 1.0
+                            }
+                        }
+                    }
+                ],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits"//,
+                    //"args": []
+                    //"kwargs": {}
+                }
+            }
+        ]
+    },
+    {
+        "name": "iris_dataset",
+        "dataset_file": "../datasets/iris_105x6_5s.gz",
+        "TOT_GEN": 1000,
+        "GEN_STEP": 40,
+        "GEN_SAMPLES": 1,
+        "TYPE": "double",
+        "F": 0.6,
+        "NP": 20,
+        "reset_every": {
+            "epsilon": 0.02,
+            "counter": 2
+        },
+        "reinsert_best": true,
+        "de_types": [
+            "rand/1/bin"//,
+            // "best/1/bin"
+        ],
+        "NUM_INTRA_THREADS": 2,
+        "NUM_INTER_THREADS": 2,
+        "CR": 0.8,
+        "clamp": {
+            "min": -10.0,
+            "max": 10.0
+        },
+        "AdaBoost": {
+            "alpha": 1.0,
+            "C": 1.0
+        },
+        "levels": [
+            {
+                "shape": [[4,3], [3]],
+                "init": [
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -1.0, 
+                                "maxval": 1.0
+                            }
+                        }
+                    },
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -1.0, 
+                                "maxval": 1.0
+                            }
+                        }
+                    }
+                ],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits"//,
+                    //"args": []
+                    //"kwargs": {}
+                }
+            }
+        ]
+    },
+    {
+        "name": "iris_dataset",
+        "dataset_file": "../datasets/iris_105x6_5s.gz",
+        "TOT_GEN": 1000,
+        "GEN_STEP": 40,
+        "GEN_SAMPLES": 1,
+        "TYPE": "double",
+        "F": 0.6,
+        "NP": 20,
+        "training": true,
+        "reset_every": {
+            "epsilon": 0.02,
+            "counter": 2
+        },
+        "reinsert_best": true,
+        "de_types": [
+            "rand/1/bin"//,
+            // "best/1/bin"
+        ],
+        "NUM_INTRA_THREADS": 2,
+        "NUM_INTER_THREADS": 2,
+        "CR": 0.8,
+        "clamp": {
+            "min": -10.0,
+            "max": 10.0
+        },
+        "levels": [
+            {
+                "shape": [[4,3], [3]],
+                "init": [
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -1.0, 
+                                "maxval": 1.0
+                            }
+                        }
+                    },
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -1.0, 
+                                "maxval": 1.0
+                            }
+                        }
+                    }
+                ],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits"//,
+                    //"args": []
+                    //"kwargs": {}
+                }
+            }
+        ]
+    },
+    {
+        "name": "iris_dataset",
+        "dataset_file": "../datasets/iris_105x6_5s.gz",
+        "TOT_GEN": 1000,
+        "GEN_STEP": 40,
+        "GEN_SAMPLES": 1,
+        "TYPE": "double",
+        "F": 0.6,
+        "NP": 20,
+        "training": true,
+        "reset_every": {
+            "epsilon": 0.02,
+            "counter": 2
+        },
+        "reinsert_best": true,
+        "de_types": [
+            "rand/1/bin"//,
+            // "best/1/bin"
+        ],
+        "NUM_INTRA_THREADS": 2,
+        "NUM_INTER_THREADS": 2,
+        "CR": 0.8,
+        "clamp": {
+            "min": -10.0,
+            "max": 10.0
+        },
+        "AdaBoost": {
+            "alpha": 1.0,
+            "C": 1.0
+        },
+        "levels": [
+            {
+                "shape": [[4,3], [3]],
+                "init": [
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -1.0, 
+                                "maxval": 1.0
+                            }
+                        }
+                    },
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -1.0, 
+                                "maxval": 1.0
+                            }
+                        }
+                    }
+                ],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits"//,
+                    //"args": []
+                    //"kwargs": {}
+                }
+            }
+        ]
+    }
+]

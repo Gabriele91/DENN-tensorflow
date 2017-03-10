@@ -192,8 +192,13 @@ class Operation(object):
                 # input params
                 # [num_gen, step_gen, eval_individual]
                 [self.job.TOT_GEN, self.job.GEN_STEP, False],
-                np.array([], dtype=np.float64 if self.job.TYPE == "double" else np.float32),  # FIRST EVAL [] void
-                self.net.populations,  # POPULATIONS
+                # F and CR
+                self.net.F_placeholder,
+                self.net.CR_placeholder,
+                # FIRST EVAL [] void
+                np.array([], dtype=np.float64 if self.job.TYPE == "double" else np.float32),  
+                # POPULATIONS
+                self.net.populations,
                 # attributes
                 graph=get_graph_proto(
                     self.net.graph.as_graph_def()),
@@ -207,8 +212,7 @@ class Operation(object):
                 f_name_validation=self.net.accuracy.name,
                 f_name_test=self.net.accuracy.name,
                 #
-                F=self.job.F,
-                CR=self.job.CR,
+                JDE=self.job.JDE,
                 DE=de_type,
                 f_min=self.job.clamp.min,
                 f_max=self.job.clamp.max,
@@ -220,6 +224,8 @@ class Operation(object):
                 reset_counter=self.job.reset_every[
                     'counter'] if exists_reset_every else 1,
                 reset_rand_pop=[tfop.name for tfop in self.net.rand_pop],
+                reset_f = self.net.F_init.name,
+                reset_cr = self.net.CR_init.name,
                 reinsert_best=self.job.reinsert_best 
             )
         else:

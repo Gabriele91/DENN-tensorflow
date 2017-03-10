@@ -283,13 +283,13 @@ namespace tensorflow
             int output_id=0;
             ////////////////////////////////////////////////////////////////////////////
             // Output list_eval_of_best and list_eval_of_best_of_best
-            OutputVector(context,output_id++,list_eval_of_best);
-            OutputVector(context,output_id++,list_eval_of_best_of_best);
+            OutputVector<value_t>(context,output_id++,list_eval_of_best);
+            OutputVector<value_t>(context,output_id++,list_eval_of_best_of_best);
             ////////////////////////////////////////////////////////////////////////////
             // Output best F value 
-            OutputValue(context,output_id++, best.m_F);
+            OutputValue<value_t>(context,output_id++, best.m_F);
             // Output best CR value 
-            OutputValue(context,output_id++, best.m_CR);
+            OutputValue<value_t>(context,output_id++, best.m_CR);
             // Output best pop
             for(int i=0; i != this->m_space_size; ++i)
             {
@@ -476,38 +476,6 @@ namespace tensorflow
             }
         }
 
-        /**
-        * copy vector to output tensor
-        */
-        void OutputVector(OpKernelContext *context, int output, std::vector < value_t >& list_values)
-        {
-            //Output ptr
-            Tensor* output_tensor = nullptr;
-            //alloc
-            OP_REQUIRES_OK(context, context->allocate_output(output, TensorShape({int64(list_values.size())}), &output_tensor));
-            //copy
-            auto output_ptr = output_tensor->flat<value_t>();
-            //copy all
-            for(int i = 0; i!= (int)list_values.size(); ++i)
-            {
-                output_ptr(i) = list_values[i];
-            }
-        }
-
-        /**
-        * copy value to output tensor
-        */
-        void OutputValue(OpKernelContext *context, int output, value_t value)
-        {
-            //Output ptr
-            Tensor* output_tensor = nullptr;
-            //alloc
-            OP_REQUIRES_OK(context, context->allocate_output(output, TensorShape({int64(1)}), &output_tensor));
-            //copy
-            auto output_ptr = output_tensor->flat<value_t>();
-            //copy
-            output_ptr(0) = value;
-        }
 
         /**
          * Find best individual in populations

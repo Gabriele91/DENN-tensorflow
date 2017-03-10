@@ -163,4 +163,39 @@ namespace tensorflow
         value_t    m_CR  {  0 };
         TensorList m_individual;
     };
+
+    /**
+    * copy vector to output tensor
+    */
+    template < typename value_t = double >
+    static void OutputVector(OpKernelContext *context, int output, std::vector < value_t >& list_values)
+    {
+        //Output ptr
+        Tensor* output_tensor = nullptr;
+        //alloc
+        OP_REQUIRES_OK(context, context->allocate_output(output, TensorShape({int64(list_values.size())}), &output_tensor));
+        //copy
+        auto output_ptr = output_tensor->flat<value_t>();
+        //copy all
+        for(int i = 0; i!= (int)list_values.size(); ++i)
+        {
+            output_ptr(i) = std::move(list_values[i]);
+        }
+    }
+
+    /**
+    * copy value to output tensor
+    */
+    template < typename value_t = double >
+    static void OutputValue(OpKernelContext *context, int output, value_t& value)
+    {
+        //Output ptr
+        Tensor* output_tensor = nullptr;
+        //alloc
+        OP_REQUIRES_OK(context, context->allocate_output(output, TensorShape({int64(1)}), &output_tensor));
+        //copy
+        auto output_ptr = output_tensor->flat<value_t>();
+        //copy
+        output_ptr(0) = std::move(value);
+    }
 }

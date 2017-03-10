@@ -421,9 +421,9 @@ class DETask(object):
                                             name="labels"
                                            )
             #operation on F
-            f_init  = tf.fill([self.NP], self.F)
+            f_init  = tf.fill([self.NP], tf.cast(self.F, cur_type))
             #operation on CR
-            cr_init = tf.fill([self.NP], self.CR)
+            cr_init = tf.fill([self.NP], tf.cast(self.CR, cur_type))
 
             if self.ada_boost is not None:
                 y_placeholder = tf.placeholder(cur_type,

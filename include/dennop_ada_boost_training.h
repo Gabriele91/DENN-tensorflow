@@ -392,6 +392,8 @@ namespace tensorflow
                     if NOT(status.ok())
                     {
                         context->CtxFailure({tensorflow::error::Code::ABORTED,"Run execute random population: "+status.ToString()});
+                        MSG_DEBUG("Run execute random population, fail")
+                        ASSERT_DEBUG( 0 )
                         return /* fail */;
                     }
                     //return population
@@ -420,6 +422,8 @@ namespace tensorflow
                     if NOT(status.ok())
                     {
                         context->CtxFailure({tensorflow::error::Code::ABORTED,"Run execute reset F: "+status.ToString()});
+                        MSG_DEBUG("Run execute reset F, fail")
+                        ASSERT_DEBUG( 0 )
                         return /* fail */;
                     }
                     //return population
@@ -445,6 +449,8 @@ namespace tensorflow
                     if NOT(status.ok())
                     {
                         context->CtxFailure({tensorflow::error::Code::ABORTED,"Run execute reset CR: "+status.ToString()});
+                        MSG_DEBUG("Run execute reset CR, fail")
+                        ASSERT_DEBUG( 0 )
                         return /* fail */;
                     }
                     //return population
@@ -455,9 +461,18 @@ namespace tensorflow
                 {
                     populations[layer_id][best.m_id] = best.m_individual[layer_id];
                 }
+                #if 0
+                MSG_DEBUG("F len " << pop_F_CR[0].shape().dims())
+                MSG_DEBUG("F size " << pop_F_CR[0].shape().dim_size(0))
+                MSG_DEBUG("CR len " << pop_F_CR[1].shape().dims())
+                MSG_DEBUG("CR size " << pop_F_CR[1].shape().dim_size(0))
+                #endif
                 //replace F and CR on best id
-                pop_F_CR[0].flat<value_t>()(best.m_id) = best.m_F;
-                pop_F_CR[1].flat<value_t>()(best.m_id) = best.m_CR;
+                auto ref_F = pop_F_CR[0].flat<value_t>();
+                auto ref_CR = pop_F_CR[1].flat<value_t>();
+                ref_F(best.m_id) = best.m_F;
+                ref_CR(best.m_id) = best.m_CR;
+                //MSG_DEBUG("Copy output F CR best from: " << best.m_F << ", " << best.m_CR << ", id:" << best.m_id)
             }
         }
 
@@ -601,7 +616,8 @@ namespace tensorflow
             if NOT(this->SetCacheInputs(populations_list, NP_i))
             {
                 context->CtxFailure({tensorflow::error::Code::ABORTED,"Run evaluate: error to set inputs"});
-                assert(0);
+                MSG_DEBUG("Run evaluate: error to set inputs, fail")
+                ASSERT_DEBUG(0)
                 return -1.0;
             }
             //add labels 
@@ -625,7 +641,8 @@ namespace tensorflow
             if NOT(status.ok())
             {
                 context->CtxFailure({tensorflow::error::Code::ABORTED,"Run evaluate: "+status.ToString()});
-                assert(0);
+                MSG_DEBUG("Run evaluate, fail: "<<status.ToString())
+                ASSERT_DEBUG(0)
                 return -1.0;
             }
             //results

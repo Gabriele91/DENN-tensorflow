@@ -235,6 +235,9 @@ class Operation(object):
                 self.net.cur_gen_options,
                 self.net.label_placeholder,
                 self.net.input_placeholder,
+                # population infos
+                self.net.F_placeholder,
+                self.net.CR_placeholder,
                 self.net.evaluated,  # FIRST EVAL
                 self.net.populations,  # POPULATIONS
                 # attributes
@@ -246,8 +249,7 @@ class Operation(object):
                 f_input_features=self.net.input_placeholder.name,
                 f_min=self.job.clamp.min,
                 f_max=self.job.clamp.max,
-                F=self.job.F,
-                CR=self.job.CR,
+                JDE=self.job.JDE,
                 DE=self.de_type,
                 smoothing=self.job.smoothing,
                 smoothing_n_pass=self.job.smoothing_n_pass
@@ -769,7 +771,7 @@ class Operation(object):
                 #     "+ Start gen. [{}] with batch[{}]".format((gen + 1) * job.GEN_STEP, batch_counter))
 
                 time_start_gen = time()
-
+                
                 results = sess.run(self.denn_op, feed_dict=dict(
                     [
                         (pop_ref, prev_NN[self.de_type][num])
@@ -782,20 +784,27 @@ class Operation(object):
                     ]
                     +
                     [
+                        (self.net.F_placeholder,  prev_F[self.de_type]),
+                        (self.net.CR_placeholder,  prev_CR[self.de_type])
+                    ]
+                    +
+                    [
                         (self.net.evaluated, v_res)
                     ]
                     +
                     [
-                        (self.net.cur_gen_options, [
-                            self.job.GEN_STEP, first_time])
+                        (self.net.cur_gen_options, [self.job.GEN_STEP, first_time])
                     ]
                 ))
 
                 # print("++ Op time {}".format(time() - time_start_gen))
 
                 # get output
+                cur_f   = results.final_f
+                cur_cr  = results.final_cr
                 cur_pop = results.final_populations
-                v_res = results.final_eval
+                v_res   = results.final_eval
+
 
                 # print(len(cur_pop))
                 # print(cur_pop[0].shape)
@@ -865,16 +874,20 @@ class Operation(object):
                     self.de_type,
                     test_results,
                     cur_accuracy,
+                    cur_f[best_idx],
+                    cur_cr[best_idx],
                     [
                         cur_pop[num][best_idx] for num, target in enumerate(self.net.targets)
                     ],
                     self.job
                 )
 
+                test_results[self.de_type].F_population = cur_f
+                test_results[self.de_type].CR_population = cur_cr
                 test_results[self.de_type].population = cur_pop
 
                 if self.job.reinsert_best and not best_changed:
-                    self.__reinsert_best(cur_pop, evaluations, test_results)
+                    self.__reinsert_best(cur_f, cur_cr, cur_pop, evaluations, test_results)
 
                 # print(
                 #     "+ DENN[{}] up to {} gen on {} completed in {:.05} sec.".format(
@@ -886,6 +899,8 @@ class Operation(object):
 
                 first_time = False
 
+                prev_F[self.de_type] = cur_f
+                prev_CR[self.de_type] = cur_cr
                 prev_NN[self.de_type] = cur_pop
 
                 pbar.update(gen)
@@ -907,13 +922,18 @@ class Operation(object):
                 ##
                 # Check for new population
                 if reset_counter >= self.job.reset_every['counter']:
-                    reset_counter = 0
-                    cur_pop = self.__reset_with_1_best(
+                    reset_counter = 0  
+                    cur_f, cur_cr, cur_pop = self.__reset_with_1_best(
                         sess,
                         cur_pop,
+                        test_results[self.de_type].best_of['F'],
+                        test_results[self.de_type].best_of['CR'],
                         test_results[self.de_type].best_of['individual']
                     )
-                    prev_NN[self.de_type] = cur_pop
+                    prev_F[self.de_type] = cur_f
+                    prev_CR[self.de_type] = cur_cr
+                    prev_NN[self.de_type] = cur_pop 
+
                     ##
                     # TO DO
                     # - salvarsi la popolazione prima del reset

@@ -363,7 +363,7 @@ namespace tensorflow
             for(int pop_i = 0; pop_i !=NP; ++pop_i)
             {
                 value_t rand_value = random_indices::random0to1();
-                MSG_DEBUG("rand_value:" << rand_value << " < factors.m_JDE:" << factors.m_JDE)
+                //MSG_DEBUG("rand_value:" << rand_value << " < factors.m_JDE:" << factors.m_JDE)
                 if(rand_value <= factors.m_JDE)
                 {
                     //new F
@@ -378,7 +378,7 @@ namespace tensorflow
                     //new CR
                     new_cr_list_ref( pop_i ) = cur_cr_list_ref( pop_i );
                 }
-                MSG_DEBUG("F[i]:" << new_f_list_ref( pop_i ) << ", CR[i]:" << new_cr_list_ref( pop_i )<< " i:" << pop_i);
+                //MSG_DEBUG("F[i]:" << new_f_list_ref( pop_i ) << ", CR[i]:" << new_cr_list_ref( pop_i )<< " i:" << pop_i);
             }
         }
         //for all layers types

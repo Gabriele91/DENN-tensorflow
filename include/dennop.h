@@ -69,32 +69,45 @@ public:
         // get input batch data
         const Tensor& t_batch_features = context->input(2);
         ////////////////////////////////////////////////////////////////////////////
-        //get population first eval
-        const Tensor& population_first_eval = context->input(3);
+        // F and CR
+        TensorList  current_population_F_CR;
+        // get F
+        current_population_F_CR.emplace_back( context->input(3) );
+        // get CR
+        current_population_F_CR.emplace_back( context->input(4) );
+        //debug 
+        MSG_DEBUG( "|F,CR|: " << current_population_F_CR.size() )
+        MSG_DEBUG( "|F|: " << current_population_F_CR[0].shape().dim_size(0) )
+        MSG_DEBUG( "|CR|: " << current_population_F_CR[1].shape().dim_size(0) )
         ////////////////////////////////////////////////////////////////////////////
+        //get population first eval
+        const Tensor& population_first_eval = context->input(5);
         // start input
-        const size_t start_input = 4;
+        const size_t start_input = 6;
         ////////////////////////////////////////////////////////////////////////////
         // populations
-        TensorListList  current_populations_list;
+        TensorListList  current_population_list;
         // populations inputs
         for(int i=0; i != m_space_size; ++i)
         {
             const Tensor& population = context->input(start_input+i);
-            current_populations_list.push_back(splitDim0(population));
+            current_population_list.push_back(splitDim0(population));
         }
         //Test sizeof populations
-        if NOT(TestPopulationSize(context,current_populations_list)) return;
+        if NOT(TestPopulationSize(context,current_population_list)) return;
 
         ////////////////////////////////////////////////////////////////////////////
         //Temp of new gen of populations
-        TensorListList new_populations_list;
+        TensorList     new_population_F_CR;
+        TensorListList new_population_list;
         //Alloc temp vector of populations
-        GenCachePopulation(current_populations_list,new_populations_list);
-
+        AllocNewPopulation(current_population_F_CR,
+                           current_population_list, 
+                           new_population_F_CR,
+                           new_population_list);
         ////////////////////////////////////////////////////////////////////////////
         //Alloc input 
-        AllocCacheInputs(current_populations_list);
+        AllocCacheInputs(current_population_list);
         //Copy batch in input
         SetDatasetInCacheInputs(t_batch_labels,t_batch_features);
 
@@ -106,7 +119,7 @@ public:
         (
               context
             , calc_first_eval
-            , current_populations_list
+            , current_population_list
             , population_first_eval 
             , current_eval_result
         );
@@ -119,27 +132,39 @@ public:
               context
             , num_gen
             // Cache
-            , new_populations_list
+            , new_population_F_CR
+            , new_population_list
             // In/Out
-            , current_populations_list
             , current_eval_result
+            , current_population_F_CR
+            , current_population_list        
         );
 
         ////////////////////////////////////////////////////////////////////////////
+        // Output counter
+        int output_id=0;
+        // Output F CR
+        for(int i=0; i != current_population_F_CR.size(); ++i)
+        {
+            Tensor* output_tensor = nullptr;
+            Tensor& current_f_or_cr = current_population_F_CR[i];
+            OP_REQUIRES_OK(context, context->allocate_output(output_id++, current_f_or_cr.shape(), &output_tensor));
+            (*output_tensor) = current_f_or_cr;
+        }
         // Output populations
         for(int i=0; i != m_space_size; ++i)
         {
-            Tensor* new_generation_tensor = nullptr;
-            Tensor current_pop = concatDim0(current_populations_list[i]);
-            OP_REQUIRES_OK(context, context->allocate_output(i, current_pop.shape(), &new_generation_tensor));
-            (*new_generation_tensor) = current_pop;
+            Tensor* output_tensor = nullptr;
+            Tensor current_pop = concatDim0(current_population_list[i]);
+            OP_REQUIRES_OK(context, context->allocate_output(output_id++, current_pop.shape(), &output_tensor));
+            (*output_tensor) = current_pop;
         }
         // Output the last eval
         {
             //ptr
             Tensor* out_eval = nullptr;
             //alloc
-            OP_REQUIRES_OK(context, context->allocate_output(m_space_size,current_eval_result.shape(), &out_eval));
+            OP_REQUIRES_OK(context, context->allocate_output(output_id++,current_eval_result.shape(), &out_eval));
             //copy
             (*out_eval) = current_eval_result;
         }
@@ -149,21 +174,25 @@ public:
      * Start differential evolution
      * @param context
      * @param num_gen, number of generation
-     * @param new_populations_list, (input) cache memory of the last population generated 
-     * @param current_populations_list, (input/output) population
+     * @param new_population_list, (input) cache memory of the last population generated 
+     * @param current_population_list, (input/output) population
      * @param current_eval_result, (input/output) evaluation of population
      */
     virtual bool RunDe
     (
         OpKernelContext *context,
         const int num_gen,
-        TensorListList& new_populations_list,
-        TensorListList& current_populations_list,
-        Tensor& current_eval_result
+        // Cache
+        TensorList&       new_population_F_CR,
+        TensorListList&   new_population_list,
+        // In/Out
+        Tensor&           current_eval_result,
+        TensorList&       current_population_F_CR,
+        TensorListList&   current_population_list
     )
     {
         //Get np 
-        const int NP = current_populations_list[0].size();
+        const int NP = current_population_list[0].size();
         //Pointer to memory
         auto ref_current_eval_result = current_eval_result.flat<value_t>();
         //loop
@@ -173,27 +202,44 @@ public:
             PopulationGenerator< value_t >
             (
                 context, 
-                m_de_info,
-                m_de_factors,
+                //params
+                this->m_de_info,
+                this->m_de_factors,
+                //gen info
                 i,
                 num_gen,
+                // population in
                 NP,
                 current_eval_result,
-                current_populations_list,
-                new_populations_list
+                current_population_F_CR,
+                current_population_list,
+                // population out
+                new_population_F_CR,
+                new_population_list
             );
             //Change old population (if required)
             for(int index = 0; index!=NP ;++index)
             {
                 //Evaluation
-                value_t new_eval = ExecuteEvaluateTrain(context, index, new_populations_list);
+                value_t new_eval = ExecuteEvaluateTrain(context, index, new_population_list);
                 //Choice
                 if(new_eval < ref_current_eval_result(index))
                 {
-                    for(int p=0; p!=current_populations_list.size(); ++p)
+                    //save F and CR 
+                    for(int i = 0; i != current_population_F_CR.size(); ++i)
                     {
-                        current_populations_list[p][index] = new_populations_list[p][index];
+                        //get refs
+                        auto ref_f_cr = current_population_F_CR[i].flat<value_t>();
+                        auto new_f_cr = new_population_F_CR[i].flat<value_t>();
+                        //current F and CR <- new F and CR
+                        ref_f_cr(index) = new_f_cr(index);
                     }
+                    //x <- y
+                    for(int p=0; p!=current_population_list.size(); ++p)
+                    {
+                        current_population_list[p][index] = new_population_list[p][index];
+                    }
+                    //save eval
                     ref_current_eval_result(index) = new_eval;
                 }
             }   
@@ -237,30 +283,9 @@ public:
     }
  
     /**
-     * Alloc cache populations
-     * @param context
-     * @param current_populations_list, (input) population
-     * @param new_populations_list, (output) cache of new population
-     */
-    void GenCachePopulation
-    (
-        const TensorListList& current_populations_list,
-        TensorListList& new_populations_list
-    ) const
-    {
-        //new pupulations
-        new_populations_list.resize(m_space_size);
-        // pupulation inputs
-        for(int i=0; i != m_space_size; ++i)
-        {
-            new_populations_list[i].resize(current_populations_list[i].size());
-        }
-    }
-
-    /**
      * Do evaluation if required 
      * @param force_to_eval, if true, eval all populations in anyway
-     * @param current_populations_list, (input) populations
+     * @param current_population_list, (input) populations
      * @param population_first_eval, (input) last evaluation of population
      * @param current_eval_result, (output) new evaluation of population
      */
@@ -268,13 +293,13 @@ public:
     (
          OpKernelContext *context,
          const bool force_to_eval,
-         const TensorListList& current_populations_list,
+         const TensorListList& current_population_list,
          const Tensor& population_first_eval,
          Tensor& current_eval_result
     )
     {
         //Get np 
-        const int NP = current_populations_list[0].size();
+        const int NP = current_population_list[0].size();
         //Population already evaluated?
         if(  !(force_to_eval)
            && population_first_eval.shape().dims() == 1
@@ -291,7 +316,7 @@ public:
             //First eval
             for(int index = 0; index!=NP ;++index)
             {
-                current_eval_result.flat<value_t>()(index) = ExecuteEvaluateTrain(context, index, current_populations_list);
+                current_eval_result.flat<value_t>()(index) = ExecuteEvaluateTrain(context, index, current_population_list);
             }
         }
 
@@ -327,6 +352,8 @@ public:
         if NOT(SetCacheInputs(populations_list, NP_i))
         {
             context->CtxFailure({tensorflow::error::Code::ABORTED,"Run evaluate: error to set inputs"});
+            ASSERT_DEBUG( 0 )
+            return 0.0;
         }
         //execute
         auto
@@ -344,6 +371,8 @@ public:
         if NOT(status.ok())
         {
             context->CtxFailure({tensorflow::error::Code::ABORTED,"Run evaluate: "+status.ToString()});
+            ASSERT_DEBUG( 0 )
+            return 0.0;
         }
         //results
         return f_on_values.size() ? f_on_values[0].flat<value_t>()(0) : 0.0;

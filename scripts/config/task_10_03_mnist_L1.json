@@ -1,0 +1,8 @@
+[
+    "@sub_task_10_03_mnist/ada.json;",
+    "@sub_task_10_03_mnist/normal.json;",
+    "@sub_task_10_03_mnist/smooth_ada.json;",
+    "@sub_task_10_03_mnist/smooth_normal.json;",
+    "@sub_task_10_03_mnist/ada_small.json;",
+    "@sub_task_10_03_mnist/smooth_ada_small.json;"
+]

@@ -56,7 +56,7 @@
                         }
                     }
                 ],
-                "start_transposed": "import best_population.json;"
+                "start_transposed": "@best_population.json;"
             }
         ]
     }

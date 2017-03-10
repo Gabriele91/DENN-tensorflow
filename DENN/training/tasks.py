@@ -760,13 +760,15 @@ class TaskDecoder(json.JSONDecoder):
         del kwargs["file_name"]
         self.__base_folder = path.dirname(path.abspath(self.__file_name))
         self.__state = 0
-        super(TaskDecoder, self).__init__(*args, **kwargs, object_pairs_hook=self.object_pairs_hook)
+        super(TaskDecoder, self).__init__(*args, **kwargs, 
+            object_pairs_hook=self.object_pairs_hook,
+        )
 
     def object_pairs_hook(self, list_):
         for idx, (key, value) in enumerate(list_):
             if type(value) == str:
-                if value[:6] == "import" and value[-1] == ";":
-                    file_to_import = value.split(" ")[1][:-1]
+                if value[0] == "@" and value[-1] == ";":
+                    file_to_import = value[1:-1]
                     file_path = path.join(self.__base_folder, file_to_import)
                     with open(file_path, "r") as imported_file:
                         res = self.decode(imported_file.read(), sub_json=True)
@@ -857,6 +859,15 @@ class TaskDecoder(json.JSONDecoder):
         # print(final_string)
 
         decoded_string = super(TaskDecoder, self).decode(final_string)
+
+        for idx, obj in enumerate(decoded_string):
+            if type(obj) == str:
+                if obj[0] == "@" and obj[-1] == ";":
+                    file_to_import = obj[1:-1]
+                    file_path = path.join(self.__base_folder, file_to_import)
+                    with open(file_path, "r") as imported_file:
+                        res = self.decode(imported_file.read(), sub_json=True)
+                    decoded_string[idx] = res
 
         # print(decoded_string)
 

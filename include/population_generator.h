@@ -84,6 +84,7 @@ namespace tensorflow
     (
         const DeInfo&                              info,
         const DeFactors<value_t>&                  factors,
+        const value_t                              F,
         const TensorList&                          cur_population,
         typename TTypes<value_t>::Matrix&          new_generation, 
         int                                        elm,
@@ -97,7 +98,7 @@ namespace tensorflow
                 const value_t a = cur_population[randoms_i[0]].flat<value_t>()(elm);
                 const value_t b = cur_population[randoms_i[1]].flat<value_t>()(elm);
                 const value_t c = cur_population[randoms_i[2]].flat<value_t>()(elm);
-                new_generation(elm) = factors.f_clamp( (a-b) * factors.m_F + c );
+                new_generation(elm) = factors.f_clamp( (a-b) * F + c );
             }
             break;
             case DIFF_TWO:
@@ -105,7 +106,7 @@ namespace tensorflow
                 const value_t first_diff  = cur_population[randoms_i[0]].flat<value_t>()(elm) - cur_population[randoms_i[1]].flat<value_t>()(elm);
                 const value_t second_diff = cur_population[randoms_i[2]].flat<value_t>()(elm) - cur_population[randoms_i[3]].flat<value_t>()(elm);
                 const value_t c = cur_population[randoms_i[4]].flat<value_t>()(elm);
-                new_generation(elm) = factors.f_clamp( (first_diff + second_diff) * factors.m_F + c );
+                new_generation(elm) = factors.f_clamp( (first_diff + second_diff) * F + c );
             }
             break;
         }
@@ -116,6 +117,8 @@ namespace tensorflow
     (
         const DeInfo&                              info,
         const DeFactors<value_t>&                  factors,
+        const value_t                              F,
+        const value_t                              CR,
         const int                                  cur_x,
         const TensorList&                          cur_population,
         typename TTypes<value_t>::Matrix&          new_generation, 
@@ -131,7 +134,7 @@ namespace tensorflow
         for (int i = 0, elm = 0; i < D; ++i)
         {
             //cross event
-            bool cross_event = random() < factors.m_CR ;
+            bool cross_event = random_indices::random0to1() < CR ;
             //decide by data_type
             switch(info.m_cr_type)
             {
@@ -141,7 +144,7 @@ namespace tensorflow
                     //cases
                     if (do_random && (cross_event || random_index == elm))
                     {
-                        DeMethod< value_t >(info, factors, cur_population, new_generation, elm, randoms_i);
+                        DeMethod< value_t >(info, factors, F, cur_population, new_generation, elm, randoms_i);
                     }
                     else
                     {
@@ -156,7 +159,7 @@ namespace tensorflow
                     //cases
                     if (cross_event || random_index == elm)
                     {
-                        DeMethod< value_t >(info, factors, cur_population, new_generation, elm, randoms_i);
+                        DeMethod< value_t >(info, factors, F, cur_population, new_generation, elm, randoms_i);
                     }
                     else
                     {
@@ -173,8 +176,11 @@ namespace tensorflow
     (
         const DeInfo&                              info,
         const DeFactors<value_t>&                  factors,
+        //old
         const int                                  NP,
         const TensorList&                          cur_population,
+        //new
+        const TensorList&                          new_F_CR,
               TensorList&                          new_population,
         GeneratorRandomVector&                     v_random
     )
@@ -195,10 +201,11 @@ namespace tensorflow
             {
                 D *= cur_population[index].shape().dim_size(i);
             }
-            // alloc
-            new_population[index]  = Tensor(data_type<value_t>(), cur_population[index].shape());
             //get ref 
             typename TTypes<value_t>::Matrix ref_new_population = new_population[index].flat_inner_dims<value_t>();
+            //get F 
+            value_t F  = new_F_CR[0].flat<value_t>()(index);
+            value_t CR = new_F_CR[1].flat<value_t>()(index);
             //do rand indices
             v_random.do_rand(index);
             //crossover
@@ -206,6 +213,8 @@ namespace tensorflow
             (
                 info, 
                 factors, 
+                F,
+                CR,
                 index,
                 cur_population, 
                 ref_new_population, 
@@ -214,6 +223,79 @@ namespace tensorflow
             );
         }
     }
+
+    /**
+     * ALLOC
+     */
+    void AllocNewPopulation
+    (
+        const TensorList&         cur_population_F_CR,
+        const TensorListList&     cur_population_list,
+              TensorList&         new_population_F_CR,
+              TensorListList&     new_population_list
+    )
+    {
+        //alloc
+        new_population_list.resize(cur_population_list.size());
+        //alloc new pop 
+        for (size_t l_type=0; l_type!=cur_population_list.size(); ++l_type)
+        {
+            //alloc
+            new_population_list[l_type].resize(cur_population_list[l_type].size());
+            //ref to pupulation of layer
+            const TensorList& cur_population = cur_population_list[l_type];
+            TensorList& new_population = new_population_list[l_type];
+            //alloc
+            for (int index = 0; index < cur_population_list[l_type].size(); ++index)
+            {
+                #if 0
+                new (&new_population[index]) Tensor(cur_population[index].dtype(), cur_population[index].shape());
+                #else 
+                new_population[index] = Tensor(cur_population[index].dtype(), cur_population[index].shape());
+                #endif 
+            }
+        }
+        //resize 
+        new_population_F_CR.resize(cur_population_F_CR.size());
+        //new F <- cur F
+        //new CR <- cur CR
+        for(size_t i = 0; i != cur_population_F_CR.size(); ++i)
+        {
+            #if 0
+            new (&new_population_F_CR[i]) Tensor(cur_population_F_CR[i].dtype(), cur_population_F_CR[i].shape());
+            #else 
+            new_population_F_CR[i] = Tensor(cur_population_F_CR[i].dtype(), cur_population_F_CR[i].shape());
+            #endif
+        }
+    }
+
+    /**
+    * Reset population
+    */
+    void ResetPopulation
+    (
+        TensorList&         new_population_F_CR,
+        TensorListList&     new_population_list
+    )
+    {
+        //reset pop 
+        for (size_t l_type=0; l_type!=new_population_list.size(); ++l_type)
+        {            
+            //population 
+            TensorList& new_population = new_population_list[l_type];
+            //alloc
+            for (int index = 0; index < new_population.size(); ++index)
+            {
+                new_population[index] = Tensor(new_population[index].dtype(), new_population[index].shape());
+            }
+        }
+        //reset F, CR
+        for(size_t i = 0; i != new_population_F_CR.size(); ++i)
+        {
+            new_population_F_CR[i] = Tensor(new_population_F_CR[i].dtype(), new_population_F_CR[i].shape());
+        }
+    } 
+
     /**
      * PopulationGenerator, create new generation
      * @param context,
@@ -221,9 +303,11 @@ namespace tensorflow
      * @param de factor,
      * @param NP, size of population
      * @param F, Factor
-     * @param cur_populations_eval, input population evaluation list
-     * @param populations_list, input population list
-     * @param new_populations_list (output), return of function
+     * @param cur_population_eval, input population evaluation list
+     * @param cur_population_F_CR, input population F and CR values
+     * @param cur_population_list, input population list
+     * @param new_population_F_CR (output), return new F and CR
+     * @param new_population_list (output), return new population
      */
     template < class value_t = double > 
     void PopulationGenerator
@@ -234,9 +318,11 @@ namespace tensorflow
         const int                 generation_i,
         const int                 generations,
         const int                 NP,
-              Tensor&             cur_populations_eval,
-        const TensorListList&     cur_populations_list,
-              TensorListList&     new_populations_list
+              Tensor&             cur_population_eval,
+        const TensorList&         cur_population_F_CR,
+        const TensorListList&     cur_population_list,
+              TensorList&         new_population_F_CR,
+              TensorListList&     new_population_list
     )
     {
         //Select type of method
@@ -248,7 +334,7 @@ namespace tensorflow
         if(info.m_pert_vector == PV_BEST)
         {        
             //First best
-            auto    pop_eval_ref = cur_populations_eval.flat<value_t>();
+            auto    pop_eval_ref = cur_population_eval.flat<value_t>();
             value_t val_best     = pop_eval_ref(0);
             int     id_best      = 0;
             //search best
@@ -264,21 +350,56 @@ namespace tensorflow
             //set best
             v_random.set_best(id_best);
         }
+        //realloc 
+        #if 1
+        ResetPopulation(new_population_F_CR,new_population_list);
+        #endif
+        //JDE
+        {
+            auto cur_f_list_ref  = cur_population_F_CR[0].flat<value_t>();
+            auto cur_cr_list_ref = cur_population_F_CR[1].flat<value_t>();
+            auto new_f_list_ref  = new_population_F_CR[0].flat<value_t>();
+            auto new_cr_list_ref = new_population_F_CR[1].flat<value_t>();
+            for(int pop_i = 0; pop_i !=NP; ++pop_i)
+            {
+                value_t rand_value = random_indices::random0to1();
+                //MSG_DEBUG("rand_value:" << rand_value << " < factors.m_JDE:" << factors.m_JDE)
+                if(rand_value <= factors.m_JDE)
+                {
+                    //new F
+                    new_f_list_ref( pop_i ) = random_indices::random0to1() * 2.0;
+                    //new CR
+                    new_cr_list_ref( pop_i ) = random_indices::random0to1() * 1.0;
+                }
+                else //copy
+                {
+                    //new F
+                    new_f_list_ref( pop_i )  = cur_f_list_ref( pop_i );
+                    //new CR
+                    new_cr_list_ref( pop_i ) = cur_cr_list_ref( pop_i );
+                }
+                //MSG_DEBUG("F[i]:" << new_f_list_ref( pop_i ) << ", CR[i]:" << new_cr_list_ref( pop_i )<< " i:" << pop_i);
+            }
+        }
         //for all layers types
-        for(size_t l_type=0; l_type!=cur_populations_list.size(); ++l_type)
+        for(size_t l_type=0; l_type!=cur_population_list.size(); ++l_type)
         {
             //ref to population
-            const TensorList& cur_population = cur_populations_list[l_type];
-            //ref to new pupulation
-            TensorList& new_population = new_populations_list[l_type];
+            const TensorList& cur_population = cur_population_list[l_type];
+            //ref to pupulation of layer
+            TensorList& new_population = new_population_list[l_type];
             //gen a new layer by method selected 
             LayerGenerator< value_t >
             (
                 info,
                 factors,
+                //current
                 NP,
                 cur_population,
+                //new
+                new_population_F_CR,
                 new_population,
+                //random values generator
                 v_random
             );
         }
@@ -289,13 +410,13 @@ namespace tensorflow
         int mid_basket    = std::ceil(float(basket_size-1) / 2.0f);
         bool do_smoothing = !basket_size || (generation_i % basket_size) == mid_basket;
         //smoothing
-        if(cur_populations_list.size() && do_smoothing)
+        if(cur_population_list.size() && do_smoothing)
         {
             //types
-            for(size_t l_type=0; l_type!=cur_populations_list.size(); ++l_type)
+            for(size_t l_type=0; l_type!=cur_population_list.size(); ++l_type)
             {
                 //ref to new pupulation
-                TensorList& new_population = new_populations_list[l_type];
+                TensorList& new_population = new_population_list[l_type];
                 //smoothing if enable 
                 if(factors.CanSmoothing(l_type))
                 {

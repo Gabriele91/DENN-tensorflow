@@ -7,8 +7,7 @@ REGISTER_OP("DennAda")
 .Attr("T: {float, double}")
 .Attr("space: int")
 .Attr("graph: string")
-.Attr("CR: float = 0.5")
-.Attr("F: float = 1.0")
+.Attr("JDE: float = 0.1")
 .Attr("smoothing: list(shape)")
 .Attr("smoothing_n_pass: int = 0")
 .Attr("ada_boost_alpha: float = 0.5")
@@ -37,14 +36,25 @@ REGISTER_OP("DennAda")
       "'best/2/bin', "
       "'best/2/exp'  "
       "} = 'rand/1/bin'")
+//Input
 .Input("info: int32") //[ NUM_GEN, CALC_FIRST_EVAL ]
+//batch
 .Input("batch_labels: T")
 .Input("batch_data: T")
+//population
+.Input("f: T")
+.Input("cr: T")
 .Input("populations_list: space * T")
+//ada
 .Input("c: T")
 .Input("ec: bool")
 .Input("pop_y: T")
+//Output
+//population
+.Output("final_f:T")
+.Output("final_cr:T")
 .Output("final_populations: space * T")
+//ada
 .Output("final_c: T")
 .Output("final_ec: bool")
 .Output("final_pop_y: T");

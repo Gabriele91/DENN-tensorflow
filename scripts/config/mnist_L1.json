@@ -1,4 +1,5 @@
 [
+    /*
     {
         "name": "smooth_2_mnist_new_test",
         "dataset_file": "../datasets/mnist_d_5perV_4000xB_5s.gz",
@@ -121,15 +122,18 @@
             }
         ]
     },
+    */
     {
         "name": "smooth_0_mnist_new_test",
         "dataset_file": "../datasets/mnist_d_5perV_4000xB_5s.gz",
-        "TOT_GEN": 100000,
+        "TOT_GEN": 4000,
         "GEN_STEP": 2000,
         "TYPE": "double",
         "F": 1.9,
         "CR": 0.9,
-        "NP": 24,
+        "JDE":0.1,
+        "NP": 14,
+        "training": true,
         "de_types": [
             "rand/1/bin"
         ],
@@ -141,11 +145,11 @@
         "clamp": {
             "min": -30,
             "max": 30
-        },
+        },/*
         "AdaBoost": {
             "alpha": 1.0,
             "C": 1.0
-        },
+        },*/
         "levels": [
             {
                 "shape": [[784,10], [10]],

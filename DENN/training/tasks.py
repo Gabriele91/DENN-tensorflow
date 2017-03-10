@@ -247,10 +247,11 @@ class DETask(object):
             cur_task.get("TYPE")
         )
         self.TYPE = cur_task.get("TYPE")
-        self.F = cur_task.get("F")
-        self.NP = cur_task.get("NP")
-        self.de_types = cur_task.get("de_types")
+        self.F = cur_task.get("F")     
         self.CR = cur_task.get("CR")
+        self.JDE = cur_task.get("JDE", 0.1)
+        self.NP = cur_task.get("NP")   
+        self.de_types = cur_task.get("de_types")
         self.clamp = Clamp(cur_task.get("clamp", None))
         self.training = cur_task.get("training", False)
         self.reset_every = cur_task.get("reset_every", False)
@@ -411,6 +412,19 @@ class DETask(object):
                                                [None, label_size],
                                                name="labels"
                                                )
+            f_placeholder = tf.placeholder(cur_type,
+                                           [self.NP],
+                                            name="labels"
+                                           )
+            cr_placeholder = tf.placeholder(cur_type,
+                                            [self.NP],
+                                            name="labels"
+                                           )
+            #operation on F
+            f_init  = tf.fill([self.NP], tf.cast(self.F, cur_type))
+            #operation on CR
+            cr_init = tf.fill([self.NP], tf.cast(self.CR, cur_type))
+
             if self.ada_boost is not None:
                 y_placeholder = tf.placeholder(cur_type,
                                                [None, label_size],
@@ -576,6 +590,10 @@ class DETask(object):
             ('cross_entropy', cross_entropy),
             ('accuracy', accuracy),
             ('graph', graph),
+            ('F_init', f_init),
+            ('CR_init', cr_init),
+            ('F_placeholder', f_placeholder),
+            ('CR_placeholder', cr_placeholder),
             ('input_placeholder', input_placeholder),
             ('label_placeholder', label_placeholder),
             ('cur_gen_options', cur_gen_options),
@@ -605,6 +623,10 @@ class Network(object):
         'cross_entropy',
         'accuracy',
         'graph',
+        'F_init',
+        'CR_init',
+        'F_placeholder',
+        'CR_placeholder',
         'input_placeholder',
         'label_placeholder',
         'cur_gen_options',
@@ -632,6 +654,10 @@ class Network(object):
             - cross_entropy
             - accuracy
             - graph
+            - F_init 
+            - CR_init
+            - F_placeholder
+            - CR_placeholder
             - input_placeholder
             - label_placeholder
             - cur_gen_options
@@ -680,6 +706,7 @@ class TaskEncoder(json.JSONEncoder):
                 ('F', obj.F),
                 ('NP', obj.NP),
                 ('CR', obj.CR),
+                ('JDE', obj.JDE),
                 ('de_types', obj.de_types),
                 ('reset_every', obj.reset_every),
                 ('reinsert_best', obj.reinsert_best),

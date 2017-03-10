@@ -83,8 +83,12 @@ def main():
                             ('values', []),
                             ('best_of', {
                                 'accuracy': [0],
-                                'individual': None
+                                'individual': None,
+                                'F' : None,
+                                'CR' : None 
                             }),
+                            ('F_population', None),
+                            ('CR_population', None),
                             ('population', None)
                         ]
                     ) for _ in range(len(job.de_types))
@@ -100,6 +104,14 @@ def main():
         )
 
         prev_NN = dict(
+            list(zip(job.de_types, [
+                None for _ in range(len(job.de_types))]))
+        )
+        prev_F  = dict(
+            list(zip(job.de_types, [
+                None for _ in range(len(job.de_types))]))
+        )
+        prev_CR = dict(
             list(zip(job.de_types, [
                 None for _ in range(len(job.de_types))]))
         )
@@ -138,6 +150,16 @@ def main():
 
                 for de_type in job.de_types:
 
+                    ## 
+                    # Init F 
+                    cur_f = sess.run(cur_nn.F_init)
+                    prev_F[de_type] = cur_f
+
+                    ##
+                    # Init CR 
+                    cur_cr = sess.run(cur_nn.CR_init)
+                    prev_CR[de_type] = cur_cr
+
                     ##
                     # Random initialization of the NN
                     cur_pop = sess.run(cur_nn.rand_pop)
@@ -158,7 +180,7 @@ def main():
 
 
                     prev_NN[de_type] = cur_pop
-
+                    
                     with tf.device("/cpu:0"):
                         ##
                         # DENN op
@@ -210,6 +232,8 @@ def main():
                         de_type,
                         test_results,
                         cur_accuracy,
+                        cur_f,
+                        cur_cr,
                         [
                             cur_pop[num][best_idx] for num, target in enumerate(cur_nn.targets)
                         ],
@@ -218,7 +242,7 @@ def main():
 
                     ##
                     # Do evolution
-                    denn_op.run(sess, prev_NN, test_results, {
+                    denn_op.run(sess, prev_F, prev_CR, prev_NN, test_results, {
                         'TEST_PARALLEL_OP': TEST_PARALLEL_OP,
                         'TEST_PARTIAL': TEST_PARTIAL,
                         'start_job': start_job,

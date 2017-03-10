@@ -9,8 +9,7 @@ REGISTER_OP("DennAdaTraining")
 //dataset
 .Attr("dataset: string")
 //de
-.Attr("CR: float = 0.5")
-.Attr("F: float = 1.0")
+.Attr("JDE: float = 0.1")
 .Attr("DE: {"
       "'rand/1/bin', "
       "'rand/1/exp', "
@@ -28,6 +27,8 @@ REGISTER_OP("DennAdaTraining")
 .Attr("reset_type: {'none','execute'} = 'none'")
 .Attr("reset_fector: float = 100.0")
 .Attr("reset_counter: int  = 0")
+.Attr("reset_f: string")
+.Attr("reset_cr: string")
 .Attr("reset_rand_pop: list(string)")
 //insert best 
 .Attr("reinsert_best: bool = false")
@@ -54,10 +55,19 @@ REGISTER_OP("DennAdaTraining")
 .Attr("ada_boost_c: float = 1.0")
 //inputs 
 .Input("info: int32") //[ NUM_GEN, NUM_GEN_STEP ]
+.Input("f: T")
+.Input("cr: T")
 .Input("populations_list: space * T")
+//output
 .Output("final_eval_of_best: T")
 .Output("final_eval_of_best_of_best: T")
+
+.Output("final_best_f: T")
+.Output("final_best_cr: T")
 .Output("final_best: space * T")
+
+.Output("final_f: T")
+.Output("final_cr: T")
 .Output("final_populations: space * T")
 ;
 

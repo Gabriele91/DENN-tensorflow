@@ -36,8 +36,10 @@
 #ifdef  _DEBUG
     #include <iostream>
     #define MSG_DEBUG( _x_ ) std::cout<< _x_ <<std::endl;
+    #define ASSERT_DEBUG( __code__ ) assert(__code__);
 #else
     #define MSG_DEBUG( _x_ )  
+    #define ASSERT_DEBUG( __code__ );
 #endif
 
 #ifndef NOT

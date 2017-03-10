@@ -84,18 +84,25 @@ namespace tensorflow
             // get input batch data
             const Tensor& t_batch_features = context->input(2);
             ////////////////////////////////////////////////////////////////////////////
+            // F and CR
+            TensorList current_population_F_CR;
+            // get F
+            current_population_F_CR.emplace_back( context->input(3) );
+            // get CR
+            current_population_F_CR.emplace_back( context->input(4) );
+            ////////////////////////////////////////////////////////////////////////////
             // start input population
-            const size_t start_input_population = 3;
+            const size_t start_input_population = 5;
             // populations
-            TensorListList  current_populations_list;        
+            TensorListList  current_population_list;        
             // populations inputs
             for(int i=0; i != m_space_size; ++i)
             {
                 const Tensor& population = context->input(start_input_population+i);
-                current_populations_list.push_back(splitDim0(population));
+                current_population_list.push_back(splitDim0(population));
             }
             //Test sizeof populations
-            if NOT(TestPopulationSize(context,current_populations_list)) return;
+            if NOT(TestPopulationSize(context,current_population_list)) return;
             ////////////////////////////////////////////////////////////////////////////
             // start input of C / EC / Y
             const size_t start_input_C_EC_Y = start_input_population + m_space_size;
@@ -107,14 +114,16 @@ namespace tensorflow
             TensorList pop_Y = splitDim0(context->input(start_input_C_EC_Y+2));
             ////////////////////////////////////////////////////////////////////////////
             //Temp of new gen of populations
-            TensorListList new_populations_list;
-            ////////////////////////////////////////////////////////////////////////////
+            TensorList     new_population_F_CR;
+            TensorListList new_population_list;
             //Alloc temp vector of populations
-            GenCachePopulation(current_populations_list,new_populations_list); 
-
+            AllocNewPopulation(current_population_F_CR,
+                               current_population_list, 
+                               new_population_F_CR,
+                               new_population_list);
             ////////////////////////////////////////////////////////////////////////////
             //Alloc input 
-            AllocCacheInputs(current_populations_list);
+            AllocCacheInputs(current_population_list);
             //Copy batch in input
             SetDatasetInCacheInputs(t_batch_labels,t_batch_features);
 
@@ -122,10 +131,10 @@ namespace tensorflow
             // init evaluation
             if(calc_first_eval)
             {
-                ComputePopY(context, current_populations_list, pop_Y, EC);
+                ComputePopY(context, current_population_list, pop_Y, EC);
             }
             //Get np 
-            const int NP = current_populations_list[0].size();
+            const int NP = current_population_list[0].size();
             //Tensor first evaluation of all populations
             Tensor current_eval_result(data_type<value_t>(),TensorShape({int64(NP)}));
             //fill all to 0
@@ -139,10 +148,12 @@ namespace tensorflow
                   context
                 , num_gen
                 // Cache
-                , new_populations_list
+                , new_population_F_CR
+                , new_population_list
                 // In/Out
-                , current_populations_list
                 , current_eval_result
+                , current_population_F_CR
+                , current_population_list
                 , C
                 , EC 
                 , pop_Y
@@ -150,11 +161,19 @@ namespace tensorflow
             ////////////////////////////////////////////////////////////////////////////
             // Output counter
             int output_id=0;
+            // Output F CR
+            for(int i=0; i != current_population_F_CR.size(); ++i)
+            {
+                Tensor* new_generation_tensor = nullptr;
+                Tensor& current_f_or_cr = current_population_F_CR[i];
+                OP_REQUIRES_OK(context, context->allocate_output(output_id++, current_f_or_cr.shape(), &new_generation_tensor));
+                (*new_generation_tensor) = current_f_or_cr;
+            }
             // Output populations
             for(int i=0; i != m_space_size; ++i)
             {
                 Tensor* new_generation_tensor = nullptr;
-                Tensor current_pop = concatDim0(current_populations_list[i]);
+                Tensor current_pop = concatDim0(current_population_list[i]);
                 OP_REQUIRES_OK(context, context->allocate_output(output_id++, current_pop.shape(), &new_generation_tensor));
                 (*new_generation_tensor) = current_pop;
             }
@@ -184,24 +203,31 @@ namespace tensorflow
         * Start differential evolution
         * @param context
         * @param num_gen, number of generation
-        * @param new_populations_list, (input) cache memory of the last population generated 
-        * @param current_populations_list, (input/output) population
+        * @param new_population_F_CR, (input) cache memory of F and CR of last population generated
+        * @param new_population_list, (input) cache memory of last population generated 
         * @param current_eval_result, (input/output) evaluation of population
+        * @param current_population_F_CR, (input/output) F and CR of population
+        * @param current_population_list, (input/output) population
         */
         virtual bool RunDe
         (
             OpKernelContext*  context,
             const int         num_gen,
-            TensorListList&   new_populations_list,
-            TensorListList&   current_populations_list,
+            // Cache
+            TensorList&       new_population_F_CR,
+            TensorListList&   new_population_list,
+            // In/Out
             Tensor&           current_eval_result,
+            TensorList&       current_population_F_CR,
+            TensorListList&   current_population_list,
+            // ADA
             Tensor&           C,
             TensorList&       EC,
             TensorList&       pop_Y
         )
         {
             //Get np 
-            const int NP = current_populations_list[0].size();
+            const int NP = current_population_list[0].size();
             //Pointer to memory
             auto ref_current_eval_result = current_eval_result.flat<value_t>();
             //evaluete all population 
@@ -216,14 +242,20 @@ namespace tensorflow
                 PopulationGenerator< value_t >
                 (
                     context, 
+                    //params
                     this->m_de_info,
                     this->m_de_factors,
+                    //gen info
                     i,
                     num_gen,
+                    // population in
                     NP,
                     current_eval_result,
-                    current_populations_list,
-                    new_populations_list
+                    current_population_F_CR,
+                    current_population_list,
+                    // population out
+                    new_population_F_CR,
+                    new_population_list
                 );
                 //Change old population (if required)
                 for(int index = 0; index!=NP ;++index)
@@ -231,15 +263,26 @@ namespace tensorflow
                     //get y and ec
                     Tensor y;
                     Tensor ec;
-                    ComputeYAndEC(context, index, new_populations_list, y, ec);
+                    ComputeYAndEC(context, index, new_population_list, y, ec);
                     //execute cross
                     value_t new_eval = ExecuteEvaluateAdaBoost(context, y, C);
                     //Choice
                     if(new_eval < ref_current_eval_result(index))
                     {
-                        //save all populations (W, B)
-                        for(int p=0; p!=current_populations_list.size(); ++p)
-                            current_populations_list[p][index] = new_populations_list[p][index];
+                        //save a individual (composiction of W, B list)
+                        for(int p=0; p!=current_population_list.size(); ++p)
+                        {
+                            current_population_list[p][index] = new_population_list[p][index];
+                        }
+                        //save F and CR 
+                        for(int i = 0; i != current_population_F_CR.size(); ++i)
+                        {
+                            //get refs
+                            auto ref_f_cr = current_population_F_CR[i].flat<value_t>();
+                            auto new_f_cr = new_population_F_CR[i].flat<value_t>();
+                            //current F and CR <- new F and CR
+                            ref_f_cr(index) = new_f_cr(index);
+                        }
                         //save EC 
                         EC[index] = ec; 
                         //save Y
@@ -469,27 +512,6 @@ namespace tensorflow
             value_t cross_res = cross_value.size() ? cross_value[0].template flat<value_t>()(0) : -1.0;
             //results
             return cross_res;
-        }
-
-        /**
-        * Alloc cache populations
-        * @param context
-        * @param current_populations_list, (input) population
-        * @param new_populations_list, (output) cache of new population
-        */
-        void GenCachePopulation
-        (
-            const TensorListList& current_populations_list,
-            TensorListList& new_populations_list
-        ) const
-        {
-            //new pupulations
-            new_populations_list.resize(m_space_size);
-            // pupulation inputs
-            for(int i=0; i != m_space_size; ++i)
-            {
-                new_populations_list[i].resize(current_populations_list[i].size());
-            }
         }
 
         /**

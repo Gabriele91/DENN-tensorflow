@@ -372,6 +372,7 @@ namespace tensorflow
         * @param Context
         * @param Cache Best
         * @param populations, list of populations
+        * @return true if reset else false
         */
         bool CheckReset(OpKernelContext *context,
                         const CacheBest<value_t>& best,

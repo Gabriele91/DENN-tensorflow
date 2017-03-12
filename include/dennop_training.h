@@ -170,8 +170,8 @@ namespace tensorflow
                     cur_worst_id,
                     cur_worst_eval
                 );
-                //test best 
-                best.TestBest(cur_best_eval, cur_best_id, current_population_F_CR, current_population_list);
+                // test best 
+                best.TestBest(cur_best_eval, cur_best_id, current_population_F_CR, current_population_list);                
                 //Test 
                 SetTestDataInCacheInputs();
                 cur_test_eval  = 
@@ -243,7 +243,7 @@ namespace tensorflow
                 //update best 
                 if( best.TestBest(cur_best_eval, cur_best_id, current_population_F_CR, current_population_list) )
                 {
-                   best_test_eval = cur_test_eval;
+                    best_test_eval = cur_test_eval;
                 }
                 else if(m_reinsert_best)
                 {
@@ -255,6 +255,10 @@ namespace tensorflow
                     //replace F and CR 
                     current_population_F_CR[0].flat<value_t>()(cur_worst_id) = best.m_F;
                     current_population_F_CR[1].flat<value_t>()(cur_worst_id) = best.m_CR;
+                    //replace evaluation 
+                    current_eval_result.flat<value_t>()(cur_worst_id) = 
+                    current_eval_result.flat<value_t>()(best.m_id) ;
+
                 }
 
                 //add into vector
@@ -262,7 +266,18 @@ namespace tensorflow
                 list_eval_of_best_of_best.push_back(best_test_eval);
                 
                 //Execute reset 
-                CheckReset(context, best, current_population_F_CR, current_population_list);
+                if(CheckReset(context, best, current_population_F_CR, current_population_list))
+                {
+                    // force evaluation
+                    this->DoFirstEvaluationIfRequired
+                    (
+                          context
+                        , true
+                        , current_population_list
+                        , population_first_eval 
+                        , current_eval_result
+                    );
+                }
             }
             ////////////////////////////////////////////////////////////////////////////
             int output_id=0;
@@ -329,8 +344,9 @@ namespace tensorflow
         * @param Context
         * @param Cache Best
         * @param populations, list of populations
+        * @return true if reset else false
         */
-        void CheckReset(OpKernelContext *context,
+        bool CheckReset(OpKernelContext *context,
                         const CacheBest<value_t>& best,
                         TensorList&     pop_F_CR,
                         TensorListList& populations)
@@ -362,7 +378,7 @@ namespace tensorflow
                         context->CtxFailure({tensorflow::error::Code::ABORTED,"Run execute random population: "+status.ToString()});
                         MSG_DEBUG("Run execute random population, fail")
                         ASSERT_DEBUG( 0 )
-                        return /* fail */;
+                        return false;
                     }
                     //return population
                     for(int i=0; i!=this->m_space_size ;++i)
@@ -392,7 +408,7 @@ namespace tensorflow
                         context->CtxFailure({tensorflow::error::Code::ABORTED,"Run execute reset F: "+status.ToString()});
                         MSG_DEBUG("Run execute reset F, fail")
                         ASSERT_DEBUG( 0 )
-                        return /* fail */;
+                        return false;
                     }
                     //return population
                     pop_F_CR[0] = f_out[0];
@@ -419,7 +435,7 @@ namespace tensorflow
                         context->CtxFailure({tensorflow::error::Code::ABORTED,"Run execute reset CR: "+status.ToString()});
                         MSG_DEBUG("Run execute reset CR, fail")
                         ASSERT_DEBUG( 0 )
-                        return /* fail */;
+                        return false;
                     }
                     //return population
                     pop_F_CR[1] = cr_out[0];
@@ -440,8 +456,11 @@ namespace tensorflow
                 auto ref_CR = pop_F_CR[1].flat<value_t>();
                 ref_F(best.m_id) = best.m_F;
                 ref_CR(best.m_id) = best.m_CR;
-                //MSG_DEBUG("Copy output F CR best from: " << best.m_F << ", " << best.m_CR << ", id:" << best.m_id)
+                //population is reset 
+                return true;
             }
+            //population isn't reset 
+            return false;
         }
 
         /**

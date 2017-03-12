@@ -148,6 +148,7 @@ namespace tensorflow
              , current_eval_result
             );
             ////////////////////////////////////////////////////////////////////////////
+            value_t cache_best_train_eval = 0.0;        
             CacheBest< value_t > best;
             std::vector< value_t > list_eval_of_best;
             std::vector< value_t > list_eval_of_best_of_best;
@@ -170,8 +171,10 @@ namespace tensorflow
                     cur_worst_id,
                     cur_worst_eval
                 );
-                // test best 
-                best.TestBest(cur_best_eval, cur_best_id, current_population_F_CR, current_population_list);                
+                // set best 
+                best.TestBest(cur_best_eval, cur_best_id, current_population_F_CR, current_population_list);  
+                // save best eval on train set 
+                cache_best_train_eval = current_eval_result.flat<value_t>()(best.m_id);   
                 //Test 
                 SetTestDataInCacheInputs();
                 cur_test_eval  = 
@@ -244,6 +247,8 @@ namespace tensorflow
                 if( best.TestBest(cur_best_eval, cur_best_id, current_population_F_CR, current_population_list) )
                 {
                     best_test_eval = cur_test_eval;
+                    // save eval of best on train set 
+                    cache_best_train_eval = current_eval_result.flat<value_t>()(best.m_id);  
                 }
                 else if(m_reinsert_best)
                 {
@@ -256,9 +261,7 @@ namespace tensorflow
                     current_population_F_CR[0].flat<value_t>()(cur_worst_id) = best.m_F;
                     current_population_F_CR[1].flat<value_t>()(cur_worst_id) = best.m_CR;
                     //replace evaluation 
-                    current_eval_result.flat<value_t>()(cur_worst_id) = 
-                    current_eval_result.flat<value_t>()(best.m_id) ;
-
+                    current_eval_result.flat<value_t>()(cur_worst_id) = cache_best_train_eval;
                 }
 
                 //add into vector

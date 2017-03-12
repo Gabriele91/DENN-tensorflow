@@ -114,7 +114,13 @@ def main():
 
         cur_nn = job.gen_network(True)
 
-        with cur_nn.graph.as_default():
+        with cur_nn.graph.as_default() as cur_graph:
+
+            ##
+            # Write output graph
+            # writer = tf.summary.FileWriter(logdir='logdir', graph=cur_graph)
+            # writer.flush()
+            # writer.close()
 
             session_config = tf.ConfigProto(
                 intra_op_parallelism_threads=job.num_intra_threads,

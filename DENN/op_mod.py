@@ -407,11 +407,6 @@ class Operation(object):
 
     def adaboost_run(self, sess, prev_F, prev_CR, prev_NN, test_results, options={}):
         """Run for AdaBoost jobs."""
-        ##
-        # get options
-        test_networks = options.get('test_networks')
-        TEST_PARALLEL_OP = options.get('TEST_PARALLEL_OP')
-        TEST_PARTIAL = options.get('TEST_PARTIAL')
 
         batch_counter = 0
         v_res = [0.0 for _ in range(self.job.NP)]
@@ -515,49 +510,6 @@ class Operation(object):
                 # print(
                 #     "++ Valutation:\t\t{}".format(time() - time_valutation))
 
-                # ---------- TEST PARALLEL EVALUATIONS ----------
-                if TEST_PARALLEL_OP:
-                    time_valutation = time()
-
-                    accuracy_ops = []
-                    feed_dict_ops = {}
-
-                    for idx, network in enumerate(test_networks):
-                        accuracy_ops.append(network.accuracy)
-
-                        for num, target in enumerate(network.targets):
-                            feed_dict_ops[
-                                target] = cur_pop[num][idx]
-
-                        feed_dict_ops[
-                            network.label_placeholder] = self.dataset.validation_labels
-                        feed_dict_ops[
-                            network.input_placeholder] = self.dataset.validation_data
-
-                    if not TEST_PARTIAL:
-                        evaluations_test = sess.run(
-                            accuracy_ops, feed_dict=feed_dict_ops)
-                    else:
-                        handler = sess.partial_run_setup(
-                            accuracy_ops,
-                            [_ for _ in feed_dict_ops.keys()]
-                        )
-
-                        evaluations_test = sess.partial_run(
-                            handler,
-                            accuracy_ops,
-                            feed_dict=feed_dict_ops
-                        )
-
-                    # print(evaluations_test)
-                    # print(
-                    #     "++ Valutation Test:\t{} | equal to eval: {}".format(
-                    #         time() - time_valutation,
-                    #         np.allclose(evaluations_test, evaluations)
-                    #     )
-                    # )
-
-                # ---------- END TEST ----------
                 time_test = time()
 
                 best_idx, cur_accuracy = self.__test(
@@ -752,11 +704,6 @@ class Operation(object):
 
     def standard_run(self, sess, prev_F, prev_CR, prev_NN, test_results, options={}):
         """Run for standard jobs."""
-        ##
-        # get options
-        test_networks = options.get('test_networks')
-        TEST_PARALLEL_OP = options.get('TEST_PARALLEL_OP')
-        TEST_PARTIAL = options.get('TEST_PARTIAL')
 
         first_time = True
         batch_counter = 0
@@ -839,49 +786,6 @@ class Operation(object):
                 # print(
                 #     "++ Valutation:\t\t{}".format(time() - time_valutation))
 
-                # ---------- TEST PARALLEL EVALUATIONS ----------
-                if TEST_PARALLEL_OP:
-                    time_valutation = time()
-
-                    accuracy_ops = []
-                    feed_dict_ops = {}
-
-                    for idx, network in enumerate(test_networks):
-                        accuracy_ops.append(network.accuracy)
-
-                        for num, target in enumerate(network.targets):
-                            feed_dict_ops[
-                                target] = cur_pop[num][idx]
-
-                        feed_dict_ops[
-                            network.label_placeholder] = self.dataset.validation_labels
-                        feed_dict_ops[
-                            network.input_placeholder] = self.dataset.validation_data
-
-                    if not TEST_PARTIAL:
-                        evaluations_test = sess.run(
-                            accuracy_ops, feed_dict=feed_dict_ops)
-                    else:
-                        handler = sess.partial_run_setup(
-                            accuracy_ops,
-                            [_ for _ in feed_dict_ops.keys()]
-                        )
-
-                        evaluations_test = sess.partial_run(
-                            handler,
-                            accuracy_ops,
-                            feed_dict=feed_dict_ops
-                        )
-
-                    # print(evaluations_test)
-                    # print(
-                    #     "++ Valutation Test:\t{} | equal to eval: {}".format(
-                    #         time() - time_valutation,
-                    #         np.allclose(evaluations_test, evaluations)
-                    #     )
-                    # )
-
-                # ---------- END TEST ----------
                 time_test = time()
 
                 best_idx, cur_accuracy = self.__test(

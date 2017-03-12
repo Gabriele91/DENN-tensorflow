@@ -35,11 +35,6 @@ class NDict(dict):
 
 #@profile
 def main():
-
-    TEST_PARALLEL_OP = False
-    TEST_PARTIAL = False
-    TEST_ALTERNATE_DEV = False
-
     ##
     # jobs
     jobs = []
@@ -118,17 +113,6 @@ def main():
         )
 
         cur_nn = job.gen_network(True)
-
-        test_networks = None
-        if TEST_PARALLEL_OP:
-            test_networks = []
-            for num in range(job.NP):
-                if TEST_ALTERNATE_DEV:
-                    if num % 2 == 0:
-                        job.levels[0].preferred_device = "CPU"
-                    else:
-                        job.levels[0].preferred_device = "GPU"
-                test_networks.append(job.gen_network(True))
 
         with cur_nn.graph.as_default():
 
@@ -244,10 +228,7 @@ def main():
                     ##
                     # Do evolution
                     denn_op.run(sess, prev_F, prev_CR, prev_NN, test_results, {
-                        'TEST_PARALLEL_OP': TEST_PARALLEL_OP,
-                        'TEST_PARTIAL': TEST_PARTIAL,
-                        'start_job': start_job,
-                        'test_networks': test_networks
+                        'start_job': start_job
                     })
 
                     ##

@@ -303,6 +303,12 @@ class DETask(object):
                 True
             )
         return self.__ada_boost_cache[idx]
+    
+    def get_ec_adaboost_cache(self, idx):
+        return self.__ada_boost_cache[idx][1]
+    
+    def get_y_adaboost_cache(self, idx):
+        return self.__ada_boost_cache[idx][2]
 
     def set_adaboost_cache(self, idx, C, EC, pop_y, force_evaluation=False):
         self.__ada_boost_cache[idx] = (C, EC, pop_y, force_evaluation)

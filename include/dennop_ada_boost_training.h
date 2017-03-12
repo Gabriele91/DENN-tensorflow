@@ -270,14 +270,25 @@ namespace tensorflow
                     //replace F and CR 
                     current_population_F_CR[0].flat<value_t>()(cur_worst_id) = best.m_F;
                     current_population_F_CR[1].flat<value_t>()(cur_worst_id) = best.m_CR;
+                    //recompute wrost Y & EC 
+                    this->ComputeYAndEC(
+                          context 
+                        , cur_worst_id
+                        , current_population_list 
+                        , ada_batch_values.m_EC
+                        , ada_batch_values.m_pop_Y
+                    );
                 }
 
                 //add into vector
                 list_eval_of_best.push_back(cur_test_eval);
                 list_eval_of_best_of_best.push_back(best_test_eval);
-                
                 //Execute reset 
-                CheckReset(context, best, current_population_F_CR, current_population_list);
+                if(CheckReset(context, best, current_population_F_CR, current_population_list))
+                {
+                    //recompute all 
+                    RecomputePopYandEC(context, current_population_list);
+                }
             }
             ////////////////////////////////////////////////////////////////////////////
             int output_id=0;
@@ -362,7 +373,7 @@ namespace tensorflow
         * @param Cache Best
         * @param populations, list of populations
         */
-        void CheckReset(OpKernelContext *context,
+        bool CheckReset(OpKernelContext *context,
                         const CacheBest<value_t>& best,
                         TensorList&     pop_F_CR,
                         TensorListList& populations)
@@ -394,7 +405,7 @@ namespace tensorflow
                         context->CtxFailure({tensorflow::error::Code::ABORTED,"Run execute random population: "+status.ToString()});
                         MSG_DEBUG("Run execute random population, fail")
                         ASSERT_DEBUG( 0 )
-                        return /* fail */;
+                        return false;
                     }
                     //return population
                     for(int i=0; i!=this->m_space_size ;++i)
@@ -424,7 +435,7 @@ namespace tensorflow
                         context->CtxFailure({tensorflow::error::Code::ABORTED,"Run execute reset F: "+status.ToString()});
                         MSG_DEBUG("Run execute reset F, fail")
                         ASSERT_DEBUG( 0 )
-                        return /* fail */;
+                        return false;
                     }
                     //return population
                     pop_F_CR[0] = f_out[0];
@@ -451,7 +462,7 @@ namespace tensorflow
                         context->CtxFailure({tensorflow::error::Code::ABORTED,"Run execute reset CR: "+status.ToString()});
                         MSG_DEBUG("Run execute reset CR, fail")
                         ASSERT_DEBUG( 0 )
-                        return /* fail */;
+                        return false;
                     }
                     //return population
                     pop_F_CR[1] = cr_out[0];
@@ -472,8 +483,11 @@ namespace tensorflow
                 auto ref_CR = pop_F_CR[1].flat<value_t>();
                 ref_F(best.m_id) = best.m_F;
                 ref_CR(best.m_id) = best.m_CR;
-                //MSG_DEBUG("Copy output F CR best from: " << best.m_F << ", " << best.m_CR << ", id:" << best.m_id)
+                //population is reset 
+                return true;
             }
+            //population isn't reset 
+            return false;
         }
 
 
@@ -644,6 +658,31 @@ namespace tensorflow
         }
 
         /**
+        * Recompute Y and EC 
+        * OpKernelContext *context,
+        * const TensorListList& populations
+        */
+        void RecomputePopYandEC
+        (
+            OpKernelContext *context,
+            const TensorListList& populations
+        )
+        {
+            //Set batch in input
+            SetBatchInCacheInputs();
+            //id batch 
+            int id = m_dataset.get_last_batch_info().m_batch_id;
+            //compute Pop Y & EC
+            this->ComputePopYAndEC
+            (
+                  context
+                , populations
+                , m_cache_ada[id].m_pop_Y
+                , m_cache_ada[id].m_EC
+            );
+        }
+
+        /**
         * Alloc no C, EC, Y is required
         * @param populations
         * @param batch id 
@@ -687,7 +726,7 @@ namespace tensorflow
                 //Set batch in input
                 SetBatchInCacheInputs();
                 //compute Pop Y & EC
-                this->ComputePopY
+                this->ComputePopYAndEC
                 (
                       context
                     , populations

@@ -131,7 +131,7 @@ namespace tensorflow
             // init evaluation
             if(calc_first_eval)
             {
-                ComputePopY(context, current_population_list, pop_Y, EC);
+                ComputePopYAndEC(context, current_population_list, pop_Y, EC);
             }
             //Get np 
             const int NP = current_population_list[0].size();
@@ -365,7 +365,7 @@ namespace tensorflow
         * Compute NN if req
         * @param populations_list, (input) populations
         */
-        virtual void ComputePopY
+        virtual void ComputePopYAndEC
         (
             OpKernelContext *context,
             const TensorListList& populations_list,
@@ -384,6 +384,29 @@ namespace tensorflow
         * Compute NN if req
         * @param NP_i, (input) populations
         * @param populations_list, (input) populations
+        * @param population y vectors, (output)
+        * @param population ec vectors, (output)
+        */
+        virtual bool ComputeYAndEC
+        (
+            OpKernelContext *context,
+            //input
+            const size_t NP_i,
+            const TensorListList& populations_list,
+            //output 
+            TensorList& out_list_y,
+            TensorList& out_list_ec            
+        )
+        {
+            return ComputeYAndEC(context, NP_i, populations_list, out_list_y[NP_i], out_list_ec[NP_i]);
+        }
+
+        /**
+        * Compute Y and EC of a individual
+        * @param NP_i, (input) id individual
+        * @param populations_list, (input) population
+        * @param y vector, (output)
+        * @param ec vector, (output)
         */
         virtual bool ComputeYAndEC
         (
@@ -460,6 +483,8 @@ namespace tensorflow
                 //return Y
                 out_ec = output_correct_values[0];
             }
+            //ok 
+            return true;
         }
 
         //execute evaluate function (tensorflow function->cross entropy)

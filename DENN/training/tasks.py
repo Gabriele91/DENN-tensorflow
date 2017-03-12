@@ -306,6 +306,18 @@ class DETask(object):
 
     def set_adaboost_cache(self, idx, C, EC, pop_y, force_evaluation=False):
         self.__ada_boost_cache[idx] = (C, EC, pop_y, force_evaluation)
+    
+    def set_force_to_recompute_adaboost_cache(self, idx):
+        self.__ada_boost_cache[idx] = (
+            # C
+            self.__ada_boost_cache[idx][0],
+            # EC (will be recompute)
+            self.__ada_boost_cache[idx][1],
+            # Y (will be recompute)
+            self.__ada_boost_cache[idx][2],
+            # Force recompute
+            True
+        )
 
     def __repr__(self):
         """A string representation of the object TFFx"""

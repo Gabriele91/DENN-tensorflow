@@ -382,6 +382,7 @@ class Operation(object):
         for num in range(len(self.net.targets)):
             cur_pop[num][idx_worst] = test_results[
                 self.de_type].best_of['individual'][num]
+        return idx_worst
 
     def __reset_with_1_best(self, sess, cur_pop, best_f, best_cr, best, new_best_pos=0):
         """Reset the whole population and put one best individual."""
@@ -626,9 +627,11 @@ class Operation(object):
                     prev_F[self.de_type] = cur_f
                     prev_CR[self.de_type] = cur_cr
                     prev_NN[self.de_type] = cur_pop
+                    # force recomputation of Y and EC 
+                    self.job.set_force_to_recompute_adaboost_cache(batch_id)
                     ##
                     # TO DO
-                    # - salvarsi la popolazione prima del reset
+                    # - save population before reset 
 
         self.job.times[self.de_type] = time() - start_evolution
         self.job.accuracy[self.de_type] = cur_accuracy
@@ -891,6 +894,7 @@ class Operation(object):
                 test_results[self.de_type].F_population = cur_f
                 test_results[self.de_type].CR_population = cur_cr
                 test_results[self.de_type].population = cur_pop
+                first_time = False
 
                 if self.job.reinsert_best and not best_changed:
                     self.__reinsert_best(cur_f, cur_cr, cur_pop, evaluations, test_results)
@@ -903,7 +907,6 @@ class Operation(object):
                 #     )
                 # )
 
-                first_time = False
 
                 prev_F[self.de_type] = cur_f
                 prev_CR[self.de_type] = cur_cr
@@ -939,7 +942,8 @@ class Operation(object):
                     prev_F[self.de_type] = cur_f
                     prev_CR[self.de_type] = cur_cr
                     prev_NN[self.de_type] = cur_pop 
-
+                    # force recomputation of eval of population 
+                    first_time = True
                     ##
                     # TO DO
                     # - salvarsi la popolazione prima del reset

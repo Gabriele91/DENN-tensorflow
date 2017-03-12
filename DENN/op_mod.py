@@ -19,7 +19,7 @@ __all__ = ['Operation', 'create', 'update_best_of']
 OUT_FOLDER = "benchmark_results"
 
 
-def update_best_of(de_type, test_results, new_accuracy, new_f, new_cr, new_individual, job):
+def update_best_of(de_type, test_results, new_accuracy, new_f, new_cr, new_individual, job, temp_valutation = {}):
     """Tracks the best of the whole evolution.
 
     Params:
@@ -37,6 +37,7 @@ def update_best_of(de_type, test_results, new_accuracy, new_f, new_cr, new_indiv
         test_results[de_type].best_of['CR'] = new_cr
         test_results[de_type].best_of['accuracy'].append(new_accuracy)
         test_results[de_type].best_of['individual'] = new_individual
+        test_results[de_type].best_of['temp_valutation'] = temp_valutation
         job.best['F'] = new_f
         job.best['CR'] = new_cr
         job.best['accuracy'] = new_accuracy
@@ -575,15 +576,18 @@ class Operation(object):
                     [
                         cur_pop[num][best_idx] for num, target in enumerate(self.net.targets)
                     ],
-                    self.job
+                    self.job,
+                    # costum valutation saves
+                    temp_valutation = {
+                        'eval' : evaluations[best_idx],
+                        'ec' : results.final_ec[best_idx],
+                        'y' : results.final_pop_y[best_idx]
+                    }
                 )
 
                 test_results[self.de_type].F_population = cur_f
                 test_results[self.de_type].CR_population = cur_cr
                 test_results[self.de_type].population = cur_pop
-
-                if self.job.reinsert_best and not best_changed:
-                    self.__reinsert_best(cur_f, cur_cr, cur_pop, evaluations, test_results)
 
                 # print(
                 #     "+ DENN[{}] up to {} gen on {} completed in {:.05} sec.".format(
@@ -600,6 +604,14 @@ class Operation(object):
                 pbar.update(gen)
 
                 #### END SAMPLE ###
+
+            ## Reinsert 
+            if self.job.reinsert_best and not best_changed:
+                id_as_reinsert = self.__reinsert_best(cur_f, cur_cr, cur_pop, evaluations, test_results)
+                evaluations[id_as_reinsert] = test_results[self.de_type].best_of['temp_valutation']['eval']
+                self.job.get_ec_adaboost_cache(batch_id)[id_as_reinsert] = test_results[self.de_type].best_of['temp_valutation']['ec']
+                self.job.get_y_adaboost_cache(batch_id)[id_as_reinsert] = test_results[self.de_type].best_of['temp_valutation']['y']
+
 
             ##
             # Check reset
@@ -888,16 +900,17 @@ class Operation(object):
                     [
                         cur_pop[num][best_idx] for num, target in enumerate(self.net.targets)
                     ],
-                    self.job
+                    self.job,
+                    # costum valutation saves
+                    temp_valutation = {
+                        'eval' : evaluations[best_idx]
+                    }
                 )
 
                 test_results[self.de_type].F_population = cur_f
                 test_results[self.de_type].CR_population = cur_cr
                 test_results[self.de_type].population = cur_pop
                 first_time = False
-
-                if self.job.reinsert_best and not best_changed:
-                    self.__reinsert_best(cur_f, cur_cr, cur_pop, evaluations, test_results)
 
                 # print(
                 #     "+ DENN[{}] up to {} gen on {} completed in {:.05} sec.".format(
@@ -907,7 +920,6 @@ class Operation(object):
                 #     )
                 # )
 
-
                 prev_F[self.de_type] = cur_f
                 prev_CR[self.de_type] = cur_cr
                 prev_NN[self.de_type] = cur_pop
@@ -916,6 +928,10 @@ class Operation(object):
 
                 ### END SAMPLE ###
 
+            ## reinsert best
+            if self.job.reinsert_best and not best_changed:
+                id_as_reinsert = self.__reinsert_best(cur_f, cur_cr, cur_pop, evaluations, test_results)
+                evaluations[id_as_reinsert] = test_results[self.de_type].best_of['temp_valutation']['eval']
             ##
             # Check reset
             if self.job.reset_every != False:

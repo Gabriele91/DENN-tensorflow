@@ -85,7 +85,8 @@ def main():
                                 'accuracy': [0],
                                 'individual': None,
                                 'F' : None,
-                                'CR' : None 
+                                'CR' : None,
+                                "temp_valutation": {}, 
                             }),
                             ('F_population', None),
                             ('CR_population', None),

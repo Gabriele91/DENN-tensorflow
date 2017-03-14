@@ -36,8 +36,9 @@ REGISTER_OP("DennAda")
       "'best/2/bin', "
       "'best/2/exp'  "
       "} = 'rand/1/bin'")
+
 //Input
-.Input("info: int32") //[ NUM_GEN, CALC_FIRST_EVAL ]
+.Input("info: int32") //[ NUM_GEN ]
 //batch
 .Input("batch_labels: T")
 .Input("batch_data: T")
@@ -47,17 +48,14 @@ REGISTER_OP("DennAda")
 .Input("populations_list: space * T")
 //ada
 .Input("c: T")
-.Input("ec: bool")
-.Input("pop_y: T")
+
 //Output
 //population
 .Output("final_f:T")
 .Output("final_cr:T")
 .Output("final_populations: space * T")
 //ada
-.Output("final_c: T")
-.Output("final_ec: bool")
-.Output("final_pop_y: T");
+.Output("final_c: T");
 
 REGISTER_KERNEL_BUILDER(Name("DennAda").Device(DEVICE_CPU).TypeConstraint<float>("T"), DENNOpAdaBoost<float>);
 REGISTER_KERNEL_BUILDER(Name("DennAda").Device(DEVICE_CPU).TypeConstraint<double>("T"), DENNOpAdaBoost<double>);

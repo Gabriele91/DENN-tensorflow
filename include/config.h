@@ -33,13 +33,21 @@
     #define SOCKET_DEBUG(x)
 #endif
 
+
 #ifdef  _DEBUG
     #include <iostream>
-    #define MSG_DEBUG( _x_ ) std::cout<< _x_ <<std::endl;
-    #define ASSERT_DEBUG( __code__ ) assert(__code__);
+    #include <assert.h>
+    #define MSG_DEBUG( _msg_ ) std::cout<< _msg_ <<std::endl;
+    #define ASSERT_DEBUG( _code_ ) assert(_code_);
+    #define ASSERT_DEBUG_MSG( _code_, _msg_ )\
+        { if (!(_code_)) { std::cout << _msg_ << std::endl; } assert(_code_); } 
 #else
-    #define MSG_DEBUG( _x_ )  
-    #define ASSERT_DEBUG( __code__ );
+    #include <iostream>
+    #include <assert.h>
+    #define MSG_DEBUG( _msg_ ) 
+    #define ASSERT_DEBUG( _code_ ) 
+    #define ASSERT_DEBUG_MSG( _code_, _msg_ )\
+        { if (!(_code_)) { std::cout << _msg_ << std::endl; } assert(_code_); } 
 #endif
 
 #ifndef NOT

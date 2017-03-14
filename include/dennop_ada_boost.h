@@ -365,7 +365,7 @@ namespace tensorflow
         * Compute NN if req
         * @param populations_list, (input) populations
         */
-        virtual void ComputePopYAndEC
+        virtual bool ComputePopYAndEC
         (
             OpKernelContext *context,
             const TensorListList& populations_list,
@@ -375,9 +375,13 @@ namespace tensorflow
         {
             //Get np 
             const int NP = populations_list[0].size();
+            //output 
+            bool output = true;
             //execute
             for(size_t NP_i=0; NP_i!=NP; ++NP_i)
-                ComputeYAndEC(context, NP_i, populations_list, pop_Y[NP_i], EC[NP_i]);
+                output &= ComputeYAndEC(context, NP_i, populations_list, pop_Y[NP_i], EC[NP_i]);
+            //return 
+            return output;
         }
 
         /**
@@ -426,7 +430,7 @@ namespace tensorflow
             if NOT(this->SetCacheInputs(populations_list, NP_i))
             {
                 context->CtxFailure({tensorflow::error::Code::ABORTED,"Run evaluate: error to set inputs"});
-                assert(0);
+                ASSERT_DEBUG_MSG(0, "Run evaluate: error to set inputs");
                 return false;
             }
             //execute network
@@ -449,7 +453,7 @@ namespace tensorflow
                 if NOT(status.ok())
                 {
                     context->CtxFailure({tensorflow::error::Code::ABORTED,"Run execute network: "+status.ToString()});
-                    assert(0);
+                    ASSERT_DEBUG_MSG(0, "Run execute network: " << status.ToString());
                     return false;
                 }
                 //return Y
@@ -477,8 +481,9 @@ namespace tensorflow
                 //output error
                 if NOT(status.ok())
                 {
-                    context->CtxFailure({tensorflow::error::Code::ABORTED,"Run correct predition: "+status.ToString()});
-                    return true;
+                    context->CtxFailure({tensorflow::error::Code::ABORTED,"Run correct predition diff: "+status.ToString()});
+                    ASSERT_DEBUG_MSG(0, "Run correct predition diff: " << status.ToString());
+                    return false;
                 }
                 //return Y
                 out_ec = output_correct_values[0];
@@ -528,8 +533,7 @@ namespace tensorflow
                 if NOT(status.ok())
                 {
                     context->CtxFailure({tensorflow::error::Code::ABORTED,"Run cross eval: "+status.ToString()});
-                    MSG_DEBUG("Run cross eval: " << status.ToString());
-                    assert(0);
+                    ASSERT_DEBUG_MSG( 0, "Run cross eval: " << status.ToString());
                     return value_t(-1);
                 }
             }

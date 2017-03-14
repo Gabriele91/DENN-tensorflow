@@ -64,3 +64,12 @@ find -name '*.a' | xargs -t -n 1 objdump -t | grep something
     }
 ]
 ```
+
+## Execution
+
+```bash
+cd scripts
+python benchmark.py config/configfile.json
+```
+
+You will find in the graph folder the exported graph. Open it with TensorBoard.

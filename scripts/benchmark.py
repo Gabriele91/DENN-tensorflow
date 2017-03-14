@@ -121,6 +121,7 @@ def main():
             # writer = tf.summary.FileWriter(logdir='logdir', graph=cur_graph)
             # writer.flush()
             # writer.close()
+            tf.train.write_graph(cur_graph, 'graphs/', '{}.pbtxt'.format(job.name))
 
             session_config = tf.ConfigProto(
                 intra_op_parallelism_threads=job.num_intra_threads,

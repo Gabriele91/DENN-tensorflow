@@ -271,13 +271,17 @@ namespace tensorflow
                     current_population_F_CR[0].flat<value_t>()(cur_worst_id) = best.m_F;
                     current_population_F_CR[1].flat<value_t>()(cur_worst_id) = best.m_CR;
                     //recompute wrost Y & EC 
-                    this->ComputeYAndEC(
+                    if NOT(this->ComputeYAndEC(
                           context 
                         , cur_worst_id
                         , current_population_list 
                         , ada_batch_values.m_EC
                         , ada_batch_values.m_pop_Y
-                    );
+                    ))
+                    {
+                        //exit, wrong
+                        de_loop = false;
+                    }
                 }
 
                 //add into vector
@@ -287,7 +291,11 @@ namespace tensorflow
                 if(CheckReset(context, best, current_population_F_CR, current_population_list))
                 {
                     //recompute all 
-                    RecomputePopYandEC(context, current_population_list);
+                    if NOT(RecomputePopYandEC(context, current_population_list))
+                    {
+                        //exit, wrong
+                        de_loop = false;
+                    }
                 }
             }
             ////////////////////////////////////////////////////////////////////////////
@@ -404,8 +412,7 @@ namespace tensorflow
                     if NOT(status.ok())
                     {
                         context->CtxFailure({tensorflow::error::Code::ABORTED,"Run execute random population: "+status.ToString()});
-                        MSG_DEBUG("Run execute random population, fail")
-                        ASSERT_DEBUG( 0 )
+                        ASSERT_DEBUG_MSG( 0, "Run execute random population: "<<status.ToString() )
                         return false;
                     }
                     //return population
@@ -434,8 +441,7 @@ namespace tensorflow
                     if NOT(status.ok())
                     {
                         context->CtxFailure({tensorflow::error::Code::ABORTED,"Run execute reset F: "+status.ToString()});
-                        MSG_DEBUG("Run execute reset F, fail")
-                        ASSERT_DEBUG( 0 )
+                        ASSERT_DEBUG_MSG( 0, "Run execute reset F: " << status.ToString() )
                         return false;
                     }
                     //return population
@@ -461,8 +467,7 @@ namespace tensorflow
                     if NOT(status.ok())
                     {
                         context->CtxFailure({tensorflow::error::Code::ABORTED,"Run execute reset CR: "+status.ToString()});
-                        MSG_DEBUG("Run execute reset CR, fail")
-                        ASSERT_DEBUG( 0 )
+                        ASSERT_DEBUG_MSG( 0, "Run execute reset CR: " << status.ToString() )
                         return false;
                     }
                     //return population
@@ -599,8 +604,7 @@ namespace tensorflow
             if NOT(this->SetCacheInputs(populations_list, NP_i))
             {
                 context->CtxFailure({tensorflow::error::Code::ABORTED,"Run evaluate: error to set inputs"});
-                MSG_DEBUG("Run evaluate: error to set inputs, fail")
-                ASSERT_DEBUG(0)
+                ASSERT_DEBUG_MSG(0, "Run evaluate: error to set inputs")
                 return -1.0;
             }
             //add labels 
@@ -624,8 +628,7 @@ namespace tensorflow
             if NOT(status.ok())
             {
                 context->CtxFailure({tensorflow::error::Code::ABORTED,"Run evaluate: "+status.ToString()});
-                MSG_DEBUG("Run evaluate, fail: "<<status.ToString())
-                ASSERT_DEBUG(0)
+                ASSERT_DEBUG_MSG( 0, "Run evaluate: " << status.ToString() )
                 return -1.0;
             }
             //results
@@ -663,7 +666,7 @@ namespace tensorflow
         * OpKernelContext *context,
         * const TensorListList& populations
         */
-        void RecomputePopYandEC
+        bool RecomputePopYandEC
         (
             OpKernelContext *context,
             const TensorListList& populations
@@ -674,7 +677,7 @@ namespace tensorflow
             //id batch 
             int id = m_dataset.get_last_batch_info().m_batch_id;
             //compute Pop Y & EC
-            this->ComputePopYAndEC
+            return this->ComputePopYAndEC
             (
                   context
                 , populations

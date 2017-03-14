@@ -118,9 +118,9 @@ def main():
 
             ##
             # Write output graph
-            # writer = tf.summary.FileWriter(logdir='logdir', graph=cur_graph)
-            # writer.flush()
-            # writer.close()
+            writer = tf.summary.FileWriter(logdir='logdir', graph=cur_graph)
+            writer.flush()
+            writer.close()
             tf.train.write_graph(cur_graph, 'graphs/', '{}.pbtxt'.format(job.name))
 
             session_config = tf.ConfigProto(

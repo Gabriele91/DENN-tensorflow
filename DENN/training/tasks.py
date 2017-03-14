@@ -247,10 +247,10 @@ class DETask(object):
             cur_task.get("TYPE")
         )
         self.TYPE = cur_task.get("TYPE")
-        self.F = cur_task.get("F")     
+        self.F = cur_task.get("F")
         self.CR = cur_task.get("CR")
         self.JDE = cur_task.get("JDE", 0.1)
-        self.NP = cur_task.get("NP")   
+        self.NP = cur_task.get("NP")
         self.de_types = cur_task.get("de_types")
         self.clamp = Clamp(cur_task.get("clamp", None))
         self.training = cur_task.get("training", False)
@@ -286,10 +286,10 @@ class DETask(object):
                 [len(batch.data)], self.ada_boost.C, dtype=batch.data.dtype
             )
         return self.__ada_boost_cache[idx]
-    
+
     def set_adaboost_cache(self, idx, C):
         self.__ada_boost_cache[idx] = C
-    
+
     def __repr__(self):
         """A string representation of the object TFFx"""
         string = """+++++ Task ({}) +++++
@@ -379,204 +379,212 @@ class DETask(object):
             graph = tf.Graph()
 
         with graph.as_default():
-            levels = self.levels
-            target_ref = []
-            pop_ref = []
-            rand_pop_ref = []
-            cur_gen_options = tf.placeholder(tf.int32, [2])
+            with tf.name_scope('DENN'):
+                levels = self.levels
+                target_ref = []
+                pop_ref = []
+                rand_pop_ref = []
+                cur_gen_options = tf.placeholder(tf.int32, [2])
 
-            input_size = levels[0].in_size
-            label_size = levels[-1].out_size
-            input_placeholder = tf.placeholder(cur_type,
-                                               [None, input_size],
-                                               name="batch"
-                                               )
-            label_placeholder = tf.placeholder(cur_type,
-                                               [None, label_size],
-                                               name="labels"
-                                               )
-            f_placeholder = tf.placeholder(cur_type,
-                                           [self.NP],
-                                            name="F"
-                                           )
-            cr_placeholder = tf.placeholder(cur_type,
-                                            [self.NP],
-                                            name="CR"
-                                           )
-            #operation on F
-            with tf.name_scope('Init_F'):
-                f_init  = tf.fill([self.NP], tf.cast(self.F, cur_type))
-            #operation on CR
-            with tf.name_scope('Init_CR'):
-                cr_init = tf.fill([self.NP], tf.cast(self.CR, cur_type))
-
-            if self.ada_boost is not None:
-                y_placeholder = tf.placeholder(cur_type,
-                                               [None, label_size],
-                                               name="y"
-                                               )
-                ada_C_placeholder = tf.placeholder(cur_type,
-                                                   [None],
-                                                   name="C"
+                input_size = levels[0].in_size
+                label_size = levels[-1].out_size
+                input_placeholder = tf.placeholder(cur_type,
+                                                   [None, input_size],
+                                                   name="batch"
                                                    )
-                ada_EC_placeholder = tf.placeholder(tf.bool,
-                                                    [self.NP, None],
-                                                    name="EC"
-                                                    )
-                population_y_placeholder = tf.placeholder(cur_type,
-                                                          [self.NP, None,
-                                                              label_size],
-                                                          name="pop_y"
-                                                          )
-                cur_pop_VAL = None
-            else:
-                y_placeholder = None
-                ada_C_placeholder = None
-                ada_EC_placeholder = None
-                population_y_placeholder = None
-                cur_pop_VAL = tf.placeholder(cur_type, [self.NP])
+                label_placeholder = tf.placeholder(cur_type,
+                                                   [None, label_size],
+                                                   name="labels"
+                                                   )
+                f_placeholder = tf.placeholder(cur_type,
+                                               [self.NP],
+                                               name="F"
+                                               )
+                cr_placeholder = tf.placeholder(cur_type,
+                                                [self.NP],
+                                                name="CR"
+                                                )
+                # operation on F
+                with tf.name_scope('Init_F'):
+                    f_init = tf.fill([self.NP], tf.cast(self.F, cur_type))
+                # operation on CR
+                with tf.name_scope('Init_CR'):
+                    cr_init = tf.fill([self.NP], tf.cast(self.CR, cur_type))
 
-            last_input = input_placeholder
+                if self.ada_boost is not None:
+                    y_placeholder = tf.placeholder(cur_type,
+                                                   [None, label_size],
+                                                   name="y"
+                                                   )
+                    ada_C_placeholder = tf.placeholder(cur_type,
+                                                       [None],
+                                                       name="C"
+                                                       )
+                    ada_EC_placeholder = tf.placeholder(tf.bool,
+                                                        [self.NP, None],
+                                                        name="EC"
+                                                        )
+                    population_y_placeholder = tf.placeholder(cur_type,
+                                                              [self.NP, None,
+                                                               label_size],
+                                                              name="pop_y"
+                                                              )
+                    cur_pop_VAL = None
+                else:
+                    y_placeholder = None
+                    ada_C_placeholder = None
+                    ada_EC_placeholder = None
+                    population_y_placeholder = None
+                    cur_pop_VAL = tf.placeholder(cur_type, [self.NP])
 
-            for num, cur_level in enumerate(levels, 1):
+                last_input = input_placeholder
 
-                with tf.name_scope('Layer_{}'.format(num)):
-                    with tf.device(self.get_device(cur_level.preferred_device)):
+                for num, cur_level in enumerate(levels, 1):
 
-                        level = cur_level.shape
+                    with tf.name_scope('Layer_{}'.format(num)):
+                        with tf.device(self.get_device(cur_level.preferred_device)):
 
-                        SIZE_W, SIZE_B = level
+                            level = cur_level.shape
 
-                        ##
-                        # Init population
-                        with tf.name_scope('Pop_init'):
-                            if len(cur_level.init) == 0:
+                            SIZE_W, SIZE_B = level
+
+                            ##
+                            # Init population
+                            with tf.name_scope('Pop_init'):
+                                if len(cur_level.init) == 0:
                                     create_random_population_W = tf.random_uniform(
                                         [self.NP] + SIZE_W, dtype=cur_type, seed=1)
                                     create_random_population_B = tf.random_uniform(
                                         [self.NP] + SIZE_B, dtype=cur_type, seed=1)
 
-                                    rand_pop_ref.append(create_random_population_W)
-                                    rand_pop_ref.append(create_random_population_B)
-                            else:
-                                sizes = [
-                                    SIZE_W,
-                                    SIZE_B
-                                ]
-                                tmp_init = []
-                                for idx, init_elm in enumerate(cur_level.init):
-                                    if type(init_elm) == TFFx:
-                                        tmp_init.append(
-                                            init_elm([self.NP] + sizes[idx],
-                                                    dtype=cur_type))
-                                    elif isinstance(init_elm, (np.ndarray, np.generic)):
-                                        if not self.__equal_shape(init_elm.shape, sizes[idx]):
-                                            raise Exception("Wrong initial shape for elm. with index {} in level {}. [{} != {}]".format(
-                                                idx,
-                                                num,
-                                                init_elm.shape,
-                                                sizes[idx]
-                                            ))
-                                        tmp_init.append(
-                                            tf.constant(
-                                                np.array([init_elm.copy()
-                                                        for _ in range(self.NP)]),
-                                                shape=[self.NP] + sizes[idx],
-                                                dtype=cur_type
-                                            )
-                                        )
-
-                                rand_pop_ref += tmp_init
-
-                        ##
-                        # Placeholder
-                        with tf.name_scope('NN_targets'):
-                            target_w = tf.placeholder(
-                                cur_type, SIZE_W, name="target_W")
-                            target_b = tf.placeholder(
-                                cur_type, SIZE_B, name="target_B")
-
-                            target_ref.append(target_w)
-                            target_ref.append(target_b)
-
-                        with tf.name_scope('Population'):
-                            cur_pop_W = tf.placeholder(
-                                cur_type, [self.NP] + SIZE_W, name="cur_pop_W")
-                            cur_pop_B = tf.placeholder(
-                                cur_type, [self.NP] + SIZE_B, name="cur_pop_B")
-
-                            pop_ref.append(cur_pop_W)
-                            pop_ref.append(cur_pop_B)
-
-                        if num == len(levels):
-                            ##
-                            # NN TRAIN
-                            with tf.name_scope('NN_train_functions'):
-                                with tf.name_scope('NN'):
-                                    y = tf.add(
-                                        tf.matmul(last_input, target_w), target_b,
-                                        name="execution"
-                                    )
-
-                                ada_label_diff = None
-                                if self.ada_boost is not None:
-                                    with tf.name_scope('ADA'):
-                                        ada_label_diff = tf.equal(
-                                            tf.argmax(y_placeholder, 1),
-                                            tf.argmax(label_placeholder, 1),
-                                            name="label_diff"
-                                        )
-                                    #
-                                    # y   # |BATCH| x |CLASS|
-                                    # c   # |BATCH| x 1
-                                    # --------------------------
-                                    # y^t   # |CLASS| x |BATCH|
-                                    # brodcast  multiply
-                                    # c     #           |BATCH|
-                                    # out^t # |CLASS| x |BATCH|
-                                    # out   # |BATCH| x |CLASS|
-                                    # --------------------------
-                                    # (y^t * c )^t
-                                    #
-                                    # https://docs.scipy.org/doc/numpy/user/basics.broadcasting.html
-                                    with tf.name_scope('Cross_entropy'):
-                                        cross_entropy = tf.reduce_mean(
-                                            cur_level.fx(
-                                                tf.transpose(
-                                                    tf.multiply(
-                                                        tf.transpose(y_placeholder),
-                                                        ada_C_placeholder
-                                                    )
-                                                ), label_placeholder
-                                            ),
-                                            name="cross_entropy"
-                                        )
+                                    rand_pop_ref.append(
+                                        create_random_population_W)
+                                    rand_pop_ref.append(
+                                        create_random_population_B)
                                 else:
-                                    with tf.name_scope('Cross_entropy'):
-                                        cross_entropy = tf.reduce_mean(
-                                            cur_level.fx(
-                                                y, label_placeholder
-                                            ),
-                                            name="cross_entropy"
-                                        )
+                                    sizes = [
+                                        SIZE_W,
+                                        SIZE_B
+                                    ]
+                                    tmp_init = []
+                                    for idx, init_elm in enumerate(cur_level.init):
+                                        if type(init_elm) == TFFx:
+                                            tmp_init.append(
+                                                init_elm([self.NP] + sizes[idx],
+                                                         dtype=cur_type))
+                                        elif isinstance(init_elm, (np.ndarray, np.generic)):
+                                            if not self.__equal_shape(init_elm.shape, sizes[idx]):
+                                                raise Exception("Wrong initial shape for elm. with index {} in level {}. [{} != {}]".format(
+                                                    idx,
+                                                    num,
+                                                    init_elm.shape,
+                                                    sizes[idx]
+                                                ))
+                                            tmp_init.append(
+                                                tf.constant(
+                                                    np.array([init_elm.copy()
+                                                              for _ in range(self.NP)]),
+                                                    shape=[self.NP] +
+                                                    sizes[idx],
+                                                    dtype=cur_type
+                                                )
+                                            )
+
+                                    rand_pop_ref += tmp_init
 
                             ##
-                            # NN TEST
-                            with tf.name_scope('NN_test_functions'):
-                                with tf.name_scope('NN_test'):
-                                    y_test = tf.matmul(last_input, target_w) + target_b
-                                with tf.name_scope('Correct_predictions'):
-                                    correct_prediction = tf.equal(
-                                        tf.argmax(y_test, 1),
-                                        tf.argmax(label_placeholder, 1)
-                                    )
-                                with tf.name_scope('Accuracy'):
-                                    accuracy = tf.reduce_mean(
-                                        tf.cast(correct_prediction, cur_type), name="accuracy")
-                        else:
-                            with tf.name_scope('Output'):
-                                last_input = cur_level.fx(
-                                    tf.matmul(last_input, target_w) + target_b)
+                            # Placeholder
+                            with tf.name_scope('NN_targets'):
+                                target_w = tf.placeholder(
+                                    cur_type, SIZE_W, name="target_W")
+                                target_b = tf.placeholder(
+                                    cur_type, SIZE_B, name="target_B")
+
+                                target_ref.append(target_w)
+                                target_ref.append(target_b)
+
+                            with tf.name_scope('Population'):
+                                cur_pop_W = tf.placeholder(
+                                    cur_type, [self.NP] + SIZE_W, name="cur_pop_W")
+                                cur_pop_B = tf.placeholder(
+                                    cur_type, [self.NP] + SIZE_B, name="cur_pop_B")
+
+                                pop_ref.append(cur_pop_W)
+                                pop_ref.append(cur_pop_B)
+
+                            if num == len(levels):
+                                ##
+                                # NN TRAIN
+                                with tf.name_scope('NN_train_functions'):
+                                    with tf.name_scope('NN'):
+                                        y = tf.add(
+                                            tf.matmul(
+                                                last_input, target_w), target_b,
+                                            name="execution"
+                                        )
+
+                                    ada_label_diff = None
+                                    if self.ada_boost is not None:
+                                        with tf.name_scope('ADA'):
+                                            ada_label_diff = tf.equal(
+                                                tf.argmax(y_placeholder, 1),
+                                                tf.argmax(
+                                                    label_placeholder, 1),
+                                                name="label_diff"
+                                            )
+                                        #
+                                        # y   # |BATCH| x |CLASS|
+                                        # c   # |BATCH| x 1
+                                        # --------------------------
+                                        # y^t   # |CLASS| x |BATCH|
+                                        # brodcast  multiply
+                                        # c     #           |BATCH|
+                                        # out^t # |CLASS| x |BATCH|
+                                        # out   # |BATCH| x |CLASS|
+                                        # --------------------------
+                                        # (y^t * c )^t
+                                        #
+                                        # https://docs.scipy.org/doc/numpy/user/basics.broadcasting.html
+                                        with tf.name_scope('Target_function'):
+                                            cross_entropy = tf.reduce_mean(
+                                                cur_level.fx(
+                                                    tf.transpose(
+                                                        tf.multiply(
+                                                            tf.transpose(
+                                                                y_placeholder),
+                                                            ada_C_placeholder
+                                                        )
+                                                    ), label_placeholder
+                                                ),
+                                                name="cross_entropy"
+                                            )
+                                    else:
+                                        with tf.name_scope('Target_function'):
+                                            cross_entropy = tf.reduce_mean(
+                                                cur_level.fx(
+                                                    y, label_placeholder
+                                                ),
+                                                name="cross_entropy"
+                                            )
+
+                                ##
+                                # NN TEST
+                                with tf.name_scope('NN_test_functions'):
+                                    with tf.name_scope('NN_test'):
+                                        y_test = tf.matmul(
+                                            last_input, target_w) + target_b
+                                    with tf.name_scope('Correct_predictions'):
+                                        correct_prediction = tf.equal(
+                                            tf.argmax(y_test, 1),
+                                            tf.argmax(label_placeholder, 1)
+                                        )
+                                    with tf.name_scope('Accuracy'):
+                                        accuracy = tf.reduce_mean(
+                                            tf.cast(correct_prediction, cur_type), name="accuracy")
+                            else:
+                                with tf.name_scope('Output'):
+                                    last_input = cur_level.fx(
+                                        tf.matmul(last_input, target_w) + target_b)
 
         return Network([
             ('targets', target_ref),
@@ -759,9 +767,9 @@ class TaskDecoder(json.JSONDecoder):
         del kwargs["file_name"]
         self.__base_folder = path.dirname(path.abspath(self.__file_name))
         self.__state = 0
-        super(TaskDecoder, self).__init__(*args, **kwargs, 
-            object_pairs_hook=self.object_pairs_hook,
-        )
+        super(TaskDecoder, self).__init__(*args, **kwargs,
+                                          object_pairs_hook=self.object_pairs_hook,
+                                          )
 
     def object_pairs_hook(self, list_):
         for idx, (key, value) in enumerate(list_):

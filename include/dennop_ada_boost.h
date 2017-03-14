@@ -263,7 +263,11 @@ namespace tensorflow
                     //get y and ec
                     Tensor y;
                     Tensor ec;
-                    ComputeYAndEC(context, index, new_population_list, y, ec);
+                    if NOT(ComputeYAndEC(context, index, new_population_list, y, ec))
+                    {
+                        //exit, wrong 
+                        return false;
+                    }
                     //execute cross
                     value_t new_eval = ExecuteEvaluateAdaBoost(context, y, C);
                     //Choice

@@ -76,8 +76,6 @@ namespace tensorflow
             const Tensor& t_metainfo_i = context->input(0);
             //info 1: (NUM GEN)
             const int num_gen = t_metainfo_i.flat<int>()(0);
-            //info 2; (COMPUTE FIRST VALUTATION OF POPULATION)
-            const int calc_first_eval = t_metainfo_i.flat<int>()(1);
             ////////////////////////////////////////////////////////////////////////////
             // get input batch labels
             const Tensor& t_batch_labels = context->input(1);
@@ -91,7 +89,7 @@ namespace tensorflow
             // get CR
             current_population_F_CR.emplace_back( context->input(4) );
             ////////////////////////////////////////////////////////////////////////////
-            // start input population
+            // start input population [INFO + BATCH ROWS + BATCH LABEL + F + CR]
             const size_t start_input_population = 5;
             // populations
             TensorListList  current_population_list;        
@@ -104,14 +102,8 @@ namespace tensorflow
             //Test sizeof populations
             if NOT(TestPopulationSize(context,current_population_list)) return;
             ////////////////////////////////////////////////////////////////////////////
-            // start input of C / EC / Y
-            const size_t start_input_C_EC_Y = start_input_population + m_space_size;
-            // Take C [ start input + W + population ]
-            Tensor C  = context->input(start_input_C_EC_Y);
-            // C errors count list
-            TensorList EC = splitDim0(context->input(start_input_C_EC_Y+1));
-            // C errors list
-            TensorList pop_Y = splitDim0(context->input(start_input_C_EC_Y+2));
+            // Take C at [ INFO + BATCH ROWs + BATCH LABEL + F + CR + population ]
+            Tensor C  = context->input(start_input_population + m_space_size);
             ////////////////////////////////////////////////////////////////////////////
             //Temp of new gen of populations
             TensorList     new_population_F_CR;
@@ -128,18 +120,12 @@ namespace tensorflow
             SetDatasetInCacheInputs(t_batch_labels,t_batch_features);
 
             ////////////////////////////////////////////////////////////////////////////
-            // init evaluation
-            if(calc_first_eval)
-            {
-                ComputePopYAndEC(context, current_population_list, pop_Y, EC);
-            }
             //Get np 
             const int NP = current_population_list[0].size();
             //Tensor first evaluation of all populations
             Tensor current_eval_result(data_type<value_t>(),TensorShape({int64(NP)}));
             //fill all to 0
             fill<value_t>(current_eval_result,0);
-
             ////////////////////////////////////////////////////////////////////////////
             // Execute DE
             RunDe
@@ -155,8 +141,6 @@ namespace tensorflow
                 , current_population_F_CR
                 , current_population_list
                 , C
-                , EC 
-                , pop_Y
             );
             ////////////////////////////////////////////////////////////////////////////
             // Output counter
@@ -183,20 +167,6 @@ namespace tensorflow
                 OP_REQUIRES_OK(context, context->allocate_output(output_id++,  C.shape(), &new_generation_tensor));
                 (*new_generation_tensor) = C;
             }
-            //return EC
-            {
-                const Tensor& all_EC = concatDim0(EC);
-                Tensor* new_generation_tensor = nullptr;
-                OP_REQUIRES_OK(context, context->allocate_output(output_id++, all_EC.shape(), &new_generation_tensor));
-                (*new_generation_tensor) = all_EC;
-            }
-            //return pop Y
-            {
-                const Tensor& all_pop_Y = concatDim0(pop_Y);
-                Tensor* new_generation_tensor = nullptr;
-                OP_REQUIRES_OK(context, context->allocate_output(output_id++, all_pop_Y.shape(), &new_generation_tensor));
-                (*new_generation_tensor) = all_pop_Y;
-            }
         }
 
         /**
@@ -221,14 +191,20 @@ namespace tensorflow
             TensorList&       current_population_F_CR,
             TensorListList&   current_population_list,
             // ADA
-            Tensor&           C,
-            TensorList&       EC,
-            TensorList&       pop_Y
+            Tensor&           C
         )
         {
             //Get np 
             const int NP = current_population_list[0].size();
-            //Pointer to memory
+            // temp info about pop eval
+            TensorList pop_EC(NP), pop_Y(NP);
+            // execute networks of population 
+            if NOT( ComputePopYAndEC(context, current_population_list, pop_Y, pop_EC))
+            {
+                //exit, wrong 
+                return false;
+            }
+            //Pointer to memory of evals
             auto ref_current_eval_result = current_eval_result.flat<value_t>();
             //evaluete all population 
             for(size_t NP_i = 0; NP_i != NP; ++NP_i)
@@ -287,16 +263,15 @@ namespace tensorflow
                             //current F and CR <- new F and CR
                             ref_f_cr(index) = new_f_cr(index);
                         }
-                        //save EC 
-                        EC[index] = ec; 
                         //save Y
                         pop_Y[index] = y;
+                        //save EC 
+                        pop_EC[index] = ec; 
                         //save Eval
                         ref_current_eval_result(index) = new_eval;
                     }
                 }   
                 //////////////////////////////////////////////////////////////
-                // TO DO: Update C and to 0 C_counter
                 // C(gen+1) = (1-alpha) * C(gen) + alpha * (Ni / Np)
                 //////////////////////////////////////////////////////////////
                 //alloc counter of all ec
@@ -306,10 +281,10 @@ namespace tensorflow
                 //get pointer
                 auto raw_EC_counter = ec_counter.template flat<int>();
                 //for all errors
-                for(size_t i = 0; i!=EC.size(); ++i)
+                for(size_t i = 0; i!=pop_EC.size(); ++i)
                 {
                     //get ec
-                    auto raw_ec_i = EC[i].template flat<bool>();
+                    auto raw_ec_i = pop_EC[i].template flat<bool>();
                     //for all ec
                     for(size_t j=0; j!=ec_counter.dim_size(0); ++j)
                     {

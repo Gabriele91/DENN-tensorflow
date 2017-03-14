@@ -157,8 +157,6 @@ class Operation(object):
                 self.net.populations, 
                 # ADA
                 self.net.ada_C_placeholder,
-                self.net.ada_EC_placeholder,
-                self.net.population_y_placeholder,
                 # attributes
                 graph=get_graph_proto(
                     self.net.graph.as_graph_def()),
@@ -439,11 +437,12 @@ class Operation(object):
 
                 ##
                 # Get C, EC, Y of last iteration
-                ada_C, ada_EC, ada_pop_y, first_time = self.job.get_adaboost_cache(
+                ada_C = self.job.get_adaboost_cache(
                     batch_id,
                     cur_batch
                 )
-
+                
+                #print(ada_C)
                 # print(
                 #     "+ Start gen. [{}] with batch[{}]".format((gen + 1) * job.GEN_STEP, batch_counter))
 
@@ -466,14 +465,11 @@ class Operation(object):
                     ]
                     +
                     [
-                        (self.net.cur_gen_options, [
-                         self.job.GEN_STEP, first_time])
+                        (self.net.cur_gen_options, [self.job.GEN_STEP, False])
                     ]
                     +
                     [
-                        (self.net.ada_C_placeholder, ada_C),
-                        (self.net.ada_EC_placeholder, ada_EC),
-                        (self.net.population_y_placeholder, ada_pop_y)
+                        (self.net.ada_C_placeholder, ada_C)
                     ]
                 ))
 
@@ -492,9 +488,7 @@ class Operation(object):
                 # Update adaboost cache
                 self.job.set_adaboost_cache(
                     batch_id,
-                    results.final_c,
-                    results.final_ec,
-                    results.final_pop_y
+                    results.final_c
                 )
 
                 # print(len(cur_pop))
@@ -531,9 +525,7 @@ class Operation(object):
                     self.job,
                     # costum valutation saves
                     temp_valutation = {
-                        'eval' : evaluations[best_idx],
-                        'ec' : results.final_ec[best_idx],
-                        'y' : results.final_pop_y[best_idx]
+                        'eval' : evaluations[best_idx]
                     }
                 )
 
@@ -560,9 +552,8 @@ class Operation(object):
             ## Reinsert 
             if self.job.reinsert_best and not best_changed:
                 id_as_reinsert = self.__reinsert_best(cur_f, cur_cr, cur_pop, evaluations, test_results)
-                evaluations[id_as_reinsert] = test_results[self.de_type].best_of['temp_valutation']['eval']
-                self.job.get_ec_adaboost_cache(batch_id)[id_as_reinsert] = test_results[self.de_type].best_of['temp_valutation']['ec']
-                self.job.get_y_adaboost_cache(batch_id)[id_as_reinsert] = test_results[self.de_type].best_of['temp_valutation']['y']
+                # not required (ADA recompute alla Y, EC and EVAl for run)
+                # evaluations[id_as_reinsert] = test_results[self.de_type].best_of['temp_valutation']['eval']
 
 
             ##
@@ -591,8 +582,6 @@ class Operation(object):
                     prev_F[self.de_type] = cur_f
                     prev_CR[self.de_type] = cur_cr
                     prev_NN[self.de_type] = cur_pop
-                    # force recomputation of Y and EC 
-                    self.job.set_force_to_recompute_adaboost_cache(batch_id)
                     ##
                     # TO DO
                     # - save population before reset 

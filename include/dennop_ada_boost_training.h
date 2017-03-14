@@ -19,8 +19,6 @@ namespace tensorflow
         {
             bool       m_init = false;
             Tensor     m_C;
-            TensorList m_EC;
-            TensorList m_pop_Y;
         };
 
     public:
@@ -135,7 +133,6 @@ namespace tensorflow
             ////////////////////////////////////////////////////////////////////////////
             //Alloc input 
             this->AllocCacheInputs(current_population_list);
-
             ////////////////////////////////////////////////////////////////////////////
             // START STREAM
             m_dataset.start_read_batch();
@@ -231,8 +228,6 @@ namespace tensorflow
                  , current_population_list
                  //ADA
                  , ada_batch_values.m_C 
-                 , ada_batch_values.m_EC
-                 , ada_batch_values.m_pop_Y
                 );
 
                 //find best
@@ -269,34 +264,13 @@ namespace tensorflow
                     }
                     //replace F and CR 
                     current_population_F_CR[0].flat<value_t>()(cur_worst_id) = best.m_F;
-                    current_population_F_CR[1].flat<value_t>()(cur_worst_id) = best.m_CR;
-                    //recompute wrost Y & EC 
-                    if NOT(this->ComputeYAndEC(
-                          context 
-                        , cur_worst_id
-                        , current_population_list 
-                        , ada_batch_values.m_EC
-                        , ada_batch_values.m_pop_Y
-                    ))
-                    {
-                        //exit, wrong
-                        de_loop = false;
-                    }
+                    current_population_F_CR[1].flat<value_t>()(cur_worst_id) = best.m_CR;                   
                 }
-
                 //add into vector
                 list_eval_of_best.push_back(cur_test_eval);
                 list_eval_of_best_of_best.push_back(best_test_eval);
                 //Execute reset 
-                if(CheckReset(context, best, current_population_F_CR, current_population_list))
-                {
-                    //recompute all 
-                    if NOT(RecomputePopYandEC(context, current_population_list))
-                    {
-                        //exit, wrong
-                        de_loop = false;
-                    }
-                }
+                CheckReset(context, best, current_population_F_CR, current_population_list);
             }
             ////////////////////////////////////////////////////////////////////////////
             int output_id=0;
@@ -660,32 +634,6 @@ namespace tensorflow
         { 
             return DENNOpAdaBoost_t::SetDatasetInCacheInputs(m_test.m_labels, m_test.m_features);
         }
-
-        /**
-        * Recompute Y and EC 
-        * OpKernelContext *context,
-        * const TensorListList& populations
-        */
-        bool RecomputePopYandEC
-        (
-            OpKernelContext *context,
-            const TensorListList& populations
-        )
-        {
-            //Set batch in input
-            SetBatchInCacheInputs();
-            //id batch 
-            int id = m_dataset.get_last_batch_info().m_batch_id;
-            //compute Pop Y & EC
-            return this->ComputePopYAndEC
-            (
-                  context
-                , populations
-                , m_cache_ada[id].m_pop_Y
-                , m_cache_ada[id].m_EC
-            );
-        }
-
         /**
         * Alloc no C, EC, Y is required
         * @param populations
@@ -713,30 +661,8 @@ namespace tensorflow
                 m_cache_ada[id_batch].m_init = true;
                 //alloc C 
                 m_cache_ada[id_batch].m_C = Tensor(data_type<value_t>(), TensorShape({int64(len_batch)}));
-                fill<value_t>(m_cache_ada[id_batch].m_C, m_ada_C_init_value);
-                //alloc EC 
-                for(int i=0; i!=NP; ++i)
-                {
-                    m_cache_ada[id_batch].m_EC.push_back(Tensor(data_type<bool>(), TensorShape({int64(len_batch)})));
-                    fill<bool>(m_cache_ada[id_batch].m_EC[i], false);
-                }
-                //alloc pop Y 
-                for(int i=0; i!=NP; ++i)
-                {
-                    value_t const_y_init = 0;
-                    m_cache_ada[id_batch].m_pop_Y.push_back(Tensor(data_type<value_t>(), TensorShape({int64(len_batch), int64(len_class)})));
-                    fill<value_t>(m_cache_ada[id_batch].m_pop_Y[i], const_y_init);
-                }
-                //Set batch in input
-                SetBatchInCacheInputs();
-                //compute Pop Y & EC
-                this->ComputePopYAndEC
-                (
-                      context
-                    , populations
-                    , m_cache_ada[id_batch].m_pop_Y
-                    , m_cache_ada[id_batch].m_EC
-                );
+                //init 
+                fill<value_t>(m_cache_ada[id_batch].m_C, m_ada_C_init_value);               
             }
             return m_cache_ada[id_batch];
         }

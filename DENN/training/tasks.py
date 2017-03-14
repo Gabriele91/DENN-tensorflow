@@ -282,53 +282,14 @@ class DETask(object):
 
     def get_adaboost_cache(self, idx, batch):
         if idx not in self.__ada_boost_cache:
-            self.__ada_boost_cache[idx] = (
-                ##
-                # C vector: size[len(batch)]
-                np.full(
-                    [len(batch.data)], self.ada_boost.C, dtype=batch.data.dtype
-                ),
-                ##
-                # EC vector: size[len(pop), len(batch)]
-                np.full(
-                    [self.NP, len(batch.data)], 0, dtype=np.bool
-                ),
-                ##
-                # y vector: size[len(pop), len(batch), len(classes)]
-                np.full(
-                    [self.NP, len(batch.data), batch.labels.shape[-1]],
-                    0.0,
-                    dtype=batch.data.dtype
-                ),
-                True
+            self.__ada_boost_cache[idx] = np.full(
+                [len(batch.data)], self.ada_boost.C, dtype=batch.data.dtype
             )
         return self.__ada_boost_cache[idx]
     
-    def get_ec_adaboost_cache(self, idx):
-        if idx not in self.__ada_boost_cache:
-            raise
-        return self.__ada_boost_cache[idx][1]
+    def set_adaboost_cache(self, idx, C):
+        self.__ada_boost_cache[idx] = C
     
-    def get_y_adaboost_cache(self, idx):
-        if idx not in self.__ada_boost_cache:
-            raise
-        return self.__ada_boost_cache[idx][2]
-
-    def set_adaboost_cache(self, idx, C, EC, pop_y, force_evaluation=False):
-        self.__ada_boost_cache[idx] = (C, EC, pop_y, force_evaluation)
-    
-    def set_force_to_recompute_adaboost_cache(self, idx):
-        self.__ada_boost_cache[idx] = (
-            # C
-            self.__ada_boost_cache[idx][0],
-            # EC (will be recompute)
-            self.__ada_boost_cache[idx][1],
-            # Y (will be recompute)
-            self.__ada_boost_cache[idx][2],
-            # Force recompute
-            True
-        )
-
     def __repr__(self):
         """A string representation of the object TFFx"""
         string = """+++++ Task ({}) +++++

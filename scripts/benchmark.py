@@ -57,6 +57,10 @@ def main():
 
     for dataset, job in datasets:
 
+        ##
+        # Check Type
+        assert job.TYPE == dataset.type, "Job type have to be equal to dataset type: {} != {}".format(job.TYPE, dataset.type)
+
         if job.training:
             ##
             # Ref:

@@ -295,6 +295,7 @@ class Dataset(object):
             )
 
         # print(self.stats)
+        self.type = 'double' if self.stats.type == 2 else 'float'
         self.__dtype = np.float64 if self.stats.type == 2 else np.float32
         self.__elm_size = 8 if self.stats.type == 2 else 4
         self.__size_elm_data = self.stats.n_features * self.__elm_size

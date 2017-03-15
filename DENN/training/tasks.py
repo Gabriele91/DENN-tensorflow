@@ -282,7 +282,7 @@ class DETask(object):
     def reset_adaboost_cache(self):
         self.__ada_boost_cache = {}
 
-    def reset_a_C_adaboost_cache(self,idx):
+    def reset_a_C_adaboost_cache(self, idx):
         self.__ada_boost_cache[idx].fill(self.ada_boost.C)
 
     def get_adaboost_cache(self, idx, batch):

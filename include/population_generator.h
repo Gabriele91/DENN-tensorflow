@@ -427,7 +427,7 @@ namespace tensorflow
                     for (int index = 0; index < NP; ++index)
                 #endif
                     {
-                        ApplayFilterAVG(new_population[index],factors.GetShape(l_type));
+                        ApplayFilterAVG<value_t>(new_population[index],factors.GetShape(l_type));
                     }
                 }
             }

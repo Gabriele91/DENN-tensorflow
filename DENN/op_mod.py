@@ -19,33 +19,39 @@ __all__ = ['Operation', 'create', 'update_best_of']
 OUT_FOLDER = "benchmark_results"
 
 
-def update_best_of(de_type, test_results, new_accuracy, new_f, new_cr, new_individual, job, temp_valutation = {}):
+def update_best_of(de_type, test_results, accuracy_test, accuracy_val, new_f, new_cr, new_individual, job):
     """Tracks the best of the whole evolution.
 
     Params:
         de_type (string): current DE type in use
         test_results (dict): container of all results
-        new_accuracy (float): the accuracy of the new best individual of
-                              the current population
+        accuracy_test (float): the accuracy of the new best individual of
+                              the current population on test set
+        accuracy_val (float): the accuracy of the new best individual of
+                              the current population on validation set
         new_f (float) : scale factor of new best 
         new_cr (float) : crossover rate of new best 
         new_individual (numpy.ndarray): the current best individual 
                                         weights and biases
     """
-    if test_results[de_type].best_of['accuracy'][-1] < new_accuracy:
+    if test_results[de_type].best_of['accuracy_val'][-1] < accuracy_val:
         test_results[de_type].best_of['F'] = new_f
         test_results[de_type].best_of['CR'] = new_cr
-        test_results[de_type].best_of['accuracy'].append(new_accuracy)
+        test_results[de_type].best_of['accuracy'].append(accuracy_test)
+        test_results[de_type].best_of['accuracy_val'].append(accuracy_val)
         test_results[de_type].best_of['individual'] = new_individual
-        test_results[de_type].best_of['temp_valutation'] = temp_valutation
         job.best['F'] = new_f
         job.best['CR'] = new_cr
-        job.best['accuracy'] = new_accuracy
+        job.best['accuracy'] = accuracy_test
         job.best['individual'] = new_individual
         return True
     else:
-        last_accuracy = test_results[de_type].best_of['accuracy'][-1]
-        test_results[de_type].best_of['accuracy'].append(last_accuracy)
+        # test 
+        accuracy_test = test_results[de_type].best_of['accuracy'][-1]
+        test_results[de_type].best_of['accuracy'].append(accuracy_test)
+        # validation
+        accuracy_val = test_results[de_type].best_of['accuracy_val'][-1]
+        test_results[de_type].best_of['accuracy_val'].append(accuracy_val)
         return False
 
 
@@ -518,16 +524,13 @@ class Operation(object):
                     self.de_type,
                     test_results,
                     cur_accuracy,
+                    evaluations[best_idx],
                     cur_f[best_idx],
                     cur_cr[best_idx],
                     [
                         cur_pop[num][best_idx] for num, target in enumerate(self.net.targets)
                     ],
-                    self.job,
-                    # costum valutation saves
-                    temp_valutation = {
-                        'eval' : evaluations[best_idx]
-                    }
+                    self.job
                 )
 
                 test_results[self.de_type].F_population = cur_f
@@ -556,10 +559,7 @@ class Operation(object):
 
             ## Reinsert 
             if self.job.reinsert_best and not best_changed:
-                id_as_reinsert = self.__reinsert_best(cur_f, cur_cr, cur_pop, evaluations, test_results)
-                # not required (ADA recompute alla Y, EC and EVAl for run)
-                # evaluations[id_as_reinsert] = test_results[self.de_type].best_of['temp_valutation']['eval']
-
+                self.__reinsert_best(cur_f, cur_cr, cur_pop, evaluations, test_results)
 
             ##
             # Check reset
@@ -793,16 +793,13 @@ class Operation(object):
                     self.de_type,
                     test_results,
                     cur_accuracy,
+                    evaluations[best_idx],
                     cur_f[best_idx],
                     cur_cr[best_idx],
                     [
                         cur_pop[num][best_idx] for num, target in enumerate(self.net.targets)
                     ],
-                    self.job,
-                    # costum valutation saves
-                    temp_valutation = {
-                        'eval' : evaluations[best_idx]
-                    }
+                    self.job
                 )
 
                 test_results[self.de_type].F_population = cur_f
@@ -829,7 +826,7 @@ class Operation(object):
             ## reinsert best
             if self.job.reinsert_best and not best_changed:
                 id_as_reinsert = self.__reinsert_best(cur_f, cur_cr, cur_pop, evaluations, test_results)
-                evaluations[id_as_reinsert] = test_results[self.de_type].best_of['temp_valutation']['eval']
+                evaluations[id_as_reinsert] = test_results[self.de_type].best_of['accuracy_val'][-1]
             ##
             # Check reset
             if self.job.reset_every != False:

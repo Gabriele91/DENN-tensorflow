@@ -69,9 +69,10 @@ namespace tensorflow
         return std::memcmp(left_data.data(), right_data.data(),  left_data.size()) == 0;
     }
     
-    template < class T > 
-    inline void fill(const Tensor& tensor, const T& v)
+    template < typename T = double > 
+    inline void fill(Tensor& tensor, const T& v)
     {
+        #if 0
         //get data
         StringPiece to_data = tensor.tensor_data();
         //get ptr 
@@ -81,6 +82,16 @@ namespace tensorflow
         {
             std::memcpy(ptr_data+i,&v,sizeof(T));
         }
+        #else 
+        //raw ptr
+        typename TTypes< T >::Flat tensor_data = tensor.flat< T >();
+        //write
+        for(int i=0; i!=tensor_data.size(); ++i)
+        {
+            tensor_data(i) = v;
+        }
+        //end
+        #endif 
     }
  
     inline std::vector<Tensor> splitDim0(const Tensor& tensor)

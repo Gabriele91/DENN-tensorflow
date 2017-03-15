@@ -78,10 +78,10 @@ def main():
                             ('values', []),
                             ('best_of', {
                                 'accuracy': [0],
+                                'accuracy_val': [0],
                                 'individual': None,
                                 'F' : None,
-                                'CR' : None,
-                                "temp_valutation": {}, 
+                                'CR' : None
                             }),
                             ('F_population', None),
                             ('CR_population', None),
@@ -224,6 +224,7 @@ def main():
                         de_type,
                         test_results,
                         cur_accuracy,
+                        evaluations[best_idx],
                         cur_f,
                         cur_cr,
                         [

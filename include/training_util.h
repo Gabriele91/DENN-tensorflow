@@ -48,15 +48,6 @@ namespace tensorflow
             {
                 //dec counter
                 ++m_current_counter;
-                //test 
-                if(m_counter <= m_current_counter)
-                {
-                    //reset 
-                    m_current_counter = 0;
-                    m_value = value;
-                    //return true
-                    return true;
-                }
             }
             else 
             {
@@ -65,6 +56,14 @@ namespace tensorflow
             }
             //update value 
             m_value = value;
+            //test 
+            if(m_counter <= m_current_counter)
+            {
+                //reset 
+                m_current_counter = 0;
+                //return true
+                return true;
+            }
             //not reset
             return false;
         }

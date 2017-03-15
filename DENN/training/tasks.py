@@ -207,11 +207,13 @@ class AdaBoost(object):
     def __init__(self, ada_boost):
         self.alpha = ada_boost['alpha'] if ada_boost is not None else .5
         self.C = ada_boost['C'] if ada_boost is not None else 1.
+        self.reset_C_on_change_bacth = ada_boost.get('reset_C_on_change_bacth', True)
 
     def to_dict(self):
         return {
             'alpha': self.alpha,
-            'C': self.C
+            'C': self.C,
+            'reset_C_on_change_bacth' : self.reset_C_on_change_bacth
         }
 
 
@@ -279,6 +281,9 @@ class DETask(object):
 
     def reset_adaboost_cache(self):
         self.__ada_boost_cache = {}
+
+    def reset_a_C_adaboost_cache(self,idx):
+        self.__ada_boost_cache[idx].fill(self.ada_boost.C)
 
     def get_adaboost_cache(self, idx, batch):
         if idx not in self.__ada_boost_cache:

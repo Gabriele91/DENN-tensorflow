@@ -73,6 +73,8 @@ namespace tensorflow
             OP_REQUIRES_OK(context, context->GetAttr("ada_boost_c",&ada_boost_c));
             //cast C value
             m_ada_C_init_value = value_t(ada_boost_c);
+            /* get ADA reset C */
+            OP_REQUIRES_OK(context, context->GetAttr("ada_reset_c_on_change_bacth",&m_reset_C_on_change_bacth));
         }
 
         //star execution from python
@@ -213,6 +215,12 @@ namespace tensorflow
                 }
                 //Get current ada values 
                 BatchValuesAda& ada_batch_values = GetLastAdaBatchValues();
+                //reset C if request
+                if(m_reset_C_on_change_bacth)
+                {
+                    //filling C to start value
+                    fill<value_t>(ada_batch_values.m_C, m_ada_C_init_value);  
+                }
                 //execute
                 de_loop = this->RunDe
                 (
@@ -686,6 +694,8 @@ namespace tensorflow
         std::vector < BatchValuesAda > m_cache_ada;
         //ada init C
         value_t m_ada_C_init_value{ 1.0 };
+        //ada reset C 
+        bool m_reset_C_on_change_bacth{ true };
         //dataset
         DataSetLoader< io_wrapper::zlib_file<> > m_dataset;
         //Batch

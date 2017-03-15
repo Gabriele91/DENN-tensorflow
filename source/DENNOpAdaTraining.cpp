@@ -53,6 +53,7 @@ REGISTER_OP("DennAdaTraining")
 //ADA 
 .Attr("ada_boost_alpha: float = 0.5")
 .Attr("ada_boost_c: float = 1.0")
+.Attr("ada_reset_c_on_change_bacth: bool = true")
 //inputs 
 .Input("info: int32") //[ NUM_GEN, NUM_GEN_STEP ]
 .Input("f: T")

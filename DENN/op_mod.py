@@ -121,6 +121,7 @@ class Operation(object):
                 #ADA
                 ada_boost_alpha=self.job.ada_boost.alpha,
                 ada_boost_c=self.job.ada_boost.C,
+                ada_reset_c_on_change_bacth=self.job.ada_boost.reset_C_on_change_bacth,
                 JDE=self.job.JDE,
                 DE=de_type,
                 f_min=self.job.clamp.min,
@@ -441,7 +442,7 @@ class Operation(object):
                     batch_id,
                     cur_batch
                 )
-                
+
                 #print(ada_C)
                 # print(
                 #     "+ Start gen. [{}] with batch[{}]".format((gen + 1) * job.GEN_STEP, batch_counter))
@@ -548,6 +549,10 @@ class Operation(object):
                 pbar.update(gen)
 
                 #### END SAMPLE ###
+
+            ## Reset C if request 
+            if self.job.ada_boost.reset_C_on_change_bacth:
+                self.job.reset_a_C_adaboost_cache(batch_id)
 
             ## Reinsert 
             if self.job.reinsert_best and not best_changed:

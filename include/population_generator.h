@@ -43,12 +43,12 @@ namespace tensorflow
             m_Best = best;
         }
 
-        void set_best(int best)
+        void SetBest(int best)
         {
             m_Best = best;
         }
 
-        void do_rand(int individual)
+        void DoRand(int individual)
         {               
             //do rand indices
             if(m_Best > -1)
@@ -64,6 +64,8 @@ namespace tensorflow
             {
                 random_indices::threeRandIndicesDiffFrom(m_NP, individual, m_randoms_i, m_randoms_i.size());
             }
+            //index shuffle
+            std::random_shuffle(m_randoms_i.begin(),m_randoms_i.end());
         }
     
         operator const std::vector< int >& () const
@@ -207,7 +209,7 @@ namespace tensorflow
             value_t F  = new_F_CR[0].flat<value_t>()(index);
             value_t CR = new_F_CR[1].flat<value_t>()(index);
             //do rand indices
-            v_random.do_rand(index);
+            v_random.DoRand(index);
             //crossover
             DeCrossOver< value_t >
             (
@@ -348,7 +350,7 @@ namespace tensorflow
                 }
             }
             //set best
-            v_random.set_best(id_best);
+            v_random.SetBest(id_best);
         }
         //realloc 
         #if 1

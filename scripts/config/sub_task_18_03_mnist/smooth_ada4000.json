@@ -1,0 +1,63 @@
+{
+    "name": "18_03_mnist_f_ada_smooth_8_4k",
+    "dataset_file": "../datasets/mnist_f_t85-v15_60x4000_5s.gz",
+    "TOT_GEN": 300000,
+    "GEN_STEP": 2000,
+    "TYPE": "float",
+    "F": 1.9,
+    "CR": 0.9,
+    "NP": 24,
+    "JDE": 0.1,
+    "smoothing_n_pass": 8,
+    "smoothing": [
+        [28, 28, 3]
+    ],
+    "training": true,
+    "de_types": [
+        "rand/1/bin"
+    ],
+    "reset_every": {
+        "epsilon": 0.02,
+        "counter": 2
+    },
+    "reinsert_best": true,
+    "clamp": {
+        "min": -30,
+        "max": 30
+    },
+    "AdaBoost": {
+        "alpha": 1.0,
+        "C": 1.0
+    },
+    "levels": [
+        {
+            "shape": [[784,10], [10]],
+            "preferred_device": "CPU",
+            "fx": {
+                "name": "nn.softmax_cross_entropy_with_logits" 
+            },
+            "init": [
+                {
+                    "fx": {
+                        "name": "random_uniform",
+                        "kwargs": {
+                            "seed": 1,
+                            "minval": -15.0, 
+                            "maxval": 15.0
+                        }
+                    }
+                },
+                {
+                    "fx": {
+                        "name": "random_uniform",
+                        "kwargs": {
+                            "seed": 1,
+                            "minval": -15.0, 
+                            "maxval": 15.0
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}

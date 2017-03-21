@@ -32,7 +32,7 @@
     "levels": [
         {
             "shape": [[784,10], [10]],
-            "preferred_device": "GPU",
+            "preferred_device": "CPU",
             "fx": {
                 "name": "nn.softmax_cross_entropy_with_logits" 
             },

@@ -13,4 +13,9 @@ TMP_NAME=$(echo "$2" | tr / _)
 FILE_NAME=(${TMP_NAME//./ })
 OUT_FILE_NAME=${FILE_NAME[0]}_$(date +%s).out
 
-nohup python $@ &> logs/$OUT_FILE_NAME &
+##
+# nohup python $@ &> logs/$OUT_FILE_NAME &
+
+##
+# Thest with inhibit from Python of SIGHUP
+python $@ &> logs/$OUT_FILE_NAME &

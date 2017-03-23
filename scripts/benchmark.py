@@ -33,6 +33,11 @@ class NDict(dict):
     pass
 
 
+##
+# Inhibit SIGHUP
+signal.siginterrupt(signal.SIGHUP, False)
+
+
 #@profile
 def main():
     ##

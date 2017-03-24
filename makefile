@@ -8,7 +8,7 @@ TOP         ?= $(shell pwd)
 USE_DEBUG   =
 REBUILD_OP  =
 #include list
-TF_INCLUDE = $(shell python -c 'import tensorflow as tf; print(tf.sysconfig.get_include())')
+TF_INCLUDE = $(shell python -c 'import tensorflow as tf; print(tf.sysconfig.get_include())' 2> /dev/null)
 #Output name
 OUT_FILE_NAME_DENNOP = DENNOp
 OUT_FILE_NAME_DENNOP_TRAINING = DENNOpTraining

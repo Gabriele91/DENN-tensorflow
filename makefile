@@ -1,4 +1,4 @@
-#compile flags
+# Compiler flags
 # Needed if you are using gcc5, because tf <= 0.12 use gcc4 with old ABI
 USE_OLD_ABI ?= true
 CC          ?= g++
@@ -24,7 +24,7 @@ C_FLAGS = -Wall -std=c++11 -I $(TF_INCLUDE) -I $(S_INC) -fPIC
 LIKNER_FLAGS =
 
 ##
-# Colors
+# Color Types
 COLOR_BLACK = 0
 COLOR_RED = 1
 COLOR_GREEN = 2
@@ -34,6 +34,11 @@ COLOR_MAGENTA = 5
 COLOR_CYAN = 6
 COLOR_WHITE = 7
 
+##
+# Support function for colored output
+# Args:
+#     - $(1) = Color Type
+#     - $(2) = String to print
 define colorecho
       @tput setaf $(1)
       @echo $(2)
@@ -89,6 +94,7 @@ SOURCE_ADA_TRAINING_FILES = $(S_DIR)/DENNOpAdaTraining.cpp
 SOURCE_ADA_TRAINING_OBJS = $(addprefix $(O_DIR)/,$(notdir $(SOURCE_ADA_TRAINING_FILES:.cpp=.o)))
 #########################################################################
 
+# Support function to delete a single Op
 define delete_op
 	$(call colorecho,$(COLOR_GREEN),"[ Remove $(1).o and $(1).so files ]")
     @rm -f "$(TOP)/$(MODULE_FOLDER)/$(1).so"
@@ -97,8 +103,9 @@ endef
 
 all: denn denn_traning denn_ada denn_ada_traning
 
-.PHONY: rebuild all directories ${O_DIR} clean
+.PHONY: rebuild all denn denn_traning denn_ada denn_ada_traning directories ${O_DIR} clean
 
+# Set rebuild option
 rebuild:
 	$(eval REBUILD_OP = true)
 	
@@ -108,31 +115,31 @@ denn: directories
 # function will be called
 	$(if $(REBUILD_OP),$(call delete_op,$(OUT_FILE_NAME_DENNOP)))
 	$(MAKE) $(SOURCE_OBJS)
-	$(call colorecho,$(COLOR_GREEN),"[ Compile $(OUT_FILE_NAME_DENNOP).so ]")
+	$(call colorecho,$(COLOR_GREEN),"[ Make $(OUT_FILE_NAME_DENNOP).so ]")
 	$(CC) $(C_FLAGS) $(CPP_FLAGS) -shared -o $(TOP)/$(MODULE_FOLDER)/$(OUT_FILE_NAME_DENNOP).so $(SOURCE_OBJS) $(LIKNER_FLAGS)
 
 denn_traning: directories
 	$(if $(REBUILD_OP),$(call delete_op,$(OUT_FILE_NAME_DENNOP_TRAINING)))
 	$(MAKE) $(SOURCE_TRAINING_OBJS)
-	$(call colorecho,$(COLOR_GREEN),"[ Compile $(OUT_FILE_NAME_DENNOP_TRAINING).so ]")
+	$(call colorecho,$(COLOR_GREEN),"[ Make $(OUT_FILE_NAME_DENNOP_TRAINING).so ]")
 	$(CC) $(C_FLAGS) $(CPP_FLAGS) -shared -o $(TOP)/$(MODULE_FOLDER)/$(OUT_FILE_NAME_DENNOP_TRAINING).so $(SOURCE_TRAINING_OBJS) $(LIKNER_FLAGS)
 
 denn_ada: directories
 	$(if $(REBUILD_OP),$(call delete_op,$(OUT_FILE_NAME_DENNOP_ADA)))
 	$(MAKE) $(SOURCE_ADA_OBJS)
-	$(call colorecho,$(COLOR_GREEN),"[ Compile $(OUT_FILE_NAME_DENNOP_ADA).so ]")
+	$(call colorecho,$(COLOR_GREEN),"[ Make $(OUT_FILE_NAME_DENNOP_ADA).so ]")
 	$(CC) $(C_FLAGS) $(CPP_FLAGS) -shared -o $(TOP)/$(MODULE_FOLDER)/$(OUT_FILE_NAME_DENNOP_ADA).so $(SOURCE_ADA_OBJS) $(LIKNER_FLAGS)
 
 denn_ada_traning: directories
 	$(if $(REBUILD_OP),$(call delete_op,$(OUT_FILE_NAME_DENNOP_ADA_TRAINING)))
 	$(MAKE) $(SOURCE_ADA_TRAINING_OBJS)
-	$(call colorecho,$(COLOR_GREEN),"[ Compile $(OUT_FILE_NAME_DENNOP_ADA_TRAINING).so ]")
+	$(call colorecho,$(COLOR_GREEN),"[ Make $(OUT_FILE_NAME_DENNOP_ADA_TRAINING).so ]")
 	$(CC) $(C_FLAGS) $(CPP_FLAGS) -shared -o $(TOP)/$(MODULE_FOLDER)/$(OUT_FILE_NAME_DENNOP_ADA_TRAINING).so $(SOURCE_ADA_TRAINING_OBJS) $(LIKNER_FLAGS)
 
 # Required directories
 directories: ${O_DIR}
 
-# Dir
+# makedir
 ${O_DIR}:
 	$(call colorecho,$(COLOR_GREEN),"[ Create $(O_DIR) directory ]")
 	@${MKDIR_P} ${O_DIR}

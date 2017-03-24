@@ -1,11 +1,9 @@
 language: python
-compiler:
-  - clang
 python:
   - "3.5"
   - "3.6"
 # command to install dependencies
 install: "pip install -r requirements.txt"
-before_script: make
+before_script: "make CC=clang"
 # command to run tests
 script: "python test.py"

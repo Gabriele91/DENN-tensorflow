@@ -1,12 +1,13 @@
 language: python
-dist: trusty
+# dist: trusty
 sudo: false
 os:
-- linux
+# - linux
+  - osx
 python:
-  - "3.5"
+  - "3.6"
 # command to install dependencies
 install: "pip install -r requirements.txt"
-before_script: "make CC=clang TF_INCLUDE=~/virtualenv/python3.5/lib/python3.5/site-packages/tensorflow/include"
+before_script: "make CC=clang TF_INCLUDE=~/virtualenv/python3.6/lib/python3.6/site-packages/tensorflow/include"
 # command to run tests
 script: "python test.py"

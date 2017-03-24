@@ -622,7 +622,7 @@ class Operation(object):
         # Soket listener
         with OpListener(tot_steps=self.job.TOT_GEN) as listener:
             ##
-            # Handle SIGINT
+            # Handle SIGINT and SIGTERM
             def my_handler(signal, frame):
                 listener.interrupt()
             signal.signal(signal.SIGINT, my_handler)

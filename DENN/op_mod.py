@@ -626,6 +626,7 @@ class Operation(object):
             def my_handler(signal, frame):
                 listener.interrupt()
             signal.signal(signal.SIGINT, my_handler)
+            signal.signal(signal.SIGTERM, my_handler)
 
             # time
             time_start_gen = time()

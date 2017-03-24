@@ -35,7 +35,7 @@ class NDict(dict):
 
 ##
 # Inhibit SIGHUP
-signal.siginterrupt(signal.SIGHUP, False)
+# signal.siginterrupt(signal.SIGHUP, False)
 
 
 #@profile
@@ -72,6 +72,10 @@ def main():
             # https://docs.python.org/3/library/signal.html#signal.siginterrupt
             # False is needed to recover the execution
             signal.siginterrupt(signal.SIGINT, False)
+            ##
+            # Needed to stop background process on server
+            # http://stackoverflow.com/questions/14696427/how-can-bash-script-do-the-equivalent-of-ctrl-c-to-a-background-task
+            signal.siginterrupt(signal.SIGTERM, False)
 
         # print(job)
 

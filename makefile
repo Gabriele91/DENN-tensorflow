@@ -5,7 +5,7 @@ CC          ?= g++
 MKDIR_P     ?= mkdir -p
 MODULE_FOLDER ?= DENN
 TOP         ?= $(shell pwd)
-USE_DEBUG   ?= false
+USE_DEBUG   =
 REBUILD_OP  =
 #include list
 TF_INCLUDE = $(shell python -c 'import tensorflow as tf; print(tf.sysconfig.get_include())')
@@ -22,8 +22,10 @@ O_DIR  = $(TOP)/$(MODULE_FOLDER)/obj
 C_FLAGS = -Wall -std=c++11 -I $(TF_INCLUDE) -I $(S_INC) -fPIC
 # Linker FLAGS
 LIKNER_FLAGS =
-
-##
+# CPP flags 
+CPP_FLAGS =
+# Pass from other make file 
+MAKE_PARAMS = 
 # Color Types
 COLOR_BLACK = 0
 COLOR_RED = 1
@@ -65,19 +67,12 @@ ifeq ($(shell uname -s),Darwin)
 	#disable dynamic lookup
 	LIKNER_FLAGS += -L$(TOP)/tf_static/macOS/ -lprotobuf.pic
 	LIKNER_FLAGS += -L$(TOP)/tf_static/macOS/ -lprotobuf_lite.pic
-	C_FLAGS += -undefined dynamic_lookup
+	C_FLAGS += -undefined dynamic_lookup -Wno-deprecated-declarations
 endif
 
 # Old ABI
 ifeq ($(USE_OLD_ABI),true)
 	C_FLAGS += -D_GLIBCXX_USE_CXX11_ABI=0
-endif
-
-# C++ FLAGS
-ifeq ($(USE_DEBUG),true)
-	CPP_FLAGS = -g -D_DEBUG
-else
-	CPP_FLAGS = -Ofast
 endif
 
 # C++ files
@@ -103,38 +98,48 @@ endef
 
 all: denn denn_traning denn_ada denn_ada_traning
 
-.PHONY: rebuild all denn denn_traning denn_ada denn_ada_traning directories ${O_DIR} clean
+.PHONY: rebuild debug all denn denn_traning denn_ada denn_ada_traning directories ${O_DIR} clean
 
 # Set rebuild option
 rebuild:
+	$(call colorecho,$(COLOR_YELLOW),"[ Set Rebuild ]")
 	$(eval REBUILD_OP = true)
+
+# Set debug flags
+debug:
+	$(call colorecho,$(COLOR_MAGENTA),"[ Set DEBUG ]")
+	$(eval USE_DEBUG = true)
 	
 # Create plugin
 denn: directories 
 # if REBUILD_OP is not an empy string the condition is true and
 # function will be called
 	$(if $(REBUILD_OP),$(call delete_op,$(OUT_FILE_NAME_DENNOP)))
-	$(MAKE) $(SOURCE_OBJS)
+	$(if $(USE_DEBUG),$(eval MAKE_PARAMS=-g -D_DEBUG),$(eval MAKE_PARAMS=-Ofast))
+	$(MAKE) $(SOURCE_OBJS) CC=$(CC) C_FLAGS="$(C_FLAGS)" CPP_FLAGS="$(CPP_FLAGS)" MAKE_PARAMS="$(MAKE_PARAMS)"
 	$(call colorecho,$(COLOR_GREEN),"[ Make $(OUT_FILE_NAME_DENNOP).so ]")
-	$(CC) $(C_FLAGS) $(CPP_FLAGS) -shared -o $(TOP)/$(MODULE_FOLDER)/$(OUT_FILE_NAME_DENNOP).so $(SOURCE_OBJS) $(LIKNER_FLAGS)
+	$(CC) $(C_FLAGS) $(CPP_FLAGS) $(MAKE_PARAMS) -shared -o $(TOP)/$(MODULE_FOLDER)/$(OUT_FILE_NAME_DENNOP).so $(SOURCE_OBJS) $(LIKNER_FLAGS)
 
 denn_traning: directories
 	$(if $(REBUILD_OP),$(call delete_op,$(OUT_FILE_NAME_DENNOP_TRAINING)))
-	$(MAKE) $(SOURCE_TRAINING_OBJS)
+	$(if $(USE_DEBUG),$(eval MAKE_PARAMS=-g -D_DEBUG),$(eval MAKE_PARAMS=-Ofast))
+	$(MAKE) $(SOURCE_TRAINING_OBJS) CC=$(CC) C_FLAGS="$(C_FLAGS)" CPP_FLAGS="$(CPP_FLAGS)" MAKE_PARAMS="$(MAKE_PARAMS)"
 	$(call colorecho,$(COLOR_GREEN),"[ Make $(OUT_FILE_NAME_DENNOP_TRAINING).so ]")
-	$(CC) $(C_FLAGS) $(CPP_FLAGS) -shared -o $(TOP)/$(MODULE_FOLDER)/$(OUT_FILE_NAME_DENNOP_TRAINING).so $(SOURCE_TRAINING_OBJS) $(LIKNER_FLAGS)
+	$(CC) $(C_FLAGS) $(CPP_FLAGS) $(MAKE_PARAMS) -shared -o $(TOP)/$(MODULE_FOLDER)/$(OUT_FILE_NAME_DENNOP_TRAINING).so $(SOURCE_TRAINING_OBJS) $(LIKNER_FLAGS)
 
 denn_ada: directories
 	$(if $(REBUILD_OP),$(call delete_op,$(OUT_FILE_NAME_DENNOP_ADA)))
-	$(MAKE) $(SOURCE_ADA_OBJS)
+	$(if $(USE_DEBUG),$(eval MAKE_PARAMS=-g -D_DEBUG),$(eval MAKE_PARAMS=-Ofast))
+	$(MAKE) $(SOURCE_ADA_OBJS) CC=$(CC) C_FLAGS="$(C_FLAGS)" CPP_FLAGS="$(CPP_FLAGS)" MAKE_PARAMS="$(MAKE_PARAMS)"
 	$(call colorecho,$(COLOR_GREEN),"[ Make $(OUT_FILE_NAME_DENNOP_ADA).so ]")
-	$(CC) $(C_FLAGS) $(CPP_FLAGS) -shared -o $(TOP)/$(MODULE_FOLDER)/$(OUT_FILE_NAME_DENNOP_ADA).so $(SOURCE_ADA_OBJS) $(LIKNER_FLAGS)
+	$(CC) $(C_FLAGS) $(CPP_FLAGS) $(MAKE_PARAMS) -shared -o $(TOP)/$(MODULE_FOLDER)/$(OUT_FILE_NAME_DENNOP_ADA).so $(SOURCE_ADA_OBJS) $(LIKNER_FLAGS)
 
 denn_ada_traning: directories
 	$(if $(REBUILD_OP),$(call delete_op,$(OUT_FILE_NAME_DENNOP_ADA_TRAINING)))
-	$(MAKE) $(SOURCE_ADA_TRAINING_OBJS)
+	$(if $(USE_DEBUG),$(eval MAKE_PARAMS=-g -D_DEBUG),$(eval MAKE_PARAMS=-Ofast))
+	$(MAKE) $(SOURCE_ADA_TRAINING_OBJS) CC=$(CC) C_FLAGS="$(C_FLAGS)" CPP_FLAGS="$(CPP_FLAGS)" MAKE_PARAMS="$(MAKE_PARAMS)"
 	$(call colorecho,$(COLOR_GREEN),"[ Make $(OUT_FILE_NAME_DENNOP_ADA_TRAINING).so ]")
-	$(CC) $(C_FLAGS) $(CPP_FLAGS) -shared -o $(TOP)/$(MODULE_FOLDER)/$(OUT_FILE_NAME_DENNOP_ADA_TRAINING).so $(SOURCE_ADA_TRAINING_OBJS) $(LIKNER_FLAGS)
+	$(CC) $(C_FLAGS) $(CPP_FLAGS) $(MAKE_PARAMS) -shared -o $(TOP)/$(MODULE_FOLDER)/$(OUT_FILE_NAME_DENNOP_ADA_TRAINING).so $(SOURCE_ADA_TRAINING_OBJS) $(LIKNER_FLAGS)
 
 # Required directories
 directories: ${O_DIR}
@@ -147,7 +152,7 @@ ${O_DIR}:
 # Make objects files
 $(O_DIR)/%.o: $(S_DIR)/%.cpp
 	$(call colorecho,$(COLOR_GREEN),"[ Make object $(@) ]")
-	$(CC) $(C_FLAGS) $(CPP_FLAGS) -c $< -o $@
+	$(CC) $(C_FLAGS) $(CPP_FLAGS) $(MAKE_PARAMS) -c $< -o $@
 
 # Clean
 clean:

@@ -1,5 +1,5 @@
-#import "config.h"
-#import "tensorflow_alias.h"
+#include "config.h"
+#include "tensorflow_alias.h"
 namespace tensorflow
 {
     //CREATE SESSION FROM GRAPH

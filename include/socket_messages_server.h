@@ -66,7 +66,7 @@ namespace debug
             void remove_first()
             {
                 m_mutex.lock();
-                auto elm = m_vector.erase(m_vector.begin());
+                m_vector.erase(m_vector.begin());
                 m_mutex.unlock();
             }
             

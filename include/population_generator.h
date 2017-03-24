@@ -248,7 +248,7 @@ namespace tensorflow
             const TensorList& cur_population = cur_population_list[l_type];
             TensorList& new_population = new_population_list[l_type];
             //alloc
-            for (int index = 0; index < cur_population_list[l_type].size(); ++index)
+            for (size_t index = 0; index < cur_population_list[l_type].size(); ++index)
             {
                 #if 0
                 new (&new_population[index]) Tensor(cur_population[index].dtype(), cur_population[index].shape());
@@ -286,7 +286,7 @@ namespace tensorflow
             //population 
             TensorList& new_population = new_population_list[l_type];
             //alloc
-            for (int index = 0; index < new_population.size(); ++index)
+            for (size_t index = 0; index < new_population.size(); ++index)
             {
                 new_population[index] = Tensor(new_population[index].dtype(), new_population[index].shape());
             }

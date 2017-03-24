@@ -37,7 +37,7 @@ public:
         // Get name of eval function
         OP_REQUIRES_OK(context, context->GetAttr("f_name_execute_net", &m_name_execute_net));
         // Test size == sizeof(names)
-        if( m_space_size != m_inputs_names.size() )
+        if( m_space_size != int(m_inputs_names.size()) )
         {
             context->CtxFailure({tensorflow::error::Code::ABORTED,"Attribute error: sizeof(inputs names) != sizeof(populations) "});
         }
@@ -144,7 +144,7 @@ public:
         // Output counter
         int output_id=0;
         // Output F CR
-        for(int i=0; i != current_population_F_CR.size(); ++i)
+        for(int i=0; i != int(current_population_F_CR.size()); ++i)
         {
             Tensor* output_tensor = nullptr;
             Tensor& current_f_or_cr = current_population_F_CR[i];
@@ -226,7 +226,7 @@ public:
                 if(new_eval < ref_current_eval_result(index))
                 {
                     //save F and CR 
-                    for(int i = 0; i != current_population_F_CR.size(); ++i)
+                    for(int i = 0; i != int(current_population_F_CR.size()); ++i)
                     {
                         //get refs
                         auto ref_f_cr = current_population_F_CR[i].flat<value_t>();
@@ -235,7 +235,7 @@ public:
                         ref_f_cr(index) = new_f_cr(index);
                     }
                     //x <- y
-                    for(int p=0; p!=current_population_list.size(); ++p)
+                    for(size_t p=0; p!=current_population_list.size(); ++p)
                     {
                         current_population_list[p][index] = new_population_list[p][index];
                     }

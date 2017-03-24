@@ -37,7 +37,7 @@ namespace tensorflow
             OP_REQUIRES_OK(context, context->GetAttr("f_name_execute_net", &m_name_execute_net));
 
             // Test size == sizeof(names)
-            if( m_space_size != m_inputs_names.size() )
+            if( m_space_size != int(m_inputs_names.size()) )
             {
                 context->CtxFailure({tensorflow::error::Code::ABORTED,"Attribute error: sizeof(inputs names) != sizeof(populations) "});
             }
@@ -146,7 +146,7 @@ namespace tensorflow
             // Output counter
             int output_id=0;
             // Output F CR
-            for(int i=0; i != current_population_F_CR.size(); ++i)
+            for(int i=0; i != int(current_population_F_CR.size()); ++i)
             {
                 Tensor* new_generation_tensor = nullptr;
                 Tensor& current_f_or_cr = current_population_F_CR[i];
@@ -207,7 +207,7 @@ namespace tensorflow
             //Pointer to memory of evals
             auto ref_current_eval_result = current_eval_result.flat<value_t>();
             //evaluete all population 
-            for(size_t NP_i = 0; NP_i != NP; ++NP_i)
+            for(int NP_i = 0; NP_i != NP; ++NP_i)
             {
                 ref_current_eval_result(NP_i) = ExecuteEvaluateAdaBoost(  context, pop_Y[NP_i], C );
             }
@@ -250,12 +250,12 @@ namespace tensorflow
                     if(new_eval < ref_current_eval_result(index))
                     {
                         //save a individual (composiction of W, B list)
-                        for(int p=0; p!=current_population_list.size(); ++p)
+                        for(size_t p=0; p!=current_population_list.size(); ++p)
                         {
                             current_population_list[p][index] = new_population_list[p][index];
                         }
                         //save F and CR 
-                        for(int i = 0; i != current_population_F_CR.size(); ++i)
+                        for(int i = 0; i != int(current_population_F_CR.size()); ++i)
                         {
                             //get refs
                             auto ref_f_cr = current_population_F_CR[i].flat<value_t>();
@@ -286,7 +286,7 @@ namespace tensorflow
                     //get ec
                     auto raw_ec_i = pop_EC[i].template flat<bool>();
                     //for all ec
-                    for(size_t j=0; j!=ec_counter.dim_size(0); ++j)
+                    for(int j=0; j!=ec_counter.dim_size(0); ++j)
                     {
                         raw_EC_counter(j) += int(!raw_ec_i(j));
                     }
@@ -294,7 +294,7 @@ namespace tensorflow
                 //get values
                 auto raw_C = C.flat<value_t>();
                 //new c
-                for(size_t i = 0; i!= C.shape().dim_size(0); ++i)
+                for(int i = 0; i!= C.shape().dim_size(0); ++i)
                 {
                     value_t  op0 = (value_t(1.0)-m_alpha) * raw_C(i);
                     value_t  op1 = m_alpha * (value_t(raw_EC_counter(i)) / NP);
@@ -357,7 +357,7 @@ namespace tensorflow
             //output 
             bool output = true;
             //execute
-            for(size_t NP_i=0; NP_i!=NP; ++NP_i)
+            for(int NP_i=0; NP_i!=NP; ++NP_i)
                 output &= ComputeYAndEC(context, NP_i, populations_list, pop_Y[NP_i], EC[NP_i]);
             //return 
             return output;

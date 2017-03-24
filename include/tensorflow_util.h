@@ -58,7 +58,7 @@ namespace tensorflow
         //shape size
         if(left.shape().dims()  != right.shape().dims()) return false;
         //shape dims size
-        for(size_t i=0;i!=left.shape().dims();++i)
+        for(int i=0;i!=left.shape().dims();++i)
         {
             if(left.shape().dim_size(i)!=right.shape().dim_size(i)) return false;
         }

@@ -196,7 +196,7 @@ namespace tensorflow
             for
             (
                 //gen counter
-                size_t i_sub_gen = 0;          
+                int i_sub_gen = 0;          
                 //exit case
                 i_sub_gen != n_sub_gen && de_loop;    
                 //next    
@@ -266,7 +266,7 @@ namespace tensorflow
                 else if(m_reinsert_best)
                 {
                     //replace wrost
-                    for(int layer_id=0; layer_id!=current_population_list.size(); ++layer_id)
+                    for(size_t layer_id=0; layer_id!=current_population_list.size(); ++layer_id)
                     {
                         current_population_list[layer_id][cur_worst_id] = best.m_individual[layer_id];
                     }
@@ -305,7 +305,7 @@ namespace tensorflow
             }
             ////////////////////////////////////////////////////////////////////////////          
             // Output F CR
-            for(int i=0; i != current_population_F_CR.size(); ++i)
+            for(int i=0; i != int(current_population_F_CR.size()); ++i)
             {
                 Tensor* output_tensor = nullptr;
                 Tensor& current_f_or_cr = current_population_F_CR[i];
@@ -456,7 +456,7 @@ namespace tensorflow
                     pop_F_CR[1] = cr_out[0];
                 }
                 //push best
-                for(int layer_id=0; layer_id!=populations.size(); ++layer_id)
+                for(size_t layer_id=0; layer_id!=populations.size(); ++layer_id)
                 {
                     populations[layer_id][best.m_id] = best.m_individual[layer_id];
                 }
@@ -659,12 +659,10 @@ namespace tensorflow
         )
         {
             //alloc vector
-            if(m_cache_ada.size() <= id_batch) m_cache_ada.resize(id_batch+1);
+            if(int(m_cache_ada.size()) <= id_batch) m_cache_ada.resize(id_batch+1);
             //alloc variables
             if NOT(m_cache_ada[id_batch].m_init)
             {
-                //NP 
-                const int NP = populations[0].size();
                 //init
                 m_cache_ada[id_batch].m_init = true;
                 //alloc C 
@@ -677,7 +675,7 @@ namespace tensorflow
 
         BatchValuesAda& GetAdaBatchValues(int id_batch)
         {
-            assert(id_batch < m_cache_ada.size());
+            assert(id_batch < int(m_cache_ada.size()));
             return m_cache_ada[id_batch];
         }
 

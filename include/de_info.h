@@ -74,12 +74,12 @@ namespace tensorflow
             }
         }
         //can execute smooth?
-        bool CanSmoothing(int layer) const
+        bool CanSmoothing(size_t layer) const
         {
             return layer < m_shapes_smoothing.size();
         }
         //get shape 
-        const TensorShape& GetShape(int layer) const
+        const TensorShape& GetShape(size_t layer) const
         {
             return m_shapes_smoothing[layer];
         }

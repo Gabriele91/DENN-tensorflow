@@ -8,7 +8,8 @@ from collections import namedtuple
 
 __all__ = ['Dataset', 'calc_confusin_M', 'calc_TF',
            'precision_recall_acc', 'f1_score',
-           'calc_bin_stats', 'calc_pop_diff']
+           'calc_bin_stats', 'calc_pop_diff',
+           'TestResults', 'OutOptions']
 
 Batch = namedtuple('Batch', ['data', 'labels'])
 BinClassify = namedtuple('BinClassify', ['TP', 'FP', 'FN', 'TN'])
@@ -53,11 +54,12 @@ def calc_pop_diff(test_result_file, out_file="distances.json"):
             eu_distance[key] = float(np.sqrt(eu_distance[key]))
 
     output = [(idx, [elm, eu_distance[idx], elm / total_size,
-                     eu_distance[idx]/total_size]) for idx, elm in hem_reduce.items()]
+                     eu_distance[idx] / total_size]) for idx, elm in hem_reduce.items()]
 
     with open(out_file, "w") as out_file:
         json.dump(
             list(reversed(sorted(output, key=lambda elm: elm[1][0]))), out_file, indent=2)
+
 
 def calc_confusin_M(labels, cur_y):
     size = labels.shape[-1]
@@ -117,11 +119,41 @@ def calc_bin_stats(confusion_m):
     }
 
 
-class ENDict(dict):
+class TestResults(dict):
+
+    """Container for de results."""
+
+    def __init__(self, de_types):
+        super(self.__class__, self).__init__()
+        for de_t in de_types:
+            self[de_t] = Results()
+
+
+class Results(dict):
+
+    """Container for the single benchmark results."""
 
     def __init__(self, *args, **kwargs):
-        super(ENDict, self).__init__(*args, **kwargs)
+        super(self.__class__, self).__init__(*args, **kwargs)
         self.__dict__ = self
+        self.values = []
+        self.best_of = {
+            'accuracy': [0],
+            'accuracy_val': [0],
+            'individual': None,
+            'F': None,
+            'CR': None
+        }
+        self.F_population = None
+        self.CR_population = None
+        self.population = None
+
+
+class OutOptions(object):
+
+    def __init__(self, job, num_batches):
+        self.job = job
+        self.num_batches = num_batches
 
 
 class Header(object):

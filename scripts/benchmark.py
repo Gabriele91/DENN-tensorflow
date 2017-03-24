@@ -82,35 +82,9 @@ def main():
         time_start_dataset = time()
 
         ##
-        # test data collections
-        test_results = NDict(
-            list(
-                zip(job.de_types, [
-                    ENDict(
-                        [
-                            ('values', []),
-                            ('best_of', {
-                                'accuracy': [0],
-                                'accuracy_val': [0],
-                                'individual': None,
-                                'F' : None,
-                                'CR' : None
-                            }),
-                            ('F_population', None),
-                            ('CR_population', None),
-                            ('population', None)
-                        ]
-                    ) for _ in range(len(job.de_types))
-                ])
-            )
-        )
-
-        out_options = ENDict(
-            [
-                ('job', job),
-                ('num_batches', dataset.num_batches)
-            ]
-        )
+        # test data collections and options
+        test_results = DENN.training.TestResults(job.de_types) 
+        out_options = DENN.training.OutOptions(job, dataset.num_batches)
 
         prev_NN = dict(
             list(zip(job.de_types, [

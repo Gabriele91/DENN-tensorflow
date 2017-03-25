@@ -1,0 +1,15 @@
+language: cpp
+# dist: trusty
+# sudo: false
+os:
+# - linux
+  - osx
+osx_image: xcode8.2
+# python:
+#   - "3.6"
+before_install: "brew update && brew install python3"
+# command to install dependencies
+install: "pip3 install -r requirements.txt"
+before_script: "make CC=clang TF_INCLUDE=$(python3 -c 'import tensorflow as tf; print(tf.sysconfig.get_include())')"
+# command to run tests
+script: "python3 test.py"

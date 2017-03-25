@@ -3,4 +3,4 @@
 	url = https://github.com/MircoT/tensorflow-build-pip-package
 [submodule "datasets"]
 	path = datasets
-	url = git@github.com:MircoT/DENN-dataset-samples.git
+	url = https://github.com/MircoT/DENN-dataset-samples.git

@@ -5,6 +5,8 @@ import numpy as np
 from os import path
 from os import chdir
 from os import getcwd
+import subprocess
+import time
 
 
 class TestDENN(unittest.TestCase):
@@ -31,6 +33,16 @@ class TestDENN(unittest.TestCase):
         jobs = DENN.training.open_task_list(self.iris_all_config)
         dataset = DENN.training.Dataset(jobs[0].dataset_file)
         self.assertIsInstance(dataset, DENN.training.utils.Dataset)
+    
+    def test_iris_with_all_ops(self):
+        sub_task = subprocess.Popen(
+            ["python", "benchmark.py", self.iris_all_config],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL
+        )
+        while sub_task.poll() is None:
+            time.sleep(0.5)
+        self.assertEqual(sub_task.returncode, 0)
 
 
 if __name__ == '__main__':

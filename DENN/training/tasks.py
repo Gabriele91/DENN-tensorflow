@@ -29,6 +29,16 @@ class DETaskList(object):
 
     def __iter__(self):
         return iter(self.tasks)
+    
+    def __getitem__(self, idx):
+        return self.tasks[idx]
+    
+    def __setitem__(self, idx, val):
+        self.tasks[idx] = val
+        return self
+    
+    def __delitem__(self, idx):
+        return self.tasks.pop(idx)
 
     def __repr__(self):
         return "".join([str(task) for task in self.tasks])

@@ -21,25 +21,13 @@ from tqdm import tqdm
 
 # sleep(6)
 
-
-class ENDict(dict):
-
-    def __init__(self, *args, **kwargs):
-        super(ENDict, self).__init__(*args, **kwargs)
-        self.__dict__ = self
-
-
-class NDict(dict):
-    pass
-
-
 ##
 # Inhibit SIGHUP
 # signal.siginterrupt(signal.SIGHUP, False)
 
 
 #@profile
-def main():
+def main(config_file):
     ##
     # jobs
     jobs = []
@@ -48,7 +36,7 @@ def main():
     # datasets
     datasets = []
 
-    jobs = DENN.training.open_task_list(argv[1])
+    jobs = DENN.training.open_task_list(config_file)
 
     ##
     # Load data
@@ -264,4 +252,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main(argv[1])

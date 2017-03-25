@@ -4,10 +4,11 @@ language: python
 os:
 # - linux
   - osx
-python:
-  - "3.6"
+# python:
+#   - "3.6"
+before_install: "brew update && brew install python3"
 # command to install dependencies
-install: "pip install -r requirements.txt"
-before_script: "make CC=clang TF_INCLUDE=~/virtualenv/python3.6/lib/python3.6/site-packages/tensorflow/include"
+install: "pip3 install -r requirements.txt"
+before_script: "make CC=clang TF_INCLUDE=$(python3 -c 'import tensorflow as tf; print(tf.sysconfig.get_include())')"
 # command to run tests
-script: "python test.py"
+script: "python3 test.py"

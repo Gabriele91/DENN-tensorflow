@@ -4,6 +4,7 @@ language: cpp
 os:
 # - linux
   - osx
+osx_image: xcode8.2
 # python:
 #   - "3.6"
 before_install: "brew update && brew install python3"

@@ -1,0 +1,332 @@
+[
+    {
+        "name": "mnist_NO_ADA",
+        "dataset_file": "../datasets/mnist_f_t85-v15_60x4000_5s.gz",
+        "TOT_GEN": 100000,
+        "GEN_STEP": 1000,
+        "TYPE": "float",
+        "F": 1.9,
+        "CR": 0.9,
+        "NP": 32,
+        "training": true,
+        "de_types": [
+            "rand/1/bin"
+        ],
+        "clamp": {
+            "min": -28,
+            "max": 28
+        },
+        "levels": [
+            {
+                "shape": [[784,10], [10]],
+                "preferred_device": "GPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits" 
+                },
+                "init": [
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -10.0, 
+                                "maxval": 10.0
+                            }
+                        }
+                    },
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -10.0, 
+                                "maxval": 10.0
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "name": "mnist_ADA",
+        "dataset_file": "../datasets/mnist_f_t85-v15_60x4000_5s.gz",
+        "TOT_GEN": 100000,
+        "GEN_STEP": 1000,
+        "TYPE": "float",
+        "F": 1.9,
+        "CR": 0.9,
+        "NP": 32,
+        "training": true,
+        "de_types": [
+            "rand/1/bin"
+        ],
+        "clamp": {
+            "min": -28,
+            "max": 28
+        },
+        "AdaBoost": {
+            "alpha": 1.0,
+            "C": 1.0
+        },
+        "levels": [
+            {
+                "shape": [[784,10], [10]],
+                "preferred_device": "GPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits" 
+                },
+                "init": [
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -10.0, 
+                                "maxval": 10.0
+                            }
+                        }
+                    },
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -10.0, 
+                                "maxval": 10.0
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "name": "mnist_ADA_reset",
+        "dataset_file": "../datasets/mnist_f_t85-v15_60x4000_5s.gz",
+        "TOT_GEN": 100000,
+        "GEN_STEP": 1000,
+        "TYPE": "float",
+        "F": 1.9,
+        "CR": 0.9,
+        "NP": 32,
+        "training": true,
+        "de_types": [
+            "rand/1/bin"
+        ],
+        "clamp": {
+            "min": -28,
+            "max": 28
+        },
+        "AdaBoost": {
+            "alpha": 1.0,
+            "C": 1.0
+        },
+        "reset_every": {
+            "epsilon": 0.02,
+            "counter": 2
+        },
+        "levels": [
+            {
+                "shape": [[784,10], [10]],
+                "preferred_device": "GPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits" 
+                },
+                "init": [
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -10.0, 
+                                "maxval": 10.0
+                            }
+                        }
+                    },
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -10.0, 
+                                "maxval": 10.0
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "name": "mnist_ADA_reset_elite",
+        "dataset_file": "../datasets/mnist_f_t85-v15_60x4000_5s.gz",
+        "TOT_GEN": 100000,
+        "GEN_STEP": 1000,
+        "TYPE": "float",
+        "F": 1.9,
+        "CR": 0.9,
+        "NP": 32,
+        "training": true,
+        "de_types": [
+            "rand/1/bin"
+        ],
+        "clamp": {
+            "min": -28,
+            "max": 28
+        },
+        "AdaBoost": {
+            "alpha": 1.0,
+            "C": 1.0
+        },
+        "reset_every": {
+            "epsilon": 0.02,
+            "counter": 2
+        },
+        "reinsert_best": true,
+        "levels": [
+            {
+                "shape": [[784,10], [10]],
+                "preferred_device": "GPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits" 
+                },
+                "init": [
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -10.0, 
+                                "maxval": 10.0
+                            }
+                        }
+                    },
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -10.0, 
+                                "maxval": 10.0
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "name": "mnist_ADA_JDE",
+        "dataset_file": "../datasets/mnist_f_t85-v15_60x4000_5s.gz",
+        "TOT_GEN": 100000,
+        "GEN_STEP": 1000,
+        "TYPE": "float",
+        "F": 1.9,
+        "CR": 0.9,
+        "NP": 32,
+        "JDE": 0.1,
+        "training": true,
+        "de_types": [
+            "rand/1/bin"
+        ],
+        "clamp": {
+            "min": -28,
+            "max": 28
+        },
+        "AdaBoost": {
+            "alpha": 1.0,
+            "C": 1.0
+        },
+        "levels": [
+            {
+                "shape": [[784,10], [10]],
+                "preferred_device": "GPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits" 
+                },
+                "init": [
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -10.0, 
+                                "maxval": 10.0
+                            }
+                        }
+                    },
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -10.0, 
+                                "maxval": 10.0
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "name": "mnist_ADA_JDE_reset_elite",
+        "dataset_file": "../datasets/mnist_f_t85-v15_60x4000_5s.gz",
+        "TOT_GEN": 100000,
+        "GEN_STEP": 1000,
+        "TYPE": "float",
+        "F": 1.9,
+        "CR": 0.9,
+        "NP": 32,
+        "JDE": 0.1,
+        "training": true,
+        "de_types": [
+            "rand/1/bin"
+        ],
+        "clamp": {
+            "min": -28,
+            "max": 28
+        },
+        "AdaBoost": {
+            "alpha": 1.0,
+            "C": 1.0
+        },
+        "reset_every": {
+            "epsilon": 0.02,
+            "counter": 2
+        },
+        "reinsert_best": true,
+        "levels": [
+            {
+                "shape": [[784,10], [10]],
+                "preferred_device": "GPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits" 
+                },
+                "init": [
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -10.0, 
+                                "maxval": 10.0
+                            }
+                        }
+                    },
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -10.0, 
+                                "maxval": 10.0
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    }
+]

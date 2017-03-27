@@ -112,7 +112,6 @@
         "F": 1.9,
         "CR": 0.9,
         "NP": 24,
-        "JDE": -1.0,
         "training": true,
         "de_types": [
             "rand/1/bin"

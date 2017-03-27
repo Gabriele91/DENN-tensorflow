@@ -270,5 +270,71 @@
                 ]
             }
         ]
+    },
+    {
+        "name": "mnist_ADA_JDE_reset_elite_smooth",
+        "dataset_file": "../datasets/mnist_f_t85-v15_60x4000_5s.gz",
+        "TOT_GEN": 60000,
+        "GEN_STEP": 1000,
+        "TYPE": "float",
+        "F": 1.9,
+        "CR": 0.9,
+        "NP": 24,
+        "training": true,
+        "de_types": [
+            "rand/1/bin"
+        ],
+        "clamp": {
+            "min": -28,
+            "max": 28
+        },
+        "AdaBoost": {
+            "alpha": 1.0,
+            "C": 1.0
+        },
+        "reset_every": {
+            "epsilon": 0.02,
+            "counter": 3
+        },
+        "reinsert_best": true,
+        "smoothing": [
+            [
+                28,
+                28,
+                3
+            ]
+        ],
+        "smoothing_n_pass": 4,
+        "levels": [
+            {
+                "shape": [[784,10], [10]],
+                "preferred_device": "GPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits" 
+                },
+                "init": [
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -10.0, 
+                                "maxval": 10.0
+                            }
+                        }
+                    },
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -10.0, 
+                                "maxval": 10.0
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
     }
 ]

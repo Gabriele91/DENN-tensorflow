@@ -5,6 +5,7 @@ from matplotlib.ticker import FuncFormatter
 import numpy as np
 from math import cos, pi
 import json
+from os import path
 
 
 def NN_DE_mnist_loader(filename):
@@ -13,15 +14,15 @@ def NN_DE_mnist_loader(filename):
     return [np.array(res['W']), np.array(res['b'])]
 
 
-def NN_DE_result_loader(filename,method = 'rand/1/bin'):
+def NN_DE_result_loader(filename, method='rand/1/bin'):
     with open(filename, "r") as input_file:
         res = json.load(input_file)
     return res['results'][method]['best_of']['individual']
 
 
-def NN_to_image(test_result_file, shape, level=0, loader="DE",method = 'rand/1/bin'):
+def NN_to_image(test_result_file, shape, level=0, loader="DE", method='rand/1/bin'):
     if loader == "DE":
-        individual = NN_DE_result_loader(test_result_file,method)
+        individual = NN_DE_result_loader(test_result_file, method)
         W = np.array(individual[0 + (level * 2)])
         b = np.array(individual[1 + (level * 2)])
     elif loader == "gradient":
@@ -164,18 +165,50 @@ def my_hist(fig, data, bins_, range_, colors, labels, normalized=False, max_y=No
         plt.gca().yaxis.set_major_formatter(formatter)
 
 
-def plot_results(results, save=False):
+def plot_results(config_file, save=False):
     """Plot a result graph.
 
     Params:
-        results (dict or string): the result dictionary or the json file to
-                                  parse
+        config_file (dict or string): the config dictionary or the json file to
+                                      parse
 
-    Note:
-        results: {
-            "title": ...,
-            "x_label": ...,
-            "y_label": ...
+    Config example:
+        config_file: {
+            "title": "example",
+            "x_label": "X",
+            "y_label": "Y",
+            "gen_step": 1000,
+            "sorted": true,
+            "max_step": 60000,
+            "results": {
+                "0": {
+                    "values": "@file.json->results|rand/1/bin|best_of|accuracy;",
+                    "label": "rand/1/bin",
+                    "alpha": 1.0,
+                    "markersize": 5,
+                    "marker": "o",
+                    "color": "#888888"
+                },
+                "1": {
+                    "values": [
+                        0.1,
+                        0.2,
+                        ...
+                        0.5
+                    ],
+                    "label": "rand/1/bin ADA",
+                    "alpha": 0.9,
+                    "markersize": 5,
+                    "marker": "o",
+                    "color": "black",
+                    "linewidth": 2
+                }
+            },
+            "markevery": 2000,
+            "legend_ancor": [
+                1.0,
+                0.2
+            ]
         }
     """
     MARKERS = ['o', '^', '*', 's', '+', 'v']
@@ -197,29 +230,41 @@ def plot_results(results, save=False):
     ]
     LINESTYLE = [":", "--", "-", "-.", "steps", ":"]
 
-    if type(results) != dict:
-        with open(results) as result_file:
-            from json import load as js_load
-            results = js_load(result_file)
+    if type(config_file) != dict:
+        base_folder = path.dirname(path.abspath(config_file))
+        with open(config_file) as result_file:
+            config_file = json.load(result_file)
+            for name, obj in config_file['results'].items():
+                if obj['values'][0] == "@" and obj['values'][-1] == ";":
+                    string_to_parse = obj['values'][1:-1]
+                    file_to_import, keys = string_to_parse.split("->")
+                    keys = keys.split("|")
+                    file_path = path.join(base_folder, file_to_import)
+                    with open(file_path) as cur_file:
+                        res = json.load(cur_file)
+                        for key in keys:
+                            res = res[key]
+                        config_file['results'][name]['values'] = res
 
     fig = plt.figure()
-    fig.suptitle(results.get('title', ''), fontsize=14, fontweight='bold')
+    fig.suptitle(config_file.get('title', ''), fontsize=14, fontweight='bold')
 
-    data = results.get('results')
+    data = config_file.get('results')
     labels = []
 
-    if results.get("sorted", False):
+    if config_file.get("sorted", False):
         all_data = enumerate(sorted(data.items(), key=lambda elm: int(elm[0])))
     else:
         all_data = enumerate(data.items())
 
     for idx, (type_, obj) in all_data:
-        if results.get("max_step", False):
-            _y_ = obj.get('values')[:results.get("max_step")]
+        gen_step = config_file.get("gen_step", 1)
+        if config_file.get("max_step", False):
+            _y_ = obj.get('values')[
+                :int(config_file.get("max_step") / gen_step)]
         else:
             _y_ = obj.get('values')
         _x_ = range(len(_y_))
-        gen_step = results.get("gen_step", 1)
         tot_gen = (len(_y_) - 1) * gen_step
 
         x_real = range(tot_gen)
@@ -249,7 +294,7 @@ def plot_results(results, save=False):
             #  ls=LINESTYLE[idx],
             alpha=obj.get('alpha', ALPHA[idx]),
             label=obj.get('label'),
-            markevery=results.get(
+            markevery=config_file.get(
                 "markevery", [int(elm * gen_step) for elm in _x_[:-1]])
         )
         labels.append(cur_plot[0])
@@ -260,7 +305,7 @@ def plot_results(results, save=False):
                 (label, HandlerLine2D(numpoints=1))for label in labels
             ]
         ),
-        bbox_to_anchor=results.get("legend_ancor", (1.0, 1.0)),
+        bbox_to_anchor=config_file.get("legend_ancor", (1.0, 1.0)),
         fontsize=18
     )
 
@@ -268,8 +313,8 @@ def plot_results(results, save=False):
     plt.tick_params(axis='both', which='minor', labelsize=14)
 
     plt.axis((0, tot_gen, 0, 1))
-    plt.xlabel(results.get('x_label', 'Generations'), fontsize=14)
-    plt.ylabel(results.get('y_label', 'Accuracy'), fontsize=14)
+    plt.xlabel(config_file.get('x_label', 'Generations'), fontsize=14)
+    plt.ylabel(config_file.get('y_label', 'Accuracy'), fontsize=14)
     plt.grid(True)
 
     if save:

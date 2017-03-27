@@ -146,6 +146,7 @@ class Results(dict):
         }
         self.F_population = None
         self.CR_population = None
+        self.population_test = []
         self.population = None
 
 

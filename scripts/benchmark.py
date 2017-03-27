@@ -52,7 +52,8 @@ def main(config_file):
 
         ##
         # Check Type
-        assert job.TYPE == dataset.type, "Job type have to be equal to dataset type: {} != {}".format(job.TYPE, dataset.type)
+        assert job.TYPE == dataset.type, "Job type have to be equal to dataset type: {} != {}".format(
+            job.TYPE, dataset.type)
 
         if job.training:
             ##
@@ -71,14 +72,14 @@ def main(config_file):
 
         ##
         # test data collections and options
-        test_results = DENN.training.TestResults(job.de_types) 
+        test_results = DENN.training.TestResults(job.de_types)
         out_options = DENN.training.OutOptions(job, dataset.num_batches)
 
         prev_NN = dict(
             list(zip(job.de_types, [
                 None for _ in range(len(job.de_types))]))
         )
-        prev_F  = dict(
+        prev_F = dict(
             list(zip(job.de_types, [
                 None for _ in range(len(job.de_types))]))
         )
@@ -96,7 +97,8 @@ def main(config_file):
             writer = tf.summary.FileWriter(logdir='logdir', graph=cur_graph)
             writer.flush()
             writer.close()
-            tf.train.write_graph(cur_graph, 'graphs/', '{}.pbtxt'.format(job.name))
+            tf.train.write_graph(cur_graph, 'graphs/',
+                                 '{}.pbtxt'.format(job.name))
 
             session_config = tf.ConfigProto(
                 intra_op_parallelism_threads=job.num_intra_threads,
@@ -117,13 +119,13 @@ def main(config_file):
 
                 for de_type in job.de_types:
 
-                    ## 
-                    # Init F 
+                    ##
+                    # Init F
                     cur_f = sess.run(cur_nn.F_init)
                     prev_F[de_type] = cur_f
 
                     ##
-                    # Init CR 
+                    # Init CR
                     cur_cr = sess.run(cur_nn.CR_init)
                     prev_CR[de_type] = cur_cr
 
@@ -136,7 +138,8 @@ def main(config_file):
                     for level in job.levels:
                         for elm_idx, elem in enumerate(level.start_transposed):
                             for ind_pos, individual_elm in enumerate(elem):
-                                cur_pop[elm_idx][ind_pos] = np.array(individual_elm)
+                                cur_pop[elm_idx][ind_pos] = np.array(
+                                    individual_elm)
 
                     ##
                     # Initial population insertion (individuals)
@@ -145,9 +148,8 @@ def main(config_file):
                             for elm_idx, elem in enumerate(individual):
                                 cur_pop[elm_idx][ind_pos] = np.array(elem)
 
-
                     prev_NN[de_type] = cur_pop
-                    
+
                     with tf.device("/cpu:0"):
                         ##
                         # DENN op
@@ -210,13 +212,31 @@ def main(config_file):
 
                     ##
                     # Do evolution
-                    denn_op.run(sess, prev_F, prev_CR, prev_NN, test_results, {
+                    res_pop = denn_op.run(sess, prev_F, prev_CR, prev_NN, test_results, {
                         'start_job': start_job
                     })
 
                     ##
                     # Reset AdaBoost cache
                     job.reset_adaboost_cache()
+
+                    ##
+                    # Eval population with test set
+                    for idx in range(job.NP):
+                        cur_evaluation = sess.run(cur_nn.accuracy, feed_dict=dict(
+                            [
+                                (target, res_pop[num][idx])
+                                for num, target in enumerate(cur_nn.targets)
+                            ]
+                            +
+                            [
+                                (cur_nn.label_placeholder,
+                                 dataset.test_labels),
+                                (cur_nn.input_placeholder,
+                                 dataset.test_data)
+                            ]
+                        ))
+                        test_results[de_type].population_test.append(cur_evaluation)
 
         print("+ Completed all test on dataset {} in {} sec.".format(job.name,
                                                                      time() - time_start_dataset))

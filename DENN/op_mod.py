@@ -611,6 +611,8 @@ class Operation(object):
 
         pbar.close()
 
+        return cur_pop
+
     def training_run(self, sess, prev_F, prev_CR, prev_NN, test_results, options={}):
         """Run for training jobs."""
         start_job = options.get('start_job')
@@ -700,6 +702,8 @@ class Operation(object):
             self.job.times[self.de_type] = run_time + test_time
             self.job.accuracy[self.de_type] = cur_accuracy
             self.job.best[self.de_type] = op_result
+
+            return op_result.final_populations
 
     def standard_run(self, sess, prev_F, prev_CR, prev_NN, test_results, options={}):
         """Run for standard jobs."""
@@ -883,6 +887,8 @@ class Operation(object):
             self.job.stats[self.de_type].append(precision_recall_acc(elm_tf))
 
         pbar.close()
+
+        return cur_pop
 
 
 class create(object):

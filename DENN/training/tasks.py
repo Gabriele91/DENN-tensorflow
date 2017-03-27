@@ -261,7 +261,7 @@ class DETask(object):
         self.TYPE = cur_task.get("TYPE")
         self.F = cur_task.get("F")
         self.CR = cur_task.get("CR")
-        self.JDE = cur_task.get("JDE", 0.0)
+        self.JDE = cur_task.get("JDE", 0.1)
         self.NP = cur_task.get("NP")
         self.de_types = cur_task.get("de_types")
         self.clamp = Clamp(cur_task.get("clamp", None))

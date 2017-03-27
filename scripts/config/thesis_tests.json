@@ -2,7 +2,7 @@
     {
         "name": "mnist_NO_ADA_NO_JDE",
         "dataset_file": "../datasets/mnist_f_t85-v15_60x4000_5s.gz",
-        "TOT_GEN": 100000,
+        "TOT_GEN": 60000,
         "GEN_STEP": 1000,
         "TYPE": "float",
         "F": 1.9,
@@ -52,7 +52,7 @@
     {
         "name": "mnist_ADA_NO_JDE",
         "dataset_file": "../datasets/mnist_f_t85-v15_60x4000_5s.gz",
-        "TOT_GEN": 100000,
+        "TOT_GEN": 60000,
         "GEN_STEP": 1000,
         "TYPE": "float",
         "F": 1.9,
@@ -106,7 +106,7 @@
     {
         "name": "mnist_ADA_JDE",
         "dataset_file": "../datasets/mnist_f_t85-v15_60x4000_5s.gz",
-        "TOT_GEN": 100000,
+        "TOT_GEN": 60000,
         "GEN_STEP": 1000,
         "TYPE": "float",
         "F": 1.9,
@@ -160,7 +160,7 @@
     {
         "name": "mnist_ADA_JDE_reset",
         "dataset_file": "../datasets/mnist_f_t85-v15_60x4000_5s.gz",
-        "TOT_GEN": 100000,
+        "TOT_GEN": 60000,
         "GEN_STEP": 1000,
         "TYPE": "float",
         "F": 1.9,
@@ -217,7 +217,7 @@
     {
         "name": "mnist_ADA_JDE_reset_elite",
         "dataset_file": "../datasets/mnist_f_t85-v15_60x4000_5s.gz",
-        "TOT_GEN": 100000,
+        "TOT_GEN": 60000,
         "GEN_STEP": 1000,
         "TYPE": "float",
         "F": 1.9,

@@ -221,11 +221,10 @@ def plot_results(config_file, save=False):
         "#CCCCCC"
     ]
     ALPHA = [
-        0.9,
-        1.0,
-        1.0,
-        1.0,
-        1.0,
+        0.2,
+        0.4,
+        0.6,
+        0.8,
         1.0
     ]
     LINESTYLE = [":", "--", "-", "-.", "steps", ":"]
@@ -287,12 +286,12 @@ def plot_results(config_file, save=False):
         # Do lines and point
         cur_plot = plt.plot(
             x_real, y_real,
-            marker=obj.get('marker', MARKERS[idx]),
+            marker=obj.get('marker', MARKERS[idx%len(MARKERS)]),
             markersize=obj.get('markersize', None),
-            color=obj.get('color', COLORS[idx]),
+            color=obj.get('color', COLORS[idx%len(COLORS)]),
             linewidth=obj.get('linewidth', 1),
             #  ls=LINESTYLE[idx],
-            alpha=obj.get('alpha', ALPHA[idx]),
+            alpha=obj.get('alpha', ALPHA[idx%len(ALPHA)]),
             label=obj.get('label'),
             markevery=config_file.get(
                 "markevery", [int(elm * gen_step) for elm in _x_[:-1]])

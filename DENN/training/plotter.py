@@ -165,7 +165,7 @@ def my_hist(fig, data, bins_, range_, colors, labels, normalized=False, max_y=No
         plt.gca().yaxis.set_major_formatter(formatter)
 
 
-def plot_results(config_file, save=False):
+def plot_results(config_file, save=False, show=True):
     """Plot a result graph.
 
     Params:
@@ -319,5 +319,6 @@ def plot_results(config_file, save=False):
     if save:
         plt.savefig("{}.png".format(save), dpi=600, bbox_inches='tight')
         print("+ out file -> {}.png".format(save))
-    plt.show()
+    if show:
+        plt.show()
     plt.close()

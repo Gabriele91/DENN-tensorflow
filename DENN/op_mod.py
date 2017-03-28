@@ -701,7 +701,6 @@ class Operation(object):
 
             self.job.times[self.de_type] = run_time + test_time
             self.job.accuracy[self.de_type] = cur_accuracy
-            self.job.best[self.de_type] = op_result
 
             return op_result.final_populations
 

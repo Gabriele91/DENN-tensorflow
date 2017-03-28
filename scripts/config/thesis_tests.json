@@ -7,7 +7,7 @@
         "TYPE": "float",
         "F": 0.5,
         "CR": 0.9,
-        "NP": 6,
+        "NP": 12,
         "JDE": -1.0,
         "training": true,
         "de_types": [
@@ -20,7 +20,7 @@
         "levels": [
             {
                 "shape": [[784,10], [10]],
-                "preferred_device": "GPU",
+                "preferred_device": "CPU",
                 "fx": {
                     "name": "nn.softmax_cross_entropy_with_logits" 
                 },
@@ -57,7 +57,7 @@
         "TYPE": "float",
         "F": 0.5,
         "CR": 0.9,
-        "NP": 6,
+        "NP": 12,
         "JDE": -1.0,
         "training": true,
         "de_types": [
@@ -74,7 +74,7 @@
         "levels": [
             {
                 "shape": [[784,10], [10]],
-                "preferred_device": "GPU",
+                "preferred_device": "CPU",
                 "fx": {
                     "name": "nn.softmax_cross_entropy_with_logits" 
                 },
@@ -127,7 +127,7 @@
         "levels": [
             {
                 "shape": [[784,10], [10]],
-                "preferred_device": "GPU",
+                "preferred_device": "CPU",
                 "fx": {
                     "name": "nn.softmax_cross_entropy_with_logits" 
                 },
@@ -184,7 +184,7 @@
         "levels": [
             {
                 "shape": [[784,10], [10]],
-                "preferred_device": "GPU",
+                "preferred_device": "CPU",
                 "fx": {
                     "name": "nn.softmax_cross_entropy_with_logits" 
                 },
@@ -242,7 +242,7 @@
         "levels": [
             {
                 "shape": [[784,10], [10]],
-                "preferred_device": "GPU",
+                "preferred_device": "CPU",
                 "fx": {
                     "name": "nn.softmax_cross_entropy_with_logits" 
                 },
@@ -308,7 +308,7 @@
         "levels": [
             {
                 "shape": [[784,10], [10]],
-                "preferred_device": "GPU",
+                "preferred_device": "CPU",
                 "fx": {
                     "name": "nn.softmax_cross_entropy_with_logits" 
                 },
@@ -357,7 +357,7 @@
         "levels": [
             {
                 "shape": [[784,10], [10]],
-                "preferred_device": "GPU",
+                "preferred_device": "CPU",
                 "fx": {
                     "name": "nn.softmax_cross_entropy_with_logits" 
                 },
@@ -410,7 +410,7 @@
         "levels": [
             {
                 "shape": [[784,10], [10]],
-                "preferred_device": "GPU",
+                "preferred_device": "CPU",
                 "fx": {
                     "name": "nn.softmax_cross_entropy_with_logits" 
                 },
@@ -464,7 +464,7 @@
         "levels": [
             {
                 "shape": [[784,10], [10]],
-                "preferred_device": "GPU",
+                "preferred_device": "CPU",
                 "fx": {
                     "name": "nn.softmax_cross_entropy_with_logits" 
                 },
@@ -526,7 +526,7 @@
         "levels": [
             {
                 "shape": [[784,10], [10]],
-                "preferred_device": "GPU",
+                "preferred_device": "CPU",
                 "fx": {
                     "name": "nn.softmax_cross_entropy_with_logits" 
                 },

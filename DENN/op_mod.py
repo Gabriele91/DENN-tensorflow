@@ -699,7 +699,7 @@ class Operation(object):
                 self.job.stats[self.de_type].append(
                     precision_recall_acc(elm_tf))
 
-            self.job.times[self.de_type] = run_time + test_time
+            self.job.times[self.de_type] = time() - time_start_gen
             self.job.accuracy[self.de_type] = cur_accuracy
 
             return op_result.final_populations

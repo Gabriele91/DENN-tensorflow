@@ -568,15 +568,15 @@
     {
         "name": "mnist_NO_ADA_NO_JDE_reset_elite",
         "dataset_file": "../datasets/mnist_f_t85-v15_60x4000_5s.gz",
-        "TOT_GEN": 2000,
-        "GEN_STEP": 100,
-        "GEN_SAMPLES": 4,
+        "TOT_GEN": 32000,
+        "GEN_STEP": 1000,
+        "GEN_SAMPLES": 1,
         "TYPE": "float",
         "F": 0.5,
         "CR": 0.9,
         "NP": 12,
         "JDE": -1,
-        // "training": true,
+        "training": true,
         "de_types": [
             "rand/1/bin"
         ],
@@ -592,7 +592,7 @@
         "levels": [
             {
                 "shape": [[784,10], [10]],
-                "preferred_device": "CPU",
+                "preferred_device": "GPU",
                 "fx": {
                     "name": "nn.softmax_cross_entropy_with_logits" 
                 },

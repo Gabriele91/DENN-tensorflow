@@ -1,5 +1,5 @@
 [
-    {
+    /*{
         "name": "mini_mnist_NO_ADA_NO_JDE",
         "dataset_file": "../datasets/mnist_510x100_1s.gz",
         "TOT_GEN": 2000,
@@ -276,7 +276,7 @@
             }
         ]
     },
-    /*{
+    {
         "name": "mini_mnist_ADA_JDE_reset_elite_smooth",
         "dataset_file": "../datasets/mnist_510x100_1s.gz",
         "TOT_GEN": 2000,
@@ -342,7 +342,7 @@
                 ]
             }
         ]
-    },*/
+    },
     {
         "name": "mini_mnist_NO_ADA_JDE",
         "dataset_file": "../datasets/mnist_510x100_1s.gz",
@@ -501,8 +501,8 @@
                 ]
             }
         ]
-    }//,
-    /*{
+    },
+    {
         "name": "mini_mnist_NO_ADA_JDE_reset_elite_smooth",
         "dataset_file": "../datasets/mnist_510x100_1s.gz",
         "TOT_GEN": 2000,
@@ -564,5 +564,61 @@
                 ]
             }
         ]
-    }*/
+    },*/
+    {
+        "name": "mini_mnist_NO_ADA_NO_JDE_reset_elite",
+        "dataset_file": "../datasets/mnist_510x100_1s.gz",
+        "TOT_GEN": 2000,
+        "GEN_STEP": 100,
+        "GEN_SAMPLES": 4,
+        "TYPE": "float",
+        "F": 0.5,
+        "CR": 0.9,
+        "NP": 12,
+        "JDE": -1,
+        // "training": true,
+        "de_types": [
+            "rand/1/bin"
+        ],
+        "clamp": {
+            "min": -28,
+            "max": 28
+        },
+        "reset_every": {
+            "epsilon": 0.02,
+            "counter": 3
+        },
+        "reinsert_best": true,
+        "levels": [
+            {
+                "shape": [[784,10], [10]],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits" 
+                },
+                "init": [
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -10.0, 
+                                "maxval": 10.0
+                            }
+                        }
+                    },
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -10.0, 
+                                "maxval": 10.0
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    }
 ]

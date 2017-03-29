@@ -2,6 +2,7 @@ from matplotlib import pyplot as plt
 import matplotlib as mpl
 from matplotlib.legend_handler import HandlerLine2D
 from matplotlib.ticker import FuncFormatter
+from matplotlib.backends.backend_pgf import FigureCanvasPgf
 import numpy as np
 from math import cos, pi
 import json
@@ -165,7 +166,7 @@ def my_hist(fig, data, bins_, range_, colors, labels, normalized=False, max_y=No
         plt.gca().yaxis.set_major_formatter(formatter)
 
 
-def plot_results(config_file, save=False, show=True):
+def plot_results(config_file, save=False, pdf=False, latex_backend=False, show=True):
     """Plot a result graph.
 
     Params:
@@ -211,6 +212,9 @@ def plot_results(config_file, save=False, show=True):
             ]
         }
     """
+    if latex_backend:
+        mpl.backend_bases.register_backend('pdf', FigureCanvasPgf)
+
     MARKERS = ['o', '^', '*', 's', '+', 'v']
     COLORS = [
         "#000000",
@@ -246,7 +250,7 @@ def plot_results(config_file, save=False, show=True):
                         config_file['results'][name]['values'] = res
 
     fig = plt.figure()
-    fig.suptitle(config_file.get('title', ''), fontsize=14, fontweight='bold')
+    fig.suptitle(config_file.get('title', ''), fontsize=12, fontweight='bold')
 
     data = config_file.get('results')
     labels = []
@@ -308,17 +312,20 @@ def plot_results(config_file, save=False, show=True):
         fontsize=18
     )
 
-    plt.tick_params(axis='both', which='major', labelsize=14)
-    plt.tick_params(axis='both', which='minor', labelsize=14)
+    plt.tick_params(axis='both', which='major', labelsize=12)
+    plt.tick_params(axis='both', which='minor', labelsize=12)
 
     plt.axis((0, tot_gen, 0, 1))
-    plt.xlabel(config_file.get('x_label', 'Generations'), fontsize=14)
-    plt.ylabel(config_file.get('y_label', 'Accuracy'), fontsize=14)
+    plt.xlabel(config_file.get('x_label', 'Generations'), fontsize=12)
+    plt.ylabel(config_file.get('y_label', 'Accuracy'), fontsize=12)
     plt.grid(True)
 
     if save:
         plt.savefig("{}.png".format(save), dpi=600, bbox_inches='tight')
         print("+ out file -> {}.png".format(save))
+        if pdf:
+            plt.savefig("{}.pdf".format(save), dpi=600, bbox_inches='tight')
+            print("+ out file -> {}.pdf".format(save))
     if show:
         plt.show()
     plt.close()

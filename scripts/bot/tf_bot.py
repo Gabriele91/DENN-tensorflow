@@ -96,7 +96,8 @@ workon TensorFlow && """
         files = [elm for elm in res.decode("utf-8").split("\n") if len(elm) > 1]
         files = ["- " + file_.split(" ")[-1]
                  for file_ in reversed(files)]
-        return "\n".join(files[:10]) if len(files) > 0 else "Folder empty..."
+        for start in range(0, len(files), 10):
+            yield "\n".join(files[start:10]) if len(files) > 0 else "Folder empty..."
 
     def parse_message(self, msg):
         if msg.text == "help":
@@ -202,10 +203,11 @@ workon TensorFlow && """
                 ls_folder,
                 "Folder[{}]".format(msg.text)
             )
-            self.bot.sendMessage(
-                msg.chat.id,
-                self.__ls_filter(res)
-            )
+            for cur_message in self.__ls_filter(res):
+                self.bot.sendMessage(
+                    msg.chat.id,
+                    cur_message
+                )
         elif msg.text.find("cat") != -1 or\
                 msg.text.find("tail") != -1:
             try:

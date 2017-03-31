@@ -58,7 +58,7 @@ def NN_to_image(test_result_file, shape, level=0, loader="DE", method='rand/1/bi
 
     for num, image in enumerate(images):
         sub_plt = plt.subplot(2, 5, num + 1)
-        sub_plt.set_title(str(num))
+        sub_plt.set_title(str(num), fontsize=24)
         plt.imshow(image, cmap=plt.cm.Greys,
                    interpolation='nearest')
 

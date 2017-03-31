@@ -97,7 +97,7 @@ workon TensorFlow && """
         files = ["- " + file_.split(" ")[-1]
                  for file_ in reversed(files)]
         for start in range(0, len(files), 10):
-            yield "\n".join(files[start:10]) if len(files) > 0 else "Folder empty..."
+            yield "\n".join(files[start:start+10]) if len(files) > 0 else "Folder empty..."
 
     def parse_message(self, msg):
         if msg.text == "help":

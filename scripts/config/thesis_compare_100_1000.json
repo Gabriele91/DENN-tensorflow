@@ -322,7 +322,7 @@
         ]
     },
     {
-        "name": "mnist_DE_100",
+        "name": "mnist_DE_1000",
         "dataset_file": "../datasets/mnist_f_t85-v15_60x4000_5s.gz",
         "TOT_GEN": 2000,
         "GEN_STEP": 100,

@@ -208,7 +208,7 @@
                 ]
             }
         ]
-    },*/
+    },
     {
         "name": "mnist_reset_elite_100",
         "dataset_file": "../datasets/mnist_f_t85-v15_60x4000_5s.gz",
@@ -236,7 +236,7 @@
         "levels": [
             {
                 "shape": [[784,10], [10]],
-                "preferred_device": "GPU",
+                "preferred_device": "CPU",
                 "fx": {
                     "name": "nn.softmax_cross_entropy_with_logits" 
                 },
@@ -292,7 +292,109 @@
         "levels": [
             {
                 "shape": [[784,10], [10]],
-                "preferred_device": "GPU",
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits" 
+                },
+                "init": [
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -10.0, 
+                                "maxval": 10.0
+                            }
+                        }
+                    },
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -10.0, 
+                                "maxval": 10.0
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "name": "mnist_DE_100",
+        "dataset_file": "../datasets/mnist_f_t85-v15_60x4000_5s.gz",
+        "TOT_GEN": 2000,
+        "GEN_STEP": 100,
+        "GEN_SAMPLES": 4,
+        "TYPE": "float",
+        "F": 0.5,
+        "CR": 0.9,
+        "NP": 12,
+        "JDE": -1,
+        // "training": true,
+        "de_types": [
+            "rand/1/bin"
+        ],
+        "clamp": {
+            "min": -28,
+            "max": 28
+        },
+        "levels": [
+            {
+                "shape": [[784,10], [10]],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits" 
+                },
+                "init": [
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -10.0, 
+                                "maxval": 10.0
+                            }
+                        }
+                    },
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -10.0, 
+                                "maxval": 10.0
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    },*/
+    {
+        "name": "mnist_DE_1000",
+        "dataset_file": "../datasets/mnist_f_t85-v15_60x4000_5s.gz",
+        "TOT_GEN": 2000,
+        "GEN_STEP": 1000,
+        "GEN_SAMPLES": 40,
+        "TYPE": "float",
+        "F": 0.5,
+        "CR": 0.9,
+        "NP": 12,
+        "JDE": -1,
+        // "training": true,
+        "de_types": [
+            "rand/1/bin"
+        ],
+        "clamp": {
+            "min": -28,
+            "max": 28
+        },
+        "levels": [
+            {
+                "shape": [[784,10], [10]],
+                "preferred_device": "CPU",
                 "fx": {
                     "name": "nn.softmax_cross_entropy_with_logits" 
                 },

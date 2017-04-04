@@ -1,15 +1,15 @@
 [
-    /*{
+    {
         "name": "dataset_bank",
         "dataset_file": "../datasets/bank_t75-v15-s10_40x4000_5s.gz",
-        "TOT_GEN": 16000,
-        "GEN_STEP": 200,
-        "GEN_SAMPLES": 8, 
+        "TOT_GEN": 32000,
+        "GEN_STEP": 400,
+        // "GEN_SAMPLES": 8, 
         "TYPE": "double",
         "F": 0.5,
         "CR": 0.9,
         "NP": 38,
-        // "training": true,
+        "training": true,
         "de_types": [
             "rand/1/bin"
         ],
@@ -61,14 +61,14 @@
     {
         "name": "dataset_magic",
         "dataset_file": "../datasets/magic_t75-v15-s10_70x1000_5s.gz",
-        "TOT_GEN": 16000,
-        "GEN_STEP": 200,
-        "GEN_SAMPLES": 8, 
+        "TOT_GEN": 32000,
+        "GEN_STEP": 400,
+        // "GEN_SAMPLES": 8, 
         "TYPE": "double",
         "F": 0.5,
         "CR": 0.9,
         "NP": 20,
-        // "training": true,
+        "training": true,
         "de_types": [
             "rand/1/bin"
         ],
@@ -120,14 +120,14 @@
     {
         "name": "dataset_qsar",
         "dataset_file": "../datasets/qsar_t75-v15-s10_20x160_5s.gz",
-        "TOT_GEN": 16000,
-        "GEN_STEP": 200,
-        "GEN_SAMPLES": 8, 
+        "TOT_GEN": 32000,
+        "GEN_STEP": 400,
+        // "GEN_SAMPLES": 8, 
         "TYPE": "double",
         "F": 0.5,
         "CR": 0.9,
         "NP": 82,
-        // "training": true,
+        "training": true,
         "de_types": [
             "rand/1/bin"
         ],
@@ -175,7 +175,7 @@
                 ]
             }
         ]
-    },*/
+    }/*,
     {
         "name": "dataset_coil",
         "dataset_file": "../datasets/coil-proc_28x40_1s.gz",
@@ -291,5 +291,5 @@
                 ]
             }
         ]
-    }
+    }*/
 ]

@@ -184,7 +184,7 @@
         "TYPE": "float",
         "F": 0.5,
         "CR": 0.9,
-        "NP": 32,
+        "NP": 12,
         "training": true,
         "de_types": [
             "rand/1/bin"
@@ -204,7 +204,7 @@
         "reinsert_best": true,
         "levels": [
             {
-                "shape": [[784,20], [20]],
+                "shape": [[16384,20], [20]],
                 "preferred_device": "CPU",
                 "fx": {
                     "name": "nn.softmax_cross_entropy_with_logits" 

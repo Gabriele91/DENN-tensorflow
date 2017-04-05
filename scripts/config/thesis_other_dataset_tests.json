@@ -1,6 +1,6 @@
 [
     {
-        "name": "dataset_bank",
+        "name": "dataset_bank_NO_ADA",
         "dataset_file": "../datasets/bank_t75-v15-s10_40x4000_5s.gz",
         "TOT_GEN": 32000,
         "GEN_STEP": 400,
@@ -16,10 +16,6 @@
         "clamp": {
             "min": -28,
             "max": 28
-        },
-        "AdaBoost": {
-            "alpha": 1.0,
-            "C": 1.0
         },
         "reset_every": {
             "epsilon": 0.02,
@@ -59,7 +55,7 @@
         ]
     },
     {
-        "name": "dataset_magic",
+        "name": "dataset_magic_NO_ADA",
         "dataset_file": "../datasets/magic_t75-v15-s10_70x1000_5s.gz",
         "TOT_GEN": 32000,
         "GEN_STEP": 400,
@@ -75,10 +71,6 @@
         "clamp": {
             "min": -28,
             "max": 28
-        },
-        "AdaBoost": {
-            "alpha": 1.0,
-            "C": 1.0
         },
         "reset_every": {
             "epsilon": 0.02,
@@ -118,7 +110,7 @@
         ]
     },
     {
-        "name": "dataset_qsar",
+        "name": "dataset_qsar_NO_ADA",
         "dataset_file": "../datasets/qsar_t75-v15-s10_20x160_5s.gz",
         "TOT_GEN": 32000,
         "GEN_STEP": 400,
@@ -134,10 +126,6 @@
         "clamp": {
             "min": -28,
             "max": 28
-        },
-        "AdaBoost": {
-            "alpha": 1.0,
-            "C": 1.0
         },
         "reset_every": {
             "epsilon": 0.02,

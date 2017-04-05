@@ -1,5 +1,5 @@
 [
-    {
+    /*{
         "name": "dataset_bank_ADA_08",
         "dataset_file": "../datasets/bank_t75-v15-s10_40x4000_5s.gz",
         "TOT_GEN": 32000,
@@ -237,16 +237,16 @@
                 ]
             }
         ]
-    }/*,
+    },*/
     {
         "name": "dataset_coil_28x28",
-        "dataset_file": "../datasets/coil-proc_28x28_28x40_1s.gz",
-        "TOT_GEN": 10000,
-        "GEN_STEP": 200,
+        "dataset_file": "../datasets/coil-proc_28x28_7x160_1s.gz",
+        "TOT_GEN": 60000,
+        "GEN_STEP": 300,
         "TYPE": "float",
         "F": 0.5,
         "CR": 0.9,
-        "NP": 32,
+        "NP": 48,
         "training": true,
         "de_types": [
             "rand/1/bin"
@@ -261,7 +261,7 @@
         },
         "reset_every": {
             "epsilon": 0.02,
-            "counter": 3
+            "counter": 5
         },
         // "smoothing_n_pass": 6,
         // "smoothing": [
@@ -281,8 +281,8 @@
                             "name": "random_uniform",
                             "kwargs": {
                                 "seed": 1,
-                                "minval": -1.0, 
-                                "maxval": 1.0
+                                "minval": -5.0, 
+                                "maxval": 5.0
                             }
                         }
                     },
@@ -291,13 +291,13 @@
                             "name": "random_uniform",
                             "kwargs": {
                                 "seed": 1,
-                                "minval": -1.0, 
-                                "maxval": 1.0
+                                "minval": -5.0, 
+                                "maxval": 5.0
                             }
                         }
                     }
                 ]
             }
         ]
-    }*/
+    }
 ]

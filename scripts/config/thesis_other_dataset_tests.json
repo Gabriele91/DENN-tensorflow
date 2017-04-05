@@ -241,12 +241,12 @@
     {
         "name": "dataset_coil_28x28",
         "dataset_file": "../datasets/coil-proc_28x28_7x160_1s.gz",
-        "TOT_GEN": 60000,
-        "GEN_STEP": 300,
+        "TOT_GEN": 30000,
+        "GEN_STEP": 500,
         "TYPE": "float",
         "F": 0.5,
         "CR": 0.9,
-        "NP": 48,
+        "NP": 96,
         "training": true,
         "de_types": [
             "rand/1/bin"

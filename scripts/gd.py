@@ -13,6 +13,18 @@ import json
 FLAGS = None
 OUT_FOLDER = "./benchmark_results"
 
+def calc_confusin_M(labels, cur_y):
+    size = labels.shape[-1]
+
+    labels = [np.argmax(row) for row in labels]
+    cur_y = [np.argmax(row) for row in cur_y]
+
+    matrix = np.full((size, size), 0, dtype=np.int32)
+
+    for idx, class_ in enumerate(labels):
+        matrix[class_][cur_y[idx]] += 1
+
+    return matrix.astype(int)
 
 def main(input_args):
     # Import data
@@ -76,10 +88,17 @@ def main(input_args):
             # cur_accuracy = sess.run(accuracy, feed_dict={
             #                         x: dataset.test.images, y_: dataset.test.labels})
             # print(cur_accuracy)
-        print("Accuracy: {}".format(
-            sess.run(accuracy, feed_dict={x: dataset.test.images,
-                                          y_: dataset.test.labels})
-        ))
+        cur_accuracy = sess.run(accuracy, feed_dict={
+            x: dataset.test.images,
+            y_: dataset.test.labels
+        })
+        print("Accuracy: {}".format(cur_accuracy))
+        cur_y = sess.run(y, feed_dict={
+            x: dataset.test.images,
+            y_: dataset.test.labels
+        })
+        confusion_matrix = calc_confusin_M(dataset.test.labels, cur_y)
+        print("Confusion Matrix:\n", confusion_matrix)
     else:
         for num in tqdm(range(FLAGS.steps), desc="Training {}".format(dataset_name)):
             cur_batch = dataset[num]
@@ -90,12 +109,17 @@ def main(input_args):
             # cur_accuracy=sess.run(accuracy, feed_dict={
             #                         x: dataset.test_data, y_: dataset.test_labels})
             # print(cur_accuracy)
-        print("Accuracy: {}".format(
-            sess.run(accuracy, feed_dict={
-                x: dataset.test_data,
-                y_: dataset.test_labels
-            })
-        ))
+        cur_accuracy = sess.run(accuracy, feed_dict={
+            x: dataset.test_data,
+            y_: dataset.test_labels
+        })
+        print("Accuracy: {}".format(cur_accuracy))
+        cur_y = sess.run(y, feed_dict={
+            x: dataset.test_data,
+            y_: dataset.test_labels
+        })
+        confusion_matrix = calc_confusin_M(dataset.test_labels, cur_y)
+        print("Confusion Matrix:\n", confusion_matrix)
 
     ##
     # Get results
@@ -109,7 +133,9 @@ def main(input_args):
 
     res = {
         "W": res[0].tolist(),
-        "b": res[1].tolist()
+        "b": res[1].tolist(),
+        "accuracy": float(cur_accuracy),
+        "confusionM": confusion_matrix.tolist()
     }
     with open(path.join(OUT_FOLDER, "gd_results.json"), "w") as result_file:
         json.dump(res, result_file, indent=2)

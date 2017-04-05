@@ -1,6 +1,6 @@
 [
     {
-        "name": "dataset_bank_NO_ADA",
+        "name": "dataset_bank_ADA_08",
         "dataset_file": "../datasets/bank_t75-v15-s10_40x4000_5s.gz",
         "TOT_GEN": 32000,
         "GEN_STEP": 400,
@@ -10,6 +10,10 @@
         "CR": 0.9,
         "NP": 38,
         "training": true,
+        "AdaBoost": {
+            "alpha": 0.8,
+            "C": 1.0
+        },
         "de_types": [
             "rand/1/bin"
         ],
@@ -55,7 +59,7 @@
         ]
     },
     {
-        "name": "dataset_magic_NO_ADA",
+        "name": "dataset_magic_ADA_08",
         "dataset_file": "../datasets/magic_t75-v15-s10_70x1000_5s.gz",
         "TOT_GEN": 32000,
         "GEN_STEP": 400,
@@ -65,6 +69,10 @@
         "CR": 0.9,
         "NP": 20,
         "training": true,
+        "AdaBoost": {
+            "alpha": 0.8,
+            "C": 1.0
+        },
         "de_types": [
             "rand/1/bin"
         ],
@@ -110,7 +118,7 @@
         ]
     },
     {
-        "name": "dataset_qsar_NO_ADA",
+        "name": "dataset_qsar_ADA_08",
         "dataset_file": "../datasets/qsar_t75-v15-s10_20x160_5s.gz",
         "TOT_GEN": 32000,
         "GEN_STEP": 400,
@@ -120,6 +128,10 @@
         "CR": 0.9,
         "NP": 82,
         "training": true,
+        "AdaBoost": {
+            "alpha": 0.8,
+            "C": 1.0
+        },
         "de_types": [
             "rand/1/bin"
         ],
@@ -163,16 +175,16 @@
                 ]
             }
         ]
-    }/*,
+    },
     {
         "name": "dataset_coil",
         "dataset_file": "../datasets/coil-proc_28x40_1s.gz",
-        "TOT_GEN": 20000,
-        "GEN_STEP": 400,
+        "TOT_GEN": 5000,
+        "GEN_STEP": 50,
         "TYPE": "float",
         "F": 0.5,
         "CR": 0.9,
-        "NP": 12,
+        "NP": 24,
         "training": true,
         "de_types": [
             "rand/1/bin"
@@ -189,6 +201,10 @@
             "epsilon": 0.02,
             "counter": 3
         },
+        "smoothing_n_pass": 6,
+        "smoothing": [
+            [28, 28, 3]
+        ],
         "reinsert_best": true,
         "levels": [
             {
@@ -221,12 +237,12 @@
                 ]
             }
         ]
-    },
+    }/*,
     {
         "name": "dataset_coil_28x28",
         "dataset_file": "../datasets/coil-proc_28x28_28x40_1s.gz",
-        "TOT_GEN": 20000,
-        "GEN_STEP": 400,
+        "TOT_GEN": 10000,
+        "GEN_STEP": 200,
         "TYPE": "float",
         "F": 0.5,
         "CR": 0.9,
@@ -240,13 +256,17 @@
             "max": 10
         },
         "AdaBoost": {
-            "alpha": 1.0,
+            "alpha": 0.8,
             "C": 1.0
         },
         "reset_every": {
             "epsilon": 0.02,
             "counter": 3
         },
+        // "smoothing_n_pass": 6,
+        // "smoothing": [
+        //     [28, 28, 3]
+        // ],
         "reinsert_best": true,
         "levels": [
             {

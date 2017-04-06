@@ -833,10 +833,9 @@ class Operation(object):
 
             # reinsert best
             if self.job.reinsert_best and not best_changed:
-                id_as_reinsert = self.__reinsert_best(
-                    cur_f, cur_cr, cur_pop, evaluations, test_results)
-                evaluations[id_as_reinsert] = test_results[
-                    self.de_type].best_of['accuracy_val'][-1]
+                self.__reinsert_best(cur_f, cur_cr, cur_pop,
+                                     evaluations, test_results)
+
             ##
             # Check reset
             if self.job.reset_every != False:

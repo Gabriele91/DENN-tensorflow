@@ -568,13 +568,13 @@ class Operation(object):
             if self.job.reset_every != False:
                 ##
                 # Reset test
-                if abs(cur_accuracy - reset_last_accuracy) < self.job.reset_every['epsilon']:
+                if abs(evaluations[best_idx] - reset_last_accuracy) < self.job.reset_every['epsilon']:
                     reset_counter += 1
                 else:
                     reset_counter = 0
                 ##
                 # Update accuracy
-                reset_last_accuracy = cur_accuracy
+                reset_last_accuracy = evaluations[best_idx]
                 ##
                 # Check for new population
                 if reset_counter >= self.job.reset_every['counter']:
@@ -842,13 +842,13 @@ class Operation(object):
             if self.job.reset_every != False:
                 ##
                 # Reset test
-                if abs(cur_accuracy - reset_last_accuracy) < self.job.reset_every['epsilon']:
+                if abs(evaluations[best_idx] - reset_last_accuracy) < self.job.reset_every['epsilon']:
                     reset_counter += 1
                 else:
                     reset_counter = 0
                 ##
                 # Update accuracy
-                reset_last_accuracy = cur_accuracy
+                reset_last_accuracy = evaluations[best_idx]
                 ##
                 # Check for new population
                 if reset_counter >= self.job.reset_every['counter']:

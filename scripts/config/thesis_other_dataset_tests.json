@@ -240,7 +240,7 @@
     },*/
     {
         "name": "dataset_coil_28x28",
-        "dataset_file": "../datasets/coil-proc_28x28_7x160_1s.gz",
+        "dataset_file": "../datasets/coil-proc_28x28_T90V5T5_8x160_1s.gz",
         "TOT_GEN": 60000,
         "GEN_STEP": 300,
         "TYPE": "float",

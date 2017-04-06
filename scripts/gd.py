@@ -9,9 +9,31 @@ import DENN
 from tqdm import tqdm
 from os import path
 import json
+from collections import namedtuple
 
 FLAGS = None
 OUT_FOLDER = "./benchmark_results"
+
+BinClassify = namedtuple('BinClassify', ['TP', 'FP', 'FN', 'TN'])
+
+
+def calc_TF(confusion_m, class_):
+    TP = confusion_m[class_][class_]
+    FP = np.sum(confusion_m[class_]) - TP
+    FN = np.sum(confusion_m[:, class_]) - TP
+    TN = np.sum(confusion_m.diagonal()) - TP
+
+    return BinClassify(TP, FP, FN, TN)
+
+
+def precision_recall_acc(bc):
+    precision = bc.TP / (bc.TP + bc.FP)
+    recall = bc.TP / (bc.TP + bc.FN)
+
+    acc = (bc.TP + bc.TN) / np.sum(bc)
+
+    return precision, recall, acc
+
 
 def calc_confusin_M(labels, cur_y):
     size = labels.shape[-1]
@@ -25,6 +47,7 @@ def calc_confusin_M(labels, cur_y):
         matrix[class_][cur_y[idx]] += 1
 
     return matrix.astype(int)
+
 
 def main(input_args):
     # Import data
@@ -130,14 +153,20 @@ def main(input_args):
     #         if elm < tmp:
     #             tmp = elm
     #     print(np.max(res[idx]), tmp)
+    stats = []
+    for class_ in range(confusion_matrix.shape[0]):
+        elm_tf = calc_TF(confusion_matrix, class_)
+        stats.append(precision_recall_acc(elm_tf))
+        print(elm_tf)
 
     res = {
         "W": res[0].tolist(),
         "b": res[1].tolist(),
         "accuracy": float(cur_accuracy),
-        "confusionM": confusion_matrix.tolist()
+        "confusionM": confusion_matrix.tolist(),
+        "stats": stats
     }
-    with open(path.join(OUT_FOLDER, "gd_results.json"), "w") as result_file:
+    with open(path.join(OUT_FOLDER, FLAGS.outfilename), "w") as result_file:
         json.dump(res, result_file, indent=2)
 
 if __name__ == '__main__':
@@ -151,6 +180,8 @@ if __name__ == '__main__':
                         help='Number of features', default=784)
     parser.add_argument('--classes', type=int,
                         help='Number of classes', default=10)
+    parser.add_argument('--outfilename', type=str,
+                        help='Output name', default="gd_results.json")
     parser.add_argument('--dataset', type=str,
                         help='Dataset to open. If equal to "mnist" it will use the official dataset',
                         default="../datasets/mnist_d_5perV_4000xB_5s.gz")

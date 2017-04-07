@@ -241,15 +241,15 @@
     {
         "name": "dataset_coil_28x28",
         "dataset_file": "../datasets/coil-proc_28x28_T90V5T5_8x160_1s.gz",
-        "TOT_GEN": 60000,
-        "GEN_STEP": 300,
+        "TOT_GEN": 10000,
+        "GEN_STEP": 200,
         "TYPE": "float",
         "F": 0.5,
         "CR": 0.9,
         "NP": 96,
         "training": true,
         "de_types": [
-            "rand/1/bin"
+            "rand/2/bin"
         ],
         "clamp": {
             "min": -10,

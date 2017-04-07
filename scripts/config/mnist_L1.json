@@ -125,31 +125,31 @@
     */
     {
         "name": "smooth_0_mnist_new_test",
-        "dataset_file": "../datasets/mnist_d_5perV_4000xB_5s.gz",
-        "TOT_GEN": 4000,
+        "dataset_file": "../datasets/mnist_f_t85-v15_60x4000_5s.gz",
+        "TOT_GEN": 30000,
         "GEN_STEP": 2000,
-        "TYPE": "double",
-        "F": 1.9,
+        "TYPE": "float",
+        "F": 0.5,
         "CR": 0.9,
         "JDE":0.1,
-        "NP": 14,
+        "NP": 96,
         "training": true,
         "de_types": [
-            "rand/1/bin"
+            "rand/2/bin"
         ],
         "reset_every": {
             "epsilon": 0.02,
-            "counter": 2
+            "counter": 3
         },
         "reinsert_best": true,
         "clamp": {
             "min": -30,
             "max": 30
-        },/*
+        },
         "AdaBoost": {
-            "alpha": 1.0,
+            "alpha": 0.8,
             "C": 1.0
-        },*/
+        },
         "levels": [
             {
                 "shape": [[784,10], [10]],
@@ -163,8 +163,8 @@
                             "name": "random_uniform",
                             "kwargs": {
                                 "seed": 1,
-                                "minval": -15.0, 
-                                "maxval": 15.0
+                                "minval": -10.0, 
+                                "maxval": 10.0
                             }
                         }
                     },
@@ -173,8 +173,8 @@
                             "name": "random_uniform",
                             "kwargs": {
                                 "seed": 1,
-                                "minval": -15.0, 
-                                "maxval": 15.0
+                                "minval": -10.0, 
+                                "maxval": 10.0
                             }
                         }
                     }

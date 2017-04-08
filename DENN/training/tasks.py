@@ -29,14 +29,14 @@ class DETaskList(object):
 
     def __iter__(self):
         return iter(self.tasks)
-    
+
     def __getitem__(self, idx):
         return self.tasks[idx]
-    
+
     def __setitem__(self, idx, val):
         self.tasks[idx] = val
         return self
-    
+
     def __delitem__(self, idx):
         return self.tasks.pop(idx)
 
@@ -217,13 +217,14 @@ class AdaBoost(object):
     def __init__(self, ada_boost):
         self.alpha = ada_boost['alpha'] if ada_boost is not None else .5
         self.C = ada_boost['C'] if ada_boost is not None else 1.
-        self.reset_C_on_change_bacth = ada_boost.get('reset_C_on_change_bacth', True)
+        self.reset_C_on_change_bacth = ada_boost.get(
+            'reset_C_on_change_bacth', True)
 
     def to_dict(self):
         return {
             'alpha': self.alpha,
             'C': self.C,
-            'reset_C_on_change_bacth' : self.reset_C_on_change_bacth
+            'reset_C_on_change_bacth': self.reset_C_on_change_bacth
         }
 
 
@@ -461,7 +462,13 @@ class DETask(object):
 
                             level = cur_level.shape
 
-                            SIZE_W, SIZE_B = level
+                            if len(level) == 2:
+                                SIZE_W, SIZE_B = level
+                            elif len(level) == 1:
+                                SIZE_W = level[0]
+                                SIZE_B = None
+                            else:
+                                raise Exception("Not supported level depth!")
 
                             ##
                             # Init population
@@ -469,13 +476,13 @@ class DETask(object):
                                 if len(cur_level.init) == 0:
                                     create_random_population_W = tf.random_uniform(
                                         [self.NP] + SIZE_W, dtype=cur_type, seed=1)
-                                    create_random_population_B = tf.random_uniform(
-                                        [self.NP] + SIZE_B, dtype=cur_type, seed=1)
-
                                     rand_pop_ref.append(
                                         create_random_population_W)
-                                    rand_pop_ref.append(
-                                        create_random_population_B)
+                                    if SIZE_B is not None:
+                                        create_random_population_B = tf.random_uniform(
+                                            [self.NP] + SIZE_B, dtype=cur_type, seed=1)
+                                        rand_pop_ref.append(
+                                            create_random_population_B)
                                 else:
                                     sizes = [
                                         SIZE_W,
@@ -512,31 +519,35 @@ class DETask(object):
                             with tf.name_scope('NN_targets'):
                                 target_w = tf.placeholder(
                                     cur_type, SIZE_W, name="target_W")
-                                target_b = tf.placeholder(
-                                    cur_type, SIZE_B, name="target_B")
-
                                 target_ref.append(target_w)
-                                target_ref.append(target_b)
+                                if SIZE_B is not None:
+                                    target_b = tf.placeholder(
+                                        cur_type, SIZE_B, name="target_B")
+                                    target_ref.append(target_b)
 
                             with tf.name_scope('Population'):
                                 cur_pop_W = tf.placeholder(
                                     cur_type, [self.NP] + SIZE_W, name="cur_pop_W")
-                                cur_pop_B = tf.placeholder(
-                                    cur_type, [self.NP] + SIZE_B, name="cur_pop_B")
-
                                 pop_ref.append(cur_pop_W)
-                                pop_ref.append(cur_pop_B)
+                                if SIZE_B is not None:
+                                    cur_pop_B = tf.placeholder(
+                                        cur_type, [self.NP] + SIZE_B, name="cur_pop_B")
+                                    pop_ref.append(cur_pop_B)
 
                             if num == len(levels):
                                 ##
                                 # NN TRAIN
                                 with tf.name_scope('NN_train_functions'):
                                     with tf.name_scope('NN'):
-                                        y = tf.add(
-                                            tf.matmul(
-                                                last_input, target_w), target_b,
-                                            name="execution"
-                                        )
+                                        if SIZE_B is not None:
+                                            y = tf.add(
+                                                tf.matmul(
+                                                    last_input, target_w), target_b,
+                                                name="execution"
+                                            )
+                                        else:
+                                            y = tf.matmul(
+                                                last_input, target_w, name="execution")
 
                                     ada_label_diff = None
                                     if self.ada_boost is not None:
@@ -560,7 +571,7 @@ class DETask(object):
                                         # (y^t * c )^t
                                         #
                                         # https://docs.scipy.org/doc/numpy/user/basics.broadcasting.html
-                                        with tf.name_scope('Target_function'):
+                                        with tf.name_scope('Objective_function'):
                                             objective_function = tf.reduce_mean(
                                                 cur_level.fx(
                                                     tf.transpose(
@@ -574,7 +585,7 @@ class DETask(object):
                                                 name="objective_function"
                                             )
                                     else:
-                                        with tf.name_scope('Target_function'):
+                                        with tf.name_scope('Objective_function'):
                                             objective_function = tf.reduce_mean(
                                                 cur_level.fx(
                                                     y, label_placeholder
@@ -586,8 +597,11 @@ class DETask(object):
                                 # NN TEST
                                 with tf.name_scope('NN_test_functions'):
                                     with tf.name_scope('NN_test'):
-                                        y_test = tf.matmul(
-                                            last_input, target_w) + target_b
+                                        if SIZE_B is not None:
+                                            y_test = tf.matmul(
+                                                last_input, target_w) + target_b
+                                        else:
+                                            y_test = tf.matmul(last_input, target_w)
                                     with tf.name_scope('Correct_predictions'):
                                         correct_prediction = tf.equal(
                                             tf.argmax(y_test, 1),
@@ -598,8 +612,12 @@ class DETask(object):
                                             tf.cast(correct_prediction, cur_type), name="accuracy")
                             else:
                                 with tf.name_scope('Output'):
-                                    last_input = cur_level.fx(
-                                        tf.matmul(last_input, target_w) + target_b)
+                                    if SIZE_B is not None:
+                                        last_input = cur_level.fx(
+                                            tf.matmul(last_input, target_w) + target_b)
+                                    else:
+                                        last_input = cur_level.fx(
+                                            tf.matmul(last_input, target_w))
 
         return Network([
             ('targets', target_ref),

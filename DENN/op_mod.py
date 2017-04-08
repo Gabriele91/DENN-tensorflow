@@ -118,7 +118,7 @@ class Operation(object):
                 f_input_correct_predition=self.net.y_placeholder.name,
                 f_correct_predition=self.net.ada_label_diff.name,
                 # CROSS
-                f_cross_entropy=self.net.cross_entropy.name,
+                f_cross_entropy=self.net.objective_function.name,
                 f_input_cross_entropy_y=self.net.y_placeholder.name,
                 f_input_cross_entropy_c=self.net.ada_C_placeholder.name,
                 # VALIDATION
@@ -173,7 +173,7 @@ class Operation(object):
                 f_input_features=self.net.input_placeholder.name,
                 f_input_correct_predition=self.net.y_placeholder.name,
                 f_correct_predition=self.net.ada_label_diff.name,
-                f_cross_entropy=self.net.cross_entropy.name,
+                f_cross_entropy=self.net.objective_function.name,
                 f_input_cross_entropy_y=self.net.y_placeholder.name,
                 f_input_cross_entropy_c=self.net.ada_C_placeholder.name,
                 ada_boost_alpha=self.job.ada_boost.alpha,
@@ -211,7 +211,7 @@ class Operation(object):
                     self.net.graph.as_graph_def()),
                 dataset=self.job.dataset_file,
                 # NET
-                f_name_execute_net=self.net.cross_entropy.name,
+                f_name_execute_net=self.net.objective_function.name,
                 f_inputs=[elm.name for elm in self.net.targets],
                 f_input_labels=self.net.label_placeholder.name,
                 f_input_features=self.net.input_placeholder.name,
@@ -256,7 +256,7 @@ class Operation(object):
                 # attributes
                 graph=get_graph_proto(
                     self.net.graph.as_graph_def()),
-                f_name_execute_net=self.net.cross_entropy.name,
+                f_name_execute_net=self.net.objective_function.name,
                 f_inputs=[elm.name for elm in self.net.targets],
                 f_input_labels=self.net.label_placeholder.name,
                 f_input_features=self.net.input_placeholder.name,

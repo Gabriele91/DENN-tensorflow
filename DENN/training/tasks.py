@@ -561,7 +561,7 @@ class DETask(object):
                                         #
                                         # https://docs.scipy.org/doc/numpy/user/basics.broadcasting.html
                                         with tf.name_scope('Target_function'):
-                                            cross_entropy = tf.reduce_mean(
+                                            objective_function = tf.reduce_mean(
                                                 cur_level.fx(
                                                     tf.transpose(
                                                         tf.multiply(
@@ -571,15 +571,15 @@ class DETask(object):
                                                         )
                                                     ), label_placeholder
                                                 ),
-                                                name="cross_entropy"
+                                                name="objective_function"
                                             )
                                     else:
                                         with tf.name_scope('Target_function'):
-                                            cross_entropy = tf.reduce_mean(
+                                            objective_function = tf.reduce_mean(
                                                 cur_level.fx(
                                                     y, label_placeholder
                                                 ),
-                                                name="cross_entropy"
+                                                name="objective_function"
                                             )
 
                                 ##
@@ -609,7 +609,7 @@ class DETask(object):
             ('nn_exec', y),
             ('y', y),
             ('y_test', y_test),
-            ('cross_entropy', cross_entropy),
+            ('objective_function', objective_function),
             ('accuracy', accuracy),
             ('graph', graph),
             ('F_init', f_init),
@@ -642,7 +642,7 @@ class Network(object):
         'nn_exec',
         'y',
         'y_test',
-        'cross_entropy',
+        'objective_function',
         'accuracy',
         'graph',
         'F_init',
@@ -673,7 +673,7 @@ class Network(object):
             - nn_exec
             - y
             - y_test
-            - cross_entropy
+            - objective_function
             - accuracy
             - graph
             - F_init 

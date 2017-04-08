@@ -25,6 +25,8 @@ from tqdm import tqdm
 # Inhibit SIGHUP
 # signal.siginterrupt(signal.SIGHUP, False)
 
+GECCO_DEBUG = False
+
 
 #@profile
 def main(config_file):
@@ -202,8 +204,8 @@ def main(config_file):
                         test_results,
                         cur_accuracy,
                         evaluations[best_idx],
-                        cur_f,
-                        cur_cr,
+                        cur_f[best_idx],
+                        cur_cr[best_idx],
                         [
                             cur_pop[num][best_idx] for num, target in enumerate(cur_nn.targets)
                         ],
@@ -237,6 +239,28 @@ def main(config_file):
                             ]
                         ))
                         test_results[de_type].population_test.append(cur_evaluation)
+                    
+                    if GECCO_DEBUG:
+                        X = np.arange(-1, 1, 0.01)
+                        Y = np.arange(-1, 1, 0.01)
+                        B = np.ones(len(X))
+                        fun_data = np.array(list(zip(X.tolist(), Y.tolist(), B.tolist())))
+
+                        Z = sess.run(cur_nn.y, feed_dict=dict(
+                            [
+                                (target, cur_pop[num][best_idx])
+                                for num, target in enumerate(cur_nn.targets)
+                            ]
+                            +
+                            [
+                                (cur_nn.input_placeholder, fun_data)
+                            ]
+                        ))
+                        # print(Z[0])
+                        # print(X.shape)
+                        # print(Y.shape)
+                        # print(Z.shape)
+                        DENN.training.plot_3d_function(X, Y, Z)
 
         print("+ Completed all test on dataset {} in {} sec.".format(job.name,
                                                                      time() - time_start_dataset))

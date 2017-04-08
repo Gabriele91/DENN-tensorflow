@@ -3,10 +3,33 @@ import matplotlib as mpl
 from matplotlib.legend_handler import HandlerLine2D
 from matplotlib.ticker import FuncFormatter
 from matplotlib.backends.backend_pgf import FigureCanvasPgf
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib import cm
+from matplotlib.ticker import LinearLocator
+from matplotlib.ticker import FormatStrFormatter
 import numpy as np
 from math import cos, pi
 import json
 from os import path
+
+
+def plot_3d_function(X, Y, Z):
+    fig = plt.figure()
+    ax = fig.gca(projection='3d')
+
+    # Plot the surface.
+    surf = ax.plot_surface(X, Y, Z, cmap=cm.coolwarm,
+                           linewidth=0, antialiased=False)
+
+    # Customize the z axis.
+    ax.set_zlim(0.0, 1.0)
+    ax.zaxis.set_major_locator(LinearLocator(10))
+    ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
+
+    # Add a color bar which maps values to colors.
+    fig.colorbar(surf, shrink=0.5, aspect=5)
+
+    plt.show()
 
 
 def NN_DE_mnist_loader(filename):
@@ -290,12 +313,12 @@ def plot_results(config_file, save=False, pdf=False, latex_backend=False, show=T
         # Do lines and point
         cur_plot = plt.plot(
             x_real, y_real,
-            marker=obj.get('marker', MARKERS[idx%len(MARKERS)]),
+            marker=obj.get('marker', MARKERS[idx % len(MARKERS)]),
             markersize=obj.get('markersize', None),
-            color=obj.get('color', COLORS[idx%len(COLORS)]),
+            color=obj.get('color', COLORS[idx % len(COLORS)]),
             linewidth=obj.get('linewidth', 1),
             #  ls=LINESTYLE[idx],
-            alpha=obj.get('alpha', ALPHA[idx%len(ALPHA)]),
+            alpha=obj.get('alpha', ALPHA[idx % len(ALPHA)]),
             label=obj.get('label'),
             markevery=config_file.get(
                 "markevery", [int(elm * gen_step) for elm in _x_[:-1]])

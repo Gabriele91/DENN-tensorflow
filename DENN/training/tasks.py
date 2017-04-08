@@ -123,7 +123,11 @@ class Level(object):
         """
         self.shape = cur_lvl.get("shape")
         self.preferred_device = cur_lvl.get("preferred_device", "CPU")
-        self.fx = TFFx(cur_lvl.get("fx"))
+        fx = cur_lvl.get("fx")
+        if isinstance(fx, str):
+            self.fx = fx
+        else:
+            self.fx = TFFx(fx)
         self.init = cur_lvl.get("init", [])
         self.start = cur_lvl.get("start", [])
         self.start_transposed = cur_lvl.get("start_transposed", [])
@@ -157,7 +161,7 @@ class Level(object):
     @property
     def out_size(self):
         """Output size of the current level."""
-        return self.__flat(self.shape)[-1]
+        return self.shape[-1][-1]
 
     def __repr__(self):
         """A string representation of level."""
@@ -186,12 +190,12 @@ class Level(object):
             'preferred_device': ...,
             'init': ...,
             'start': ...,
-            'start_transposed': ..            
+            'start_transposed': ..
         }
         """
         return {
             'shape': self.shape,
-            'fx': self.fx.to_dict(),
+            'fx': self.fx if isinstance(self.fx, str) else self.fx.to_dict(),
             'preferred_device': self.preferred_device,
             'init': self.__get_init_dict(),
             'start': self.start,
@@ -376,7 +380,7 @@ class DETask(object):
         """Generate the network for a DENN op.
 
         Params:
-            default_graph (default=False): specify if you want to work with 
+            default_graph (default=False): specify if you want to work with
                                            the default graph
         Returns:
             Network object
@@ -572,26 +576,55 @@ class DETask(object):
                                         #
                                         # https://docs.scipy.org/doc/numpy/user/basics.broadcasting.html
                                         with tf.name_scope('Objective_function'):
-                                            objective_function = tf.reduce_mean(
-                                                cur_level.fx(
-                                                    tf.transpose(
-                                                        tf.multiply(
-                                                            tf.transpose(
-                                                                y_placeholder),
-                                                            ada_C_placeholder
-                                                        )
-                                                    ), label_placeholder
-                                                ),
-                                                name="objective_function"
-                                            )
+                                            if isinstance(cur_level.fx, str):
+                                                if cur_level.fx == "abs_diff":
+                                                    objective_function = -tf.reduce_sum(
+                                                        tf.abs(
+                                                            label_placeholder - tf.transpose(
+                                                                tf.multiply(
+                                                                    tf.transpose(
+                                                                        y_placeholder),
+                                                                    ada_C_placeholder
+                                                                )
+                                                            )
+                                                        ),
+                                                        name="objective_function"
+                                                    )
+                                                else:
+                                                    raise Exception(
+                                                        "Invalid objecti function '{}'".format(level.fx))
+                                            else:
+                                                objective_function = tf.reduce_mean(
+                                                    cur_level.fx(
+                                                        tf.transpose(
+                                                            tf.multiply(
+                                                                tf.transpose(
+                                                                    y_placeholder),
+                                                                ada_C_placeholder
+                                                            )
+                                                        ), label_placeholder
+                                                    ),
+                                                    name="objective_function"
+                                                )
                                     else:
                                         with tf.name_scope('Objective_function'):
-                                            objective_function = tf.reduce_mean(
-                                                cur_level.fx(
-                                                    y, label_placeholder
-                                                ),
-                                                name="objective_function"
-                                            )
+                                            if isinstance(cur_level.fx, str):
+                                                if cur_level.fx == "abs_diff":
+                                                    objective_function = -tf.reduce_sum(
+                                                        tf.abs(
+                                                            label_placeholder - y),
+                                                        name="objective_function"
+                                                    )
+                                                else:
+                                                    raise Exception(
+                                                        "Invalid objecti function '{}'".format(level.fx))
+                                            else:
+                                                objective_function = tf.reduce_mean(
+                                                    cur_level.fx(
+                                                        y, label_placeholder
+                                                    ),
+                                                    name="objective_function"
+                                                )
 
                                 ##
                                 # NN TEST
@@ -601,7 +634,8 @@ class DETask(object):
                                             y_test = tf.matmul(
                                                 last_input, target_w) + target_b
                                         else:
-                                            y_test = tf.matmul(last_input, target_w)
+                                            y_test = tf.matmul(
+                                                last_input, target_w)
                                     with tf.name_scope('Correct_predictions'):
                                         correct_prediction = tf.equal(
                                             tf.argmax(y_test, 1),

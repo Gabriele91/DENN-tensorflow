@@ -1,0 +1,95 @@
+[
+    {
+        "name": "first_domain",
+        "dataset_file": "../datasets/first_domain_12x50_1s.gz",
+        "TOT_GEN": 10000,
+        "GEN_STEP": 100,
+        "GEN_SAMPLES": 1,
+        "TYPE": "float",
+        "F": 0.5,
+        "CR": 0.9,
+        "NP": 24,
+        "training": true,
+        "reset_every": {
+            "epsilon": 0.02,
+            "counter": 2
+        },
+        "reinsert_best": true,
+        "de_types": [
+            "rand/1/bin"//,
+            // "best/1/bin"
+        ],
+        "NUM_INTRA_THREADS": 2,
+        "NUM_INTER_THREADS": 2,
+        "clamp": {
+            "min": -1.0,
+            "max": 1.0
+        },
+        "AdaBoost": {
+            "alpha": 1.0,
+            "C": 1.0
+        },
+        "levels": [
+            {
+                "shape": [[3,50]],
+                "init": [
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -1.0, 
+                                "maxval": 1.0
+                            }
+                        }
+                    }
+                ],
+                "fx": { "name": "nn.sigmoid" }
+            },
+            {
+                "shape": [[50,20]],
+                "init": [
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -1.0, 
+                                "maxval": 1.0
+                            }
+                        }
+                    }
+                ],
+                "preferred_device": "CPU",
+                "fx": { "name": "nn.sigmoid" }
+            },
+            {
+                "shape": [[20,1], [1]],
+                "init": [
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -1.0, 
+                                "maxval": 1.0
+                            }
+                        }
+                    },
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -1.0, 
+                                "maxval": 1.0
+                            }
+                        }
+                    }
+                ],
+                "preferred_device": "CPU",
+                "fx": "abs_diff"
+            }
+        ]
+    }
+]

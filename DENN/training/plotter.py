@@ -46,7 +46,7 @@ def NN_DE_result_loader(filename, method='rand/1/bin'):
     return res['results'][method]['best_of']['individual']
 
 
-def NN_to_image(test_result_file, shape, level=0, loader="DE", method='rand/1/bin'):
+def NN_to_image(test_result_file, shape, level=0, loader="DE", method='rand/1/bin', cmap="gray"):
     if loader == "DE":
         individual = NN_DE_result_loader(test_result_file, method)
         W = np.array(individual[0 + (level * 2)])
@@ -69,22 +69,22 @@ def NN_to_image(test_result_file, shape, level=0, loader="DE", method='rand/1/bi
 
     ##
     # Normalization
-    for image in images:
-        max_ = np.max(image)
-        min_ = np.min(image)
-        image = image - min_
-        image = image / (max_ - min_)
+    for idx, _ in enumerate(images):
+        max_ = np.max(images[idx])
+        min_ = np.min(images[idx])
+        images[idx] = images[idx] - min_
+        images[idx] = images[idx] / (max_ - min_)
         # print(image)
 
     images = np.array(images)
-    # print(images.shape)
+    print(images.shape)
 
     fig = plt.figure()
 
     for num, image in enumerate(images):
         sub_plt = plt.subplot(2, 5, num + 1)
         sub_plt.set_title(str(num), fontsize=24)
-        plt.imshow(image, cmap=plt.cm.Greys,
+        plt.imshow(image, cmap=plt.cm.Greys if cmap=="gray" else plt.cm.coolwarm,
                    interpolation='nearest')
 
     plt.tight_layout()

@@ -636,14 +636,28 @@ class DETask(object):
                                         else:
                                             y_test = tf.matmul(
                                                 last_input, target_w)
-                                    with tf.name_scope('Correct_predictions'):
-                                        correct_prediction = tf.equal(
-                                            tf.argmax(y_test, 1),
-                                            tf.argmax(label_placeholder, 1)
-                                        )
-                                    with tf.name_scope('Accuracy'):
-                                        accuracy = tf.reduce_mean(
-                                            tf.cast(correct_prediction, cur_type), name="accuracy")
+                                    if isinstance(cur_level.fx, str):
+                                        if cur_level.fx == "abs_diff":
+                                            with tf.name_scope('Correct_predictions'):
+                                                correct_prediction = tf.less_equal(
+                                                    tf.abs(y_test - label_placeholder),
+                                                    tf.constant(0.5)
+                                                )
+                                            with tf.name_scope('Accuracy'):
+                                                accuracy = tf.reduce_mean(
+                                                    tf.cast(correct_prediction, cur_type), name="accuracy")
+                                        else:
+                                            raise Exception(
+                                                "Invalid objecti function '{}'".format(level.fx))
+                                    else:
+                                        with tf.name_scope('Correct_predictions'):
+                                            correct_prediction = tf.equal(
+                                                tf.argmax(y_test, 1),
+                                                tf.argmax(label_placeholder, 1)
+                                            )
+                                        with tf.name_scope('Accuracy'):
+                                            accuracy = tf.reduce_mean(
+                                                tf.cast(correct_prediction, cur_type), name="accuracy")
                             else:
                                 with tf.name_scope('Output'):
                                     if SIZE_B is not None:

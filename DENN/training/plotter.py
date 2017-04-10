@@ -18,16 +18,18 @@ def plot_3d_function(X, Y, Z):
     ax = fig.gca(projection='3d')
 
     # Plot the surface.
-    surf = ax.plot_surface(X, Y, Z, cmap=cm.coolwarm,
-                           linewidth=0, antialiased=False)
+    # surf = ax.plot_surface(X, Y, Z, cmap=cm.coolwarm,
+    #                        linewidth=0, antialiased=True)
 
     # Customize the z axis.
-    ax.set_zlim(0.0, 1.0)
-    ax.zaxis.set_major_locator(LinearLocator(10))
-    ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
+    # ax.set_zlim(0.0, 1.0)
+    # ax.zaxis.set_major_locator(LinearLocator(10))
+    # ax.zaxis.set_major_formatter(FormatStrFormatter('%.02f'))
 
     # Add a color bar which maps values to colors.
-    fig.colorbar(surf, shrink=0.5, aspect=5)
+    # fig.colorbar(surf, shrink=0.5, aspect=5)
+
+    ax.scatter(X, Y, Z)
 
     plt.show()
 

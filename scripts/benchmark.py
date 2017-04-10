@@ -25,7 +25,7 @@ from tqdm import tqdm
 # Inhibit SIGHUP
 # signal.siginterrupt(signal.SIGHUP, False)
 
-GECCO_DEBUG = False
+GECCO_DEBUG = True
 
 
 #@profile
@@ -241,9 +241,15 @@ def main(config_file):
                         test_results[de_type].population_test.append(cur_evaluation)
                     
                     if GECCO_DEBUG:
-                        X = np.arange(-1, 1, 0.01)
-                        Y = np.arange(-1, 1, 0.01)
+                        X = np.arange(-1, 1, 0.1)
+                        Y = np.arange(-1, 1, 0.1)
+                        X, Y = np.meshgrid(X, Y)
+                        X = np.array(X.flat)
+                        Y = np.array(Y.flat)
                         B = np.ones(len(X))
+                        # print(X.shape)
+                        # print(Y.shape)
+                        # print(B.shape)
                         fun_data = np.array(list(zip(X.tolist(), Y.tolist(), B.tolist())))
 
                         Z = sess.run(cur_nn.y, feed_dict=dict(

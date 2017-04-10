@@ -20,13 +20,15 @@ def plot_3d_function(X, Y, Z):
 
     # Add a color bar which maps values to colors.
     fig.colorbar(surf, shrink=0.5, aspect=5)
+    
+    # ax.scatter(X, Y, Z)
 
     plt.show()
 
 def gecco_first_domain():
     # Make data.
-    X = np.arange(-1, 1, 0.01)
-    Y = np.arange(-1, 1, 0.01)
+    X = np.arange(-1, 1, 0.1)
+    Y = np.arange(-1, 1, 0.1)
     X, Y = np.meshgrid(X, Y)
     Z = (np.sin(5.*X*(3*Y+1))+1.) / 2.
     return X, Y, Z

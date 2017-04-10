@@ -1,14 +1,14 @@
 [
     {
         "name": "first_domain",
-        "dataset_file": "../datasets/first_domain_12x50_1s.gz",
-        "TOT_GEN": 10000,
+        "dataset_file": "../datasets/first_domain_grid_4x200_1s.gz",
+        "TOT_GEN": 2000,
         "GEN_STEP": 100,
         "GEN_SAMPLES": 1,
         "TYPE": "float",
         "F": 0.5,
         "CR": 0.9,
-        "NP": 24,
+        "NP": 32,
         "training": true,
         "reset_every": {
             "epsilon": 0.02,
@@ -25,10 +25,10 @@
             "min": -1.0,
             "max": 1.0
         },
-        "AdaBoost": {
+        /*"AdaBoost": {
             "alpha": 1.0,
             "C": 1.0
-        },
+        },*/
         "levels": [
             {
                 "shape": [[3,50]],

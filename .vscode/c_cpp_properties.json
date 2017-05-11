@@ -6,9 +6,13 @@
                 "/usr/include",
                 "$(python -c \"import tensorflow as tf; tf.sysconfig.get_include();\")"
             ],
-            "browse" : {
-                "limitSymbolsToIncludedHeaders" : true,
-                "databaseFilename" : ""
+            "browse": {
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": "",
+                "path": [
+                    "/usr/include",
+                    "$(python -c \"import tensorflow as tf; tf.sysconfig.get_include();\")"
+                ]
             }
         },
         {
@@ -17,17 +21,26 @@
                 "/usr/include",
                 "$(python -c \"import tensorflow as tf; tf.sysconfig.get_include();\")"
             ],
-            "browse" : {
-                "limitSymbolsToIncludedHeaders" : true,
-                "databaseFilename" : ""
+            "browse": {
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": "",
+                "path": [
+                    "/usr/include",
+                    "$(python -c \"import tensorflow as tf; tf.sysconfig.get_include();\")"
+                ]
             }
         },
         {
             "name": "Win32",
-            "includePath": ["c:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/include"],
-            "browse" : {
-                "limitSymbolsToIncludedHeaders" : true,
-                "databaseFilename" : ""
+            "includePath": [
+                "c:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/include"
+            ],
+            "browse": {
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": "",
+                "path": [
+                    "c:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/include"
+                ]
             }
         }
     ]

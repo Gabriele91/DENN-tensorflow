@@ -1,0 +1,64 @@
+{
+        "name": "Article_MNIST_RANDOM_4",
+        "dataset_file": "../datasets/ARTICLE_MNIST_RANDOM_4_13x4000_1s.gz",
+        "TOT_GEN": 12000,
+        "GEN_STEP": 1000,
+        "GEN_SAMPLES": 1,
+        "TYPE": "float",
+        "F": 1.9,
+        "CR": 0.9,
+        "NP": 96,
+        "training": true,
+        "de_types": [
+            "rand/1/bin"
+        ],
+        "reset_every": {
+            "counter": 2,
+            "epsilon": 0.02
+        },
+        "reinsert_best": true,
+        "clamp": {
+            "min": -30,
+            "max": 30
+        },
+        "AdaBoost": {
+            "alpha": 1.0,
+            "C": 1.0
+        },
+        "JDE": 0.1,
+        "smoothing": [
+            [ 28, 28, 3]
+        ],
+        "smoothing_n_pass": 4,
+        "levels": [
+            {
+                "shape": [[784,10], [10]],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits" 
+                },
+                "init": [
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -15.0, 
+                                "maxval": 15.0
+                            }
+                        }
+                    },
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -15.0, 
+                                "maxval": 15.0
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    }

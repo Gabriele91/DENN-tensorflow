@@ -25,7 +25,7 @@ from tqdm import tqdm
 # Inhibit SIGHUP
 # signal.siginterrupt(signal.SIGHUP, False)
 
-GECCO_DEBUG = True
+GECCO_DEBUG = False
 
 
 #@profile

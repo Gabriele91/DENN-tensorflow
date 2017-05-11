@@ -1,6 +1,6 @@
 {
         "name": "Article_MNIST_RANDOM_4",
-        "dataset_file": "../datasets/ARTICLE_MNIST_RANDOM_4_13x4000_1s.gz",
+        "dataset_file": "../datasets/ARTICLE_MNIST_RANDOM_4_12x4000_1s.gz",
         "TOT_GEN": 12000,
         "GEN_STEP": 1000,
         "GEN_SAMPLES": 1,

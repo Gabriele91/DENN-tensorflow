@@ -1,5 +1,5 @@
 {
-        "name": "Article_MNIST_4",
+        "name": "Article_MNIST_4_NO_ADA",
         "dataset_file": "../datasets/ARTICLE_MNIST_4_12x4000_1s.gz",
         "TOT_GEN": 12000,
         "GEN_STEP": 1000,
@@ -21,10 +21,10 @@
             "min": -5,
             "max": 5
         },
-        "AdaBoost": {
+        /*"AdaBoost": {
             "alpha": 1.0,
             "C": 1.0
-        },
+        },*/
         "JDE": 0.1,
         "smoothing": [
             [ 28, 28, 3]

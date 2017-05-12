@@ -5,7 +5,7 @@
         "GEN_STEP": 1000,
         "GEN_SAMPLES": 1,
         "TYPE": "float",
-        "F": 0.5,
+        "F": 1.0,
         "CR": 0.9,
         "NP": 96,
         "training": true,
@@ -43,8 +43,8 @@
                             "name": "random_uniform",
                             "kwargs": {
                                 "seed": 1,
-                                "minval": -1.0, 
-                                "maxval": 1.0
+                                "minval": -2.0, 
+                                "maxval": 2.0
                             }
                         }
                     },
@@ -53,8 +53,8 @@
                             "name": "random_uniform",
                             "kwargs": {
                                 "seed": 1,
-                                "minval": -1.0, 
-                                "maxval": 1.0
+                                "minval": -2.0, 
+                                "maxval": 2.0
                             }
                         }
                     }

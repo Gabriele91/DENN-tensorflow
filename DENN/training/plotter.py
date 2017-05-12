@@ -334,7 +334,7 @@ def plot_results(config_file, save=False, pdf=False, latex_backend=False, show=T
             ]
         ),
         bbox_to_anchor=config_file.get("legend_ancor", (1.0, 1.0)),
-        fontsize=18
+        fontsize=12
     )
 
     plt.tick_params(axis='both', which='major', labelsize=12)

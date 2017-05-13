@@ -1,7 +1,7 @@
 {
-        "name": "Article_MNIST_3",
+        "name": "Article_MNIST_3_NO_ADA",
         "dataset_file": "../datasets/ARTICLE_MNIST_3_12x4000_1s.gz",
-        "TOT_GEN": 12000,
+        "TOT_GEN": 32000,
         "GEN_STEP": 1000,
         "GEN_SAMPLES": 1,
         "TYPE": "float",
@@ -21,10 +21,10 @@
             "min": -5,
             "max": 5
         },
-        "AdaBoost": {
+        /*"AdaBoost": {
             "alpha": 1.0,
             "C": 1.0
-        },
+        },*/
         "JDE": 0.1,
         "smoothing": [
             [ 28, 28, 3]

@@ -9,7 +9,6 @@ namespace tensorflow
 
         DEReset()
         : m_enable(false)
-        , m_factor(100.0)
         , m_counter(0)
         , m_current_counter(0)
         , m_value((value_t)0)
@@ -20,14 +19,12 @@ namespace tensorflow
         DEReset
         (
             bool    enable,
-            value_t factor,
             int     counter,
             const std::string& reset_f,
             const std::string& reset_cr,
             const NameList& rand_functions
         )
         : m_enable(enable)
-        , m_factor(factor)
         , m_counter(counter)
         , m_reset_F({reset_f})
         , m_reset_CR({reset_cr})
@@ -44,7 +41,7 @@ namespace tensorflow
 
         bool CanExecute(value_t value)
         {
-            if(std::abs(m_value - value) < m_factor)
+            if(value <= m_value)
             {
                 //dec counter
                 ++m_current_counter;

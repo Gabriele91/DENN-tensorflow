@@ -568,7 +568,7 @@ class Operation(object):
             if self.job.reset_every != False:
                 ##
                 # Reset test
-                if abs(evaluations[best_idx] - reset_last_accuracy) < self.job.reset_every['epsilon']:
+                if evaluations[best_idx] <= reset_last_accuracy:
                     reset_counter += 1
                 else:
                     reset_counter = 0
@@ -841,7 +841,7 @@ class Operation(object):
             if self.job.reset_every != False:
                 ##
                 # Reset test
-                if abs(evaluations[best_idx] - reset_last_accuracy) < self.job.reset_every['epsilon']:
+                if evaluations[best_idx] <= reset_last_accuracy:
                     reset_counter += 1
                 else:
                     reset_counter = 0

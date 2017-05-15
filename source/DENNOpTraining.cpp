@@ -25,7 +25,6 @@ REGISTER_OP("DennTraining")
 .Attr("smoothing_n_pass: int = 0")
 //reset
 .Attr("reset_type: {'none','execute'} = 'none'")
-.Attr("reset_fector: float = 100.0")
 .Attr("reset_counter: int  = 0")
 .Attr("reset_f: string")
 .Attr("reset_cr: string")

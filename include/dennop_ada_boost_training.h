@@ -34,13 +34,11 @@ namespace tensorflow
             OP_REQUIRES_OK(context, context->GetAttr("dataset", &m_dataset_path));
             // Get reset
             std::string reset_type{"none"};
-            float       reset_factor{100.0};
             int         reset_counter{0};
             std::string reset_f;
             std::string reset_cr;
             NameList    reset_rand_pop;
             OP_REQUIRES_OK(context, context->GetAttr("reset_type", &reset_type));
-            OP_REQUIRES_OK(context, context->GetAttr("reset_fector", &reset_factor));
             OP_REQUIRES_OK(context, context->GetAttr("reset_counter", &reset_counter));
             OP_REQUIRES_OK(context, context->GetAttr("reset_rand_pop", &reset_rand_pop));
             OP_REQUIRES_OK(context, context->GetAttr("reset_f", &reset_f));
@@ -49,7 +47,6 @@ namespace tensorflow
             new (&m_reset) DEReset<value_t>
             (
                   reset_type != "none"
-                , (value_t)reset_factor
                 , reset_counter
                 , reset_f
                 , reset_cr

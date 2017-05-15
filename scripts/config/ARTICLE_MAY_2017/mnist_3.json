@@ -1,11 +1,11 @@
 {
         "name": "Article_MNIST_3_NO_ADA",
         "dataset_file": "../datasets/ARTICLE_MNIST_3_12x4000_1s.gz",
-        "TOT_GEN": 32000,
+        "TOT_GEN": 20000,
         "GEN_STEP": 1000,
         "GEN_SAMPLES": 1,
         "TYPE": "float",
-        "F": 1.9,
+        "F": 1.0,
         "CR": 0.9,
         "NP": 96,
         "training": true,
@@ -13,13 +13,12 @@
             "rand/1/bin"
         ],
         "reset_every": {
-            "counter": 2,
-            "epsilon": 0.02
+            "counter": 2
         },
         "reinsert_best": true,
         "clamp": {
-            "min": -30,
-            "max": 30
+            "min": -5,
+            "max": 5
         },
         /*"AdaBoost": {
             "alpha": 1.0,
@@ -43,8 +42,8 @@
                             "name": "random_uniform",
                             "kwargs": {
                                 "seed": 1,
-                                "minval": -15.0, 
-                                "maxval": 15.0
+                                "minval": -2.0, 
+                                "maxval": 2.0
                             }
                         }
                     },
@@ -53,8 +52,8 @@
                             "name": "random_uniform",
                             "kwargs": {
                                 "seed": 1,
-                                "minval": -15.0, 
-                                "maxval": 15.0
+                                "minval": -2.0, 
+                                "maxval": 2.0
                             }
                         }
                     }

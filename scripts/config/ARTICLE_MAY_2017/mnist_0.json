@@ -1,7 +1,7 @@
 {
         "name": "Article_MNIST_0",
         "dataset_file": "../datasets/ARTICLE_MNIST_0_12x4000_1s.gz",
-        "TOT_GEN": 12000,
+        "TOT_GEN": 20000,
         "GEN_STEP": 1000,
         "GEN_SAMPLES": 1,
         "TYPE": "float",
@@ -13,8 +13,7 @@
             "rand/1/bin"
         ],
         "reset_every": {
-            "counter": 2,
-            "epsilon": 0.02
+            "counter": 2
         },
         "reinsert_best": true,
         "clamp": {

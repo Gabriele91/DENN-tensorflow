@@ -8,6 +8,7 @@ import psutil
 import telepot
 import signal
 import re
+import shlex
 
 signal.siginterrupt(signal.SIGHUP, False)
 
@@ -218,7 +219,7 @@ workon TensorFlow && """
                     msg,
                     "cd ./scripts/logs && {} {}".format(
                         command,
-                        filename
+                        shlex.quote(filename)
                     ),
                     "+ FILE {} with {}".format(filename, command)
                 )
@@ -242,8 +243,9 @@ workon TensorFlow && """
                 _, filename = msg.text.split(" ")
                 op_ret, res = self.__bash_call(
                     msg,
-                    "cd ./scripts/benchmark_results && mkdir -p bot_zip && rm -f -R bot_zip/{0}.zip && zip -r bot_zip/{0}.zip {0}".format(
-                        filename
+                    "cd ./scripts/benchmark_results && mkdir -p bot_zip && rm -f -R {0}.zip && zip -r {0}.zip {1}".format(
+                        shlex.quote("bot_zip/"+filename),
+                        shlex.quote(filename)
                     ),
                     "+ Result zipped!"
                 )
@@ -264,7 +266,7 @@ workon TensorFlow && """
                 op_ret, res = self.__bash_call(
                     msg,
                     self.__tfenv + "cd ./scripts && ./nohup_launch.sh benchmark.py config/{}".format(
-                        filename
+                        shlex.quote(filename)
                     ),
                     "+ Task launched!"
                 )

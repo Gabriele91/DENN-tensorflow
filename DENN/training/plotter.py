@@ -319,7 +319,7 @@ def plot_results(config_file, save=False, pdf=False, latex_backend=False, show=T
             markersize=obj.get('markersize', None),
             color=obj.get('color', COLORS[idx % len(COLORS)]),
             linewidth=obj.get('linewidth', 1),
-            #  ls=LINESTYLE[idx],
+            linestyle=obj.get('linestyle', 'solid'),
             alpha=obj.get('alpha', ALPHA[idx % len(ALPHA)]),
             label=obj.get('label'),
             markevery=config_file.get(

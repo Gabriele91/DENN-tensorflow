@@ -136,8 +136,6 @@ class Operation(object):
                 smoothing_n_pass=self.job.smoothing_n_pass,
                 # TRAIN
                 reset_type='execute' if exists_reset_every else 'none',
-                reset_fector=self.job.reset_every[
-                    'epsilon'] if exists_reset_every else 100.0,
                 reset_counter=self.job.reset_every[
                     'counter'] if exists_reset_every else 1,
                 reset_f=self.net.F_init.name,
@@ -226,8 +224,6 @@ class Operation(object):
                 smoothing=self.job.smoothing,
                 smoothing_n_pass=self.job.smoothing_n_pass,
                 reset_type='execute' if exists_reset_every else 'none',
-                reset_fector=self.job.reset_every[
-                    'epsilon'] if exists_reset_every else 100.0,
                 reset_counter=self.job.reset_every[
                     'counter'] if exists_reset_every else 1,
                 reset_rand_pop=[tfop.name for tfop in self.net.rand_pop],

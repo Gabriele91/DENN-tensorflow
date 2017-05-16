@@ -21,7 +21,7 @@
             "max": 5
         },
         "AdaBoost": {
-            "alpha": 1.0,
+            "alpha": 0.5,
             "C": 1.0
         },
         "JDE": 0.1,

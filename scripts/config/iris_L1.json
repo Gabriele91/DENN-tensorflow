@@ -7,10 +7,10 @@
         "GEN_SAMPLES": 1,
         "TYPE": "double",
         "F": 0.6,
-        "NP": 20,
+        "CR": 0.9,
+        "NP": 42,
         "reset_every": {
-            "epsilon": 0.02,
-            "counter": 2
+            "counter": 5
         },
         "reinsert_best": true,
         "de_types": [
@@ -19,7 +19,6 @@
         ],
         "NUM_INTRA_THREADS": 2,
         "NUM_INTER_THREADS": 2,
-        "CR": 0.8,
         "clamp": {
             "min": -10.0,
             "max": 10.0

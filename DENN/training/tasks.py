@@ -619,12 +619,22 @@ class DETask(object):
                                                     raise Exception(
                                                         "Invalid objecti function '{}'".format(level.fx))
                                             else:
+                                                # objective_function = tf.reduce_mean(
+                                                #     cur_level.fx(
+                                                #         y, label_placeholder
+                                                #     ),
+                                                #     name="objective_function"
+                                                # )
+
+                                                ##
+                                                # TEST ACCURACY AS OBJECT FUNCTION
+                                                # INSTEAD OF CROSS ENTROPY
                                                 objective_function = tf.reduce_mean(
-                                                    cur_level.fx(
-                                                        y, label_placeholder
-                                                    ),
-                                                    name="objective_function"
-                                                )
+                                                    tf.cast(tf.equal(
+                                                        tf.argmax(y, 1),
+                                                        tf.argmax(
+                                                            label_placeholder, 1)
+                                                    ), cur_type), name="objective_function")
 
                                 ##
                                 # NN TEST
@@ -640,7 +650,8 @@ class DETask(object):
                                         if cur_level.fx == "abs_diff":
                                             with tf.name_scope('Correct_predictions'):
                                                 correct_prediction = tf.less_equal(
-                                                    tf.abs(y_test - label_placeholder),
+                                                    tf.abs(
+                                                        y_test - label_placeholder),
                                                     tf.constant(0.5)
                                                 )
                                             with tf.name_scope('Accuracy'):

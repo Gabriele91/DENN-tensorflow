@@ -1,8 +1,8 @@
 {
-        "name": "Article_MNIST_5_NO_ADA",
+        "name": "Article_MNIST_5_NO_ADA_NO_SMOOTH",
         "dataset_file": "../datasets/ARTICLE_MNIST_5_12x4000_1s.gz",
-        "TOT_GEN": 120000,
-        "GEN_STEP": 1000,
+        "TOT_GEN": 32000,
+        "GEN_STEP": 500,
         "GEN_SAMPLES": 1,
         "TYPE": "float",
         "F": 1.0,
@@ -13,7 +13,7 @@
             "rand/1/bin"
         ],
         "reset_every": {
-            "counter": 2
+            "counter": 5
         },
         "reinsert_best": true,
         "clamp": {
@@ -25,10 +25,10 @@
             "C": 1.0
         },*/
         "JDE": 0.1,
-        "smoothing": [
+        /*"smoothing": [
             [ 28, 28, 3]
         ],
-        "smoothing_n_pass": 4,
+        "smoothing_n_pass": 4,*/
         "levels": [
             {
                 "shape": [[784,10], [10]],

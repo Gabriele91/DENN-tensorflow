@@ -59,6 +59,12 @@ class TFFx(object):
         self.name = obj.get('name').split('.')
         self.args = obj.get('args', [])
         self.kwargs = obj.get('kwargs', {})
+        self.__cross_entropies = [
+            "sigmoid_cross_entropy_with_logits",
+            "softmax_cross_entropy_with_logits",
+            "sparse_softmax_cross_entropy_with_logits",
+            "weighted_cross_entropy_with_logits"
+        ]
 
     def __call__(self, *args, **kwargs):
         """Call the real TensorFlow function.
@@ -71,7 +77,7 @@ class TFFx(object):
         for string in self.name:
             tmp = getattr(tmp, string)
 
-        if self.name[-1] == "softmax_cross_entropy_with_logits":
+        if self.name[-1] in self.__cross_entropies:
             cur_kwargs = self.kwargs.copy()
             cur_kwargs.update(kwargs)
             cur_kwargs['logits'] = args[0]
@@ -592,7 +598,7 @@ class DETask(object):
                                                     )
                                                 else:
                                                     raise Exception(
-                                                        "Invalid objecti function '{}'".format(level.fx))
+                                                        "Invalid objective function '{}'".format(level.fx))
                                             else:
                                                 objective_function = tf.reduce_mean(
                                                     cur_level.fx(
@@ -619,22 +625,22 @@ class DETask(object):
                                                     raise Exception(
                                                         "Invalid objecti function '{}'".format(level.fx))
                                             else:
-                                                # objective_function = tf.reduce_mean(
-                                                #     cur_level.fx(
-                                                #         y, label_placeholder
-                                                #     ),
-                                                #     name="objective_function"
-                                                # )
+                                                objective_function = tf.reduce_mean(
+                                                    cur_level.fx(
+                                                        y, label_placeholder
+                                                    ),
+                                                    name="objective_function"
+                                                )
 
                                                 ##
                                                 # TEST ACCURACY AS OBJECT FUNCTION
                                                 # INSTEAD OF CROSS ENTROPY
-                                                objective_function = tf.reduce_mean(
-                                                    tf.cast(tf.equal(
-                                                        tf.argmax(y, 1),
-                                                        tf.argmax(
-                                                            label_placeholder, 1)
-                                                    ), cur_type), name="objective_function")
+                                                # objective_function = tf.reduce_mean(
+                                                #     tf.cast(tf.equal(
+                                                #         tf.argmax(y, 1),
+                                                #         tf.argmax(
+                                                #             label_placeholder, 1)
+                                                #     ), cur_type), name="objective_function")
 
                                 ##
                                 # NN TEST

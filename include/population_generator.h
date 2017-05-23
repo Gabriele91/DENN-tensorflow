@@ -73,6 +73,16 @@ namespace tensorflow
             return m_randoms_i;
         }
 
+        int operator [](size_t i) const
+        {
+            return m_randoms_i[i];
+        }
+
+        int GetBest() const
+        {
+            return m_Best;
+        }
+
     protected:
 
         int m_Best { -1 };
@@ -87,6 +97,7 @@ namespace tensorflow
         const DeInfo&                              info,
         const DeFactors<value_t>&                  factors,
         const value_t                              F,
+        const int                                  cur_x,
         const TensorList&                          cur_population,
         typename TTypes<value_t>::Matrix&          new_generation, 
         int                                        elm,
@@ -97,17 +108,33 @@ namespace tensorflow
         {
             case DIFF_ONE:
             {
+                //donor vectors
                 const value_t a = cur_population[randoms_i[0]].flat<value_t>()(elm);
                 const value_t b = cur_population[randoms_i[1]].flat<value_t>()(elm);
+                //genome
                 const value_t c = cur_population[randoms_i[2]].flat<value_t>()(elm);
-                new_generation(elm) = factors.f_clamp( (a-b) * F + c );
+                //function
+                if(info.m_pert_vector==PV_CURR_TO_BEST) 
+                {
+                    //target vector
+                    const value_t x = cur_population[cur_x].flat<value_t>()(elm);
+                    //CURR_TO_BEST function
+					new_generation(elm) = factors.f_clamp( x+F*(a-b)+F*(c-x));
+                }
+                else
+                {
+                    new_generation(elm) = factors.f_clamp( (a-b) * F + c );
+                }
             }
             break;
             case DIFF_TWO:
             {
+                //donor vectors
                 const value_t first_diff  = cur_population[randoms_i[0]].flat<value_t>()(elm) - cur_population[randoms_i[1]].flat<value_t>()(elm);
                 const value_t second_diff = cur_population[randoms_i[2]].flat<value_t>()(elm) - cur_population[randoms_i[3]].flat<value_t>()(elm);
+                //genome
                 const value_t c = cur_population[randoms_i[4]].flat<value_t>()(elm);
+                //end
                 new_generation(elm) = factors.f_clamp( (first_diff + second_diff) * F + c );
             }
             break;
@@ -146,7 +173,7 @@ namespace tensorflow
                     //cases
                     if (do_random && (cross_event || random_index == elm))
                     {
-                        DeMethod< value_t >(info, factors, F, cur_population, new_generation, elm, randoms_i);
+                        DeMethod< value_t >(info, factors, F, cur_x, cur_population, new_generation, elm, randoms_i);
                     }
                     else
                     {
@@ -161,7 +188,7 @@ namespace tensorflow
                     //cases
                     if (cross_event || random_index == elm)
                     {
-                        DeMethod< value_t >(info, factors, F, cur_population, new_generation, elm, randoms_i);
+                        DeMethod< value_t >(info, factors, F, cur_x, cur_population, new_generation, elm, randoms_i);
                     }
                     else
                     {
@@ -333,7 +360,7 @@ namespace tensorflow
             info, NP
         );
         //best?
-        if(info.m_pert_vector == PV_BEST)
+        if(info.m_pert_vector == PV_BEST || info.m_pert_vector == PV_CURR_TO_BEST)
         {        
             //First best
             auto    pop_eval_ref = cur_population_eval.flat<value_t>();

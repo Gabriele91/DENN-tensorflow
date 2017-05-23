@@ -18,7 +18,8 @@ REGISTER_OP("DennAdaTraining")
       "'best/1/bin', "
       "'best/1/exp', "
       "'best/2/bin', "
-      "'best/2/exp'  "
+      "'best/2/exp', "
+      "'current-to-best/1/bin' "
       "} = 'rand/1/bin'")
 //smoothing
 .Attr("smoothing: list(shape)")

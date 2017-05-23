@@ -22,7 +22,8 @@ namespace tensorflow
     {
         PV_RANDOM,
         PV_BEST,
-        PV_RAND_TO_BEST
+        PV_RAND_TO_BEST,
+        PV_CURR_TO_BEST
     };
 
     struct DeInfo
@@ -40,13 +41,14 @@ namespace tensorflow
             //get values
             while (std::getline(stream_de_type, type_elm, '/'))
             {
-                    if (type_elm == "rand")            m_pert_vector = PV_RANDOM;
-                else if (type_elm == "best")           m_pert_vector = PV_BEST;
-                else if (type_elm == "rand-to-best")   m_pert_vector = PV_RAND_TO_BEST;
-                else if (type_elm == "1")              m_diff_vector = DIFF_ONE;
-                else if (type_elm == "2")              m_diff_vector = DIFF_TWO;
-                else if (type_elm == "bin")            m_cr_type = CR_BIN;
-                else if (type_elm == "exp")            m_cr_type = CR_EXP;
+                     if (type_elm == "rand")             m_pert_vector = PV_RANDOM;
+                else if (type_elm == "best")            m_pert_vector = PV_BEST;
+                else if (type_elm == "rand-to-best")    m_pert_vector = PV_RAND_TO_BEST;
+                else if (type_elm == "current-to-best") m_pert_vector = PV_CURR_TO_BEST;
+                else if (type_elm == "1")               m_diff_vector = DIFF_ONE;
+                else if (type_elm == "2")               m_diff_vector = DIFF_TWO;
+                else if (type_elm == "bin")             m_cr_type = CR_BIN;
+                else if (type_elm == "exp")             m_cr_type = CR_EXP;
             }
         }
     };

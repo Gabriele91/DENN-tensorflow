@@ -67,7 +67,7 @@ ifeq ($(shell uname -s),Darwin)
 	#disable dynamic lookup
 	LIKNER_FLAGS += -L$(TOP)/tf_static/macOS/ -lprotobuf.pic
 	LIKNER_FLAGS += -L$(TOP)/tf_static/macOS/ -lprotobuf_lite.pic
-	C_FLAGS += -undefined dynamic_lookup -Wno-deprecated-declarations
+	C_FLAGS += -undefined dynamic_lookup -Wno-deprecated-declarations -Wno-unused-result
 endif
 
 # Old ABI

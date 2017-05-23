@@ -1,5 +1,5 @@
 {
-    "name": "Article_magic_1H",
+    "name": "Article_magic_1H_counter8",
     "dataset_file": "../datasets/magic_t75-v15-s10_70x1000_5s.gz",
     "TOT_GEN": 32000,
     "GEN_STEP": 400,
@@ -21,7 +21,7 @@
         "max": 28
     },
     "reset_every": {
-        "counter": 3
+        "counter": 8
     },
     "reinsert_best": true,
     "levels": [

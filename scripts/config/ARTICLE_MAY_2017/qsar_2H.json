@@ -1,0 +1,116 @@
+{
+    "name": "Article_qsar_2H",
+    "dataset_file": "../datasets/qsar_t75-v15-s10_20x160_5s.gz",
+    "TOT_GEN": 32000,
+    "GEN_STEP": 400,
+    // "GEN_SAMPLES": 8, 
+    "TYPE": "double",
+    "F": 0.5,
+    "CR": 0.9,
+    "NP": 82,
+    "training": true,
+    "AdaBoost": {
+        "alpha": 0.8,
+        "C": 1.0
+    },
+    "de_types": [
+        "rand/1/bin"
+    ],
+    "clamp": {
+        "min": -28,
+        "max": 28
+    },
+    "reset_every": {
+        "counter": 3
+    },
+    "reinsert_best": true,
+    "levels": [
+        {
+            "shape": [[41,82], [82]],
+            "preferred_device": "CPU",
+            "fx": {
+                "name": "nn.sigmoid" 
+            },
+            "init": [
+                {
+                    "fx": {
+                        "name": "random_uniform",
+                        "kwargs": {
+                            "seed": 1,
+                            "minval": -10.0, 
+                            "maxval": 10.0
+                        }
+                    }
+                },
+                {
+                    "fx": {
+                        "name": "random_uniform",
+                        "kwargs": {
+                            "seed": 1,
+                            "minval": -10.0, 
+                            "maxval": 10.0
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "shape": [[82,82], [82]],
+            "preferred_device": "CPU",
+            "fx": {
+                "name": "nn.sigmoid" 
+            },
+            "init": [
+                {
+                    "fx": {
+                        "name": "random_uniform",
+                        "kwargs": {
+                            "seed": 1,
+                            "minval": -10.0, 
+                            "maxval": 10.0
+                        }
+                    }
+                },
+                {
+                    "fx": {
+                        "name": "random_uniform",
+                        "kwargs": {
+                            "seed": 1,
+                            "minval": -10.0, 
+                            "maxval": 10.0
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "shape": [[82,2], [2]],
+            "preferred_device": "CPU",
+            "fx": {
+                "name": "nn.softmax_cross_entropy_with_logits" 
+            },
+            "init": [
+                {
+                    "fx": {
+                        "name": "random_uniform",
+                        "kwargs": {
+                            "seed": 1,
+                            "minval": -10.0, 
+                            "maxval": 10.0
+                        }
+                    }
+                },
+                {
+                    "fx": {
+                        "name": "random_uniform",
+                        "kwargs": {
+                            "seed": 1,
+                            "minval": -10.0, 
+                            "maxval": 10.0
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}

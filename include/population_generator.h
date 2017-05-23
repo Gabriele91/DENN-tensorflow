@@ -119,7 +119,7 @@ namespace tensorflow
                     //target vector
                     const value_t x = cur_population[cur_x].flat<value_t>()(elm);
                     //CURR_TO_BEST function
-					new_generation(elm) = factors.f_clamp( x+F*(a-b)+F*(c-x));
+                    new_generation(elm) = factors.f_clamp( x+F*(a-b)+F*(c-x));
                 }
                 else
                 {

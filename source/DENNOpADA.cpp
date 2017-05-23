@@ -30,12 +30,13 @@ REGISTER_OP("DennAda")
       "'rand/1/bin', "
       "'rand/1/exp', "
       "'rand/2/bin', "
-      "'rand/2/exp',  "
+      "'rand/2/exp', "
       "'best/1/bin', "
       "'best/1/exp', "
       "'best/2/bin', "
       "'best/2/exp', "
-      "'current-to-best/1/bin' "
+      "'current-to-best/1/bin', "
+      "'current-to-best/1/exp'  "
       "} = 'rand/1/bin'")
 
 //Input

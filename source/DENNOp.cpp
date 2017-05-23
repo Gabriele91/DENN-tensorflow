@@ -25,7 +25,8 @@ REGISTER_OP("DENN")
       "'best/1/exp', "
       "'best/2/bin', "
       "'best/2/exp', "
-      "'current-to-best/1/bin' "
+      "'current-to-best/1/bin', "
+      "'current-to-best/1/exp'  "
       "} = 'rand/1/bin'")
 //input 
 .Input("info: int32") //[ NUM_GEN, CALC_FIRST_EVAL ]

@@ -1,5 +1,5 @@
 {
-    "name": "Article_qsar_1H_counter8",
+    "name": "Article_qsar_1H_counter8_NO_ADA",
     "dataset_file": "../datasets/qsar_t75-v15-s10_20x160_5s.gz",
     "TOT_GEN": 32000,
     "GEN_STEP": 400,
@@ -9,10 +9,10 @@
     "CR": 0.9,
     "NP": 82,
     "training": true,
-    "AdaBoost": {
+    /*"AdaBoost": {
         "alpha": 0.8,
         "C": 1.0
-    },
+    },*/
     "de_types": [
         "rand/1/bin"
     ],

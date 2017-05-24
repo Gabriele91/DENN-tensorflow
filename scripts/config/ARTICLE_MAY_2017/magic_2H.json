@@ -1,5 +1,5 @@
 {
-    "name": "Article_magic_2H_counter8_NO_ADA",
+    "name": "Article_magic_2H_counter8_ADA_1",
     "dataset_file": "../datasets/magic_t75-v15-s10_70x1000_5s.gz",
     "TOT_GEN": 32000,
     "GEN_STEP": 400,
@@ -9,10 +9,10 @@
     "CR": 0.9,
     "NP": 20,
     "training": true,
-    /*"AdaBoost": {
-        "alpha": 0.8,
+    "AdaBoost": {
+        "alpha": 1.0,
         "C": 1.0
-    },*/
+    },
     "de_types": [
         "rand/1/bin"
     ],

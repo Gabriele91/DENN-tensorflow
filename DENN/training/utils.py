@@ -210,6 +210,7 @@ class Header(object):
         self.__fmt = fmt
         self.__data = data
         self.__p_data = labels
+        self.__out_size = 42
 
         if not data:
             self.__p_data = labels
@@ -258,29 +259,34 @@ class Header(object):
     def __repr__(self):
         byte_per_line = 8
 
-        string = "+++++ HEADER +++++\n"
-        string += "+ format string: '{}'\n".format(self.__fmt)
-        string += "+----------\n"
+        string = "+----------- HEADER ".ljust(self.__out_size, "-") + '+\n'
+        format_ = "| format string: '{}'".format(self.__fmt)
+        string += format_.ljust(self.__out_size, " ") + '|\n'
+        string += "+".ljust(self.__out_size, "-") + '+\n'
 
         for label, value in self.__p_data:
-            string += "+ {}: {}\n".format(label, value)
+            cur_data = "| {}: {}".format(label, value)
+            string += cur_data.ljust(self.__out_size, " ") + '|\n'
 
-        string += "+----------\n"
+        string += "+".ljust(self.__out_size, "-") + '+\n'
 
         data = binascii.b2a_hex(self.__data)
         counter = 0
+        cur_data = ''
+
         for idx in range(0, len(data), 4):
             if counter == 0:
-                string += "+ "
+                cur_data += "| "
             elif counter == byte_per_line:
                 counter = 0
-                string += "\n+ "
+                string += cur_data.ljust(self.__out_size, " ") + '|\n'
+                cur_data = "| "
 
-            string += "{} ".format("".join([chr(data[idx + cur_i])
+            cur_data += "{} ".format("".join([chr(data[idx + cur_i])
                                             for cur_i in range(4)]))
             counter += 2
 
-        string += "\n+----------"
+        string += "+".ljust(self.__out_size, "-") + '+\n'
 
         return string
 

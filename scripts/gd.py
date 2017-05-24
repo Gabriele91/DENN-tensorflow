@@ -56,12 +56,43 @@ def main(input_args):
     else:
         dataset = DENN.training.Dataset(FLAGS.dataset)
         _, dataset_name = path.split(FLAGS.dataset)
+    
+    if FLAGS.type == 'float':
+        data_type = tf.float32
+    elif FLAGS.type == 'double':
+        data_type = tf.float64
+    else:
+        raise Exception("Data type {} is not valid!".format(FLAGS.type))
 
     # Create the model
-    x = tf.placeholder(tf.float32, [None, FLAGS.features])
-    W = tf.Variable(tf.zeros([FLAGS.features, FLAGS.classes]))
-    b = tf.Variable(tf.zeros([FLAGS.classes]))
-    y = tf.matmul(x, W) + b
+    x = tf.placeholder(data_type, [None, FLAGS.features])
+    _Ws = []
+    _bs = []
+    y = None
+
+    if FLAGS.hidden > 0:
+        _Ws.append(tf.Variable(tf.zeros([FLAGS.features, FLAGS.features*2], dtype=data_type), dtype=data_type, name="input_W"))
+        _bs.append(tf.Variable(tf.zeros([FLAGS.features*2], dtype=data_type), dtype=data_type, name="input_b"))
+
+        for lvl in range(FLAGS.hidden - 1):
+            _Ws.append(tf.Variable(tf.zeros([FLAGS.features*2, FLAGS.features*2], dtype=data_type), dtype=data_type, name="hidden_{}".format(lvl+1)))
+            _bs.append(tf.Variable(tf.zeros([FLAGS.features*2], dtype=data_type), dtype=data_type, name="hidden_{}".format(lvl)))
+
+        _Ws.append(tf.Variable(tf.zeros([FLAGS.features*2, FLAGS.classes], dtype=data_type), dtype=data_type, name="output_W"))
+        _bs.append(tf.Variable(tf.zeros([FLAGS.classes], dtype=data_type), dtype=data_type, name="output_b"))
+
+        print("Num layers: ", len(_Ws))
+        for lvl in range(len(_Ws)):
+            print("- ", _Ws[lvl])
+            print("- ", _bs[lvl])
+            if lvl == 0:
+                y = tf.matmul(x, _Ws[lvl]) + _bs[lvl]
+            else:
+                y = tf.nn.sigmoid(tf.matmul(y, _Ws[lvl]) + _bs[lvl])
+    else:
+        _Ws.append(tf.Variable(tf.zeros([FLAGS.features, FLAGS.classes], dtype=data_type), dtype=data_type))
+        _bs.append(tf.Variable(tf.zeros([FLAGS.classes], dtype=data_type), dtype=data_type))
+        y = tf.matmul(x, _Ws[0]) + _bs[0]
 
     # from_file = False
 
@@ -76,7 +107,7 @@ def main(input_args):
     #         new_b = b.assign(np.zeros(FLAGS.classes))
 
     # Define loss and optimizer
-    y_ = tf.placeholder(tf.float32, [None, FLAGS.classes])
+    y_ = tf.placeholder(data_type, [None, FLAGS.classes])
 
     # The raw formulation of cross-entropy,
     #
@@ -146,7 +177,7 @@ def main(input_args):
 
     ##
     # Get results
-    res = sess.run([W, b])
+    res = sess.run([_Ws, _bs])
     # tmp = 0.
     # for idx, mat in enumerate(res):
     #     for elm in mat.flat:
@@ -159,9 +190,12 @@ def main(input_args):
         stats.append(precision_recall_acc(elm_tf))
         print(elm_tf)
 
+    all_W = [elm.tolist() for elm in res[0]]
+    all_b = [elm.tolist() for elm in res[1]]
+
     res = {
-        "W": res[0].tolist(),
-        "b": res[1].tolist(),
+        "W": all_W[0] if len(all_W) == 1 else all_W,
+        "b": all_b[0] if len(all_b) == 1 else all_b,
         "accuracy": float(cur_accuracy),
         "confusionM": confusion_matrix.tolist(),
         "stats": stats
@@ -178,8 +212,12 @@ if __name__ == '__main__':
                         help='Batch size', default=100)
     parser.add_argument('--features', type=int,
                         help='Number of features', default=784)
+    parser.add_argument('--type', type=str,
+                        help='Data type', default='float')
     parser.add_argument('--classes', type=int,
                         help='Number of classes', default=10)
+    parser.add_argument('--hidden', type=int,
+                        help='Number of hidden layers (default size is double of the input and connected with a sigmoid)', default=0)
     parser.add_argument('--outfilename', type=str,
                         help='Output name', default="gd_results.json")
     parser.add_argument('--dataset', type=str,

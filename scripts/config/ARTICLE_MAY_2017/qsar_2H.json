@@ -1,5 +1,5 @@
 {
-    "name": "Article_qsar_2H_counter8_ADA_1",
+    "name": "Article_qsar_2H_NO_RESET_ELITE_ADA_1",
     "dataset_file": "../datasets/qsar_t75-v15-s10_20x160_5s.gz",
     "TOT_GEN": 32000,
     "GEN_STEP": 400,
@@ -20,10 +20,10 @@
         "min": -28,
         "max": 28
     },
-    "reset_every": {
+    /*"reset_every": {
         "counter": 8
     },
-    "reinsert_best": true,
+    "reinsert_best": true,*/
     "levels": [
         {
             "shape": [[41,82], [82]],

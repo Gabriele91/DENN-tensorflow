@@ -4,7 +4,8 @@
     // "@ARTICLE_MAY_2017/mnist_1.json;",
     //"@ARTICLE_MAY_2017/mnist_4.json;",  // NO ADA
     // "@ARTICLE_MAY_2017/mnist_2.json;",
-    "@ARTICLE_MAY_2017/mnist_5.json;"  // best & current
+    "@ARTICLE_MAY_2017/mnist_5.json;",
+    "@ARTICLE_MAY_2017/mnist_5_current2best.json;"
     /*,
     "@ARTICLE_MAY_2017/mnist_random_0.json;",
     "@ARTICLE_MAY_2017/mnist_random_1.json;",

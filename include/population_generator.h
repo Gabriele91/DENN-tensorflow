@@ -59,13 +59,15 @@ namespace tensorflow
                 random_indices::threeRandIndicesDiffFrom(m_NP, individual, m_randoms_i, last);
                 //last is the best
                 m_randoms_i[last] = m_Best;
+                //index shuffle but not the best index
+                std::random_shuffle(m_randoms_i.begin(), --m_randoms_i.end());
             }
             else 
             {
                 random_indices::threeRandIndicesDiffFrom(m_NP, individual, m_randoms_i, m_randoms_i.size());
+                //index shuffle
+                std::random_shuffle(m_randoms_i.begin(), m_randoms_i.end());
             }
-            //index shuffle
-            std::random_shuffle(m_randoms_i.begin(),m_randoms_i.end());
         }
     
         operator const std::vector< int >& () const

@@ -81,20 +81,25 @@ def main(input_args):
         _Ws.append(tf.Variable(tf.zeros([FLAGS.features*2, FLAGS.classes], dtype=data_type), dtype=data_type, name="output_W"))
         _bs.append(tf.Variable(tf.zeros([FLAGS.classes], dtype=data_type), dtype=data_type, name="output_b"))
 
+        lvl_references = {}
         print("Num layers: ", len(_Ws))
         for lvl in range(len(_Ws)):
-            print("- ", _Ws[lvl])
-            print("- ", _bs[lvl])
+            print("-[{}] ".format(lvl), _Ws[lvl])
+            print("-[{}] ".format(lvl), _bs[lvl])
             if lvl == 0:
-                y = tf.matmul(x, _Ws[lvl]) + _bs[lvl]
+                lvl_references[lvl] = tf.nn.sigmoid(tf.matmul(x, _Ws[lvl]) + _bs[lvl])
+            elif lvl < len(_Ws) - 1:
+                lvl_references[lvl] = tf.nn.sigmoid(tf.matmul(lvl_references[lvl-1], _Ws[lvl]) + _bs[lvl])
             else:
-                y = tf.nn.sigmoid(tf.matmul(y, _Ws[lvl]) + _bs[lvl])
+                y = tf.matmul(lvl_references[lvl-1], _Ws[lvl]) + _bs[lvl]
     else:
         _Ws.append(tf.Variable(tf.zeros([FLAGS.features, FLAGS.classes], dtype=data_type), dtype=data_type))
         _bs.append(tf.Variable(tf.zeros([FLAGS.classes], dtype=data_type), dtype=data_type))
         y = tf.matmul(x, _Ws[0]) + _bs[0]
 
     # from_file = False
+
+    print(y)
 
     # if from_file:
     #     with open("test_results_with_smooth.json", "r") as input_file:

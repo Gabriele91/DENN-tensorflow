@@ -5,7 +5,7 @@
     //"@ARTICLE_MAY_2017/mnist_4.json;",  // NO ADA
     // "@ARTICLE_MAY_2017/mnist_2.json;",
     "@ARTICLE_MAY_2017/mnist_5.json;",
-    "@ARTICLE_MAY_2017/mnist_5_current2best.json;"
+    "@ARTICLE_MAY_2017/mnist_5_current2best.json;",
     /*,
     "@ARTICLE_MAY_2017/mnist_random_0.json;",
     "@ARTICLE_MAY_2017/mnist_random_1.json;",
@@ -13,4 +13,11 @@
     "@ARTICLE_MAY_2017/mnist_random_3.json;",
     "@ARTICLE_MAY_2017/mnist_random_4.json;",
     "@ARTICLE_MAY_2017/mnist_random_5.json;"*/
+
+    // INHERITANCE
+    "@ARTICLE_MAY_2017/mnist_inheritance_0.json;",
+    "@ARTICLE_MAY_2017/mnist_inheritance_1.json;",
+    "@ARTICLE_MAY_2017/mnist_inheritance_2.json;",
+    "@ARTICLE_MAY_2017/mnist_inheritance_3.json;",
+    "@ARTICLE_MAY_2017/mnist_inheritance_4.json;"
 ]

@@ -1,5 +1,5 @@
 {
-        "name": "Article_MNIST_5_NO_ADA_current-to-best-1-bin",
+        "name": "Article_MNIST_5_current-to-best-1-bin",
         "dataset_file": "../datasets/ARTICLE_MNIST_5_12x4000_1s.gz",
         "TOT_GEN": 32000,
         "GEN_STEP": 1000,
@@ -20,10 +20,10 @@
             "min": -5,
             "max": 5
         },
-        /*"AdaBoost": {
+        "AdaBoost": {
             "alpha": 1.0,
             "C": 1.0
-        },*/
+        },
         "JDE": 0.1,
         "smoothing": [
             [ 28, 28, 3]

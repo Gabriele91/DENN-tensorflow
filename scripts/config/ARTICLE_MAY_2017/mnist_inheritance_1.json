@@ -1,8 +1,8 @@
 {
-        "name": "Article_MNIST_5_best-1-bin",
-        "dataset_file": "../datasets/ARTICLE_MNIST_5_12x4000_1s.gz",
+        "name": "MNIST_INHERIT_JDE",
+        "dataset_file": "../datasets/mnist_510x100_1s.gz",
         "TOT_GEN": 32000,
-        "GEN_STEP": 1000,
+        "GEN_STEP": 1,
         "GEN_SAMPLES": 1,
         "TYPE": "float",
         "F": 1.0,
@@ -10,25 +10,25 @@
         "NP": 96,
         "training": true,
         "de_types": [
-            "best/1/bin"
+            "rand/1/bin"
         ],
-        "reset_every": {
-            "counter": 5
+        /*"reset_every": {
+            "counter": 10
         },
-        "reinsert_best": true,
+        "reinsert_best": true,*/
         "clamp": {
             "min": -5,
             "max": 5
         },
-        "AdaBoost": {
+        /*"AdaBoost": {
             "alpha": 1.0,
             "C": 1.0
-        },
+        },*/
         "JDE": 0.1,
-        "smoothing": [
+        /*"smoothing": [
             [ 28, 28, 3]
         ],
-        "smoothing_n_pass": 4,
+        "smoothing_n_pass": 4,*/
         "levels": [
             {
                 "shape": [[784,10], [10]],

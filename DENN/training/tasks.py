@@ -271,6 +271,7 @@ class DETask(object):
         )
         self.TYPE = cur_task.get("TYPE")
         self.F = cur_task.get("F")
+        self.inheritance = cur_task.get("inheritance", 1.0)
         self.CR = cur_task.get("CR")
         self.JDE = cur_task.get("JDE", 0.1)
         self.NP = cur_task.get("NP")
@@ -323,6 +324,7 @@ class DETask(object):
 + tot. gen.    -> {}
 + gen. step.   -> {}
 + gen. samples -> {}
++ inheritance  -> {}
 + F  -> {}
 + NP -> {}
 + CR -> {}
@@ -342,6 +344,7 @@ class DETask(object):
             self.TOT_GEN,
             self.GEN_STEP,
             self.GEN_SAMPLES,
+            self.inheritance,
             self.F,
             self.NP,
             self.CR,

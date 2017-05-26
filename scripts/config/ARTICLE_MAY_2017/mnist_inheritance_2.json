@@ -1,6 +1,6 @@
 {
         "name": "MNIST_INHERIT_RESET_ELITE",
-        "dataset_file": "../datasets/mnist_510x100_1s.gz",
+        "dataset_file": "../datasets/ARTICLE_mnist_minibatch_v004_576x100_1s.gz",
         "TOT_GEN": 32000,
         "GEN_STEP": 1,
         "GEN_SAMPLES": 1,
@@ -9,6 +9,7 @@
         "CR": 0.9,
         "NP": 96,
         "training": true,
+        "inheritance": 0.5,
         "de_types": [
             "rand/1/bin"
         ],

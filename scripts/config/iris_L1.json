@@ -3,16 +3,18 @@
         "name": "iris_dataset",
         "dataset_file": "../datasets/iris_105x6_5s.gz",
         "TOT_GEN": 1000,
-        "GEN_STEP": 40,
+        "GEN_STEP": 1,
         "GEN_SAMPLES": 1,
         "TYPE": "double",
-        "F": 0.6,
+        "F": 0.5,
         "CR": 0.9,
         "NP": 42,
-        "reset_every": {
-            "counter": 5
+        "inheritance": 0.5,
+        "training": true,
+       /* "reset_every": {
+            "counter": 10
         },
-        "reinsert_best": true,
+        "reinsert_best": true,*/
         "de_types": [
             "rand/1/bin"//,
             // "best/1/bin"
@@ -23,10 +25,10 @@
             "min": -10.0,
             "max": 10.0
         },
-        "AdaBoost": {
+        /*"AdaBoost": {
             "alpha": 1.0,
             "C": 1.0
-        },
+        },*/
         "levels": [
             {
                 "shape": [[4,3], [3]],

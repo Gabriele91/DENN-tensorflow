@@ -221,7 +221,8 @@ public:
             for(int index = 0; index!=NP ;++index)
             {
                 //Evaluation
-                value_t new_eval = ExecuteEvaluateTrain(context, index, new_population_list);
+                value_t new_eval = (1.0-m_de_factors.m_inheritance)*ref_current_eval_result(index)
+                                 + ExecuteEvaluateTrain(context, index, new_population_list);
                 //Choice
                 if(new_eval < ref_current_eval_result(index))
                 {

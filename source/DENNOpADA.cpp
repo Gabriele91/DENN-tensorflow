@@ -11,6 +11,7 @@ REGISTER_OP("DennAda")
 .Attr("smoothing: list(shape)")
 .Attr("smoothing_n_pass: int = 0")
 .Attr("ada_boost_alpha: float = 0.5")
+.Attr("inheritance: float = 1.0")
 .Attr("f_min: float = -1.0")
 .Attr("f_max: float = +1.0")
 //EXECUTE NN

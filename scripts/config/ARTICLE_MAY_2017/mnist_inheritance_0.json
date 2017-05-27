@@ -1,5 +1,5 @@
 {
-        "name": "MNIST_INHERIT",
+        "name": "MNIST_INHERIT_best",
         "dataset_file": "../datasets/ARTICLE_mnist_minibatch_v004_576x100_1s.gz",
         "TOT_GEN": 32000,
         "GEN_STEP": 1,
@@ -11,7 +11,7 @@
         "training": true,
         "inheritance": 0.5,
         "de_types": [
-            "rand/1/bin"
+            "best/1/bin"
         ],
         /*"reset_every": {
             "counter": 5

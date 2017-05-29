@@ -5,6 +5,7 @@ import signal
 sys.path.append("../")
 #####
 
+import os
 import DENN
 import tensorflow as tf
 
@@ -30,6 +31,10 @@ GECCO_DEBUG = False
 
 #@profile
 def main(config_file):
+    ##
+    # DISABLE GPU
+    os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+
     ##
     # jobs
     jobs = []

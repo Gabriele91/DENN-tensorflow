@@ -474,6 +474,7 @@ class DETask(object):
                 for num, cur_level in enumerate(levels, 1):
 
                     with tf.name_scope('Layer_{}'.format(num)):
+                        print(self.get_device(cur_level.preferred_device))
                         with tf.device(self.get_device(cur_level.preferred_device)):
 
                             level = cur_level.shape

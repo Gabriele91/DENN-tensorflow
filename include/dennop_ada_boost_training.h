@@ -86,6 +86,8 @@ namespace tensorflow
             const int sub_gen = t_metainfo_i.flat<int>()(1);
             //super gen
             const int n_sub_gen = tot_gen / sub_gen;
+            //info 3: (VALIDATION STEP)
+            const int validation_step = t_metainfo_i.flat<int>()(2);
             ////////////////////////////////////////////////////////////////////////////
             // F and CR
             TensorList  current_population_F_CR;
@@ -234,48 +236,51 @@ namespace tensorflow
                  //ADA
                  , ada_batch_values.m_C 
                 );
-
-                //find best
-                int     cur_best_id;
-                value_t cur_best_eval;
-                int     cur_worst_id;
-                value_t cur_worst_eval;
-                FindBestAndWorst
-                (
-                    context, 
-                    current_population_list,
-                    cur_best_id,
-                    cur_best_eval,
-                    cur_worst_id,
-                    cur_worst_eval,
-                    ada_batch_values
-                );
-
-                //test 
-                SetTestDataInCacheInputs();
-                cur_test_eval = ExecuteEvaluateTest(context, cur_best_id, current_population_list);
-
-                //update best 
-                if( best.TestBest(cur_best_eval, cur_best_id, current_population_F_CR, current_population_list) )
+                //find best only at validation step
+                if (NOT(i_sub_gen % validation_step) || i_sub_gen == (n_sub_gen-1) || NOT(de_loop))
                 {
-                   best_test_eval = cur_test_eval;
-                }
-                else if(m_reinsert_best)
-                {
-                    //replace wrost
-                    for(size_t layer_id=0; layer_id!=current_population_list.size(); ++layer_id)
+                    //find best
+                    int     cur_best_id;
+                    value_t cur_best_eval;
+                    int     cur_worst_id;
+                    value_t cur_worst_eval;
+                    FindBestAndWorst
+                    (
+                        context, 
+                        current_population_list,
+                        cur_best_id,
+                        cur_best_eval,
+                        cur_worst_id,
+                        cur_worst_eval,
+                        ada_batch_values
+                    );
+
+                    //test 
+                    SetTestDataInCacheInputs();
+                    cur_test_eval = ExecuteEvaluateTest(context, cur_best_id, current_population_list);
+
+                    //update best 
+                    if( best.TestBest(cur_best_eval, cur_best_id, current_population_F_CR, current_population_list) )
                     {
-                        current_population_list[layer_id][cur_worst_id] = best.m_individual[layer_id];
+                    best_test_eval = cur_test_eval;
                     }
-                    //replace F and CR 
-                    current_population_F_CR[0].flat<value_t>()(cur_worst_id) = best.m_F;
-                    current_population_F_CR[1].flat<value_t>()(cur_worst_id) = best.m_CR;                   
+                    else if(m_reinsert_best)
+                    {
+                        //replace wrost
+                        for(size_t layer_id=0; layer_id!=current_population_list.size(); ++layer_id)
+                        {
+                            current_population_list[layer_id][cur_worst_id] = best.m_individual[layer_id];
+                        }
+                        //replace F and CR 
+                        current_population_F_CR[0].flat<value_t>()(cur_worst_id) = best.m_F;
+                        current_population_F_CR[1].flat<value_t>()(cur_worst_id) = best.m_CR;                   
+                    }
+                    //add into vector
+                    list_eval_of_best.push_back(cur_test_eval);
+                    list_eval_of_best_of_best.push_back(best_test_eval);
+                    //Execute reset 
+                    CheckReset(context, best, current_population_F_CR, current_population_list);
                 }
-                //add into vector
-                list_eval_of_best.push_back(cur_test_eval);
-                list_eval_of_best_of_best.push_back(best_test_eval);
-                //Execute reset 
-                CheckReset(context, best, current_population_F_CR, current_population_list);
             }
             ////////////////////////////////////////////////////////////////////////////
             int output_id=0;

@@ -100,8 +100,8 @@ class Operation(object):
 
             self.denn_op = self._module.denn_ada_training(
                 # input params
-                # [num_gen, step_gen ]
-                [self.job.TOT_GEN, self.job.GEN_STEP],
+                # [num_gen, step_gen, validation_step ]
+                [self.job.TOT_GEN, self.job.GEN_STEP, self.job.VALIDATION_STEP],
                 # POPULATIONS and F and CR
                 self.net.F_placeholder,
                 self.net.CR_placeholder,
@@ -197,7 +197,7 @@ class Operation(object):
 
             self.denn_op = self._module.denn_training(
                 # input params
-                # [num_gen, step_gen, eval_individual]
+                # [num_gen, step_gen, validation_step, eval_individual]
                 [self.job.TOT_GEN, self.job.GEN_STEP, self.job.VALIDATION_STEP, False],
                 # F and CR
                 self.net.F_placeholder,

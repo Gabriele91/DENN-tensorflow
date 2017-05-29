@@ -474,7 +474,7 @@ class DETask(object):
                 for num, cur_level in enumerate(levels, 1):
 
                     with tf.name_scope('Layer_{}'.format(num)):
-                        print('Layer_{} -> [{}]'.format(
+                        print('++ Layer_{} -> [{}]'.format(
                                 num,
                                 self.get_device(cur_level.preferred_device)
                             )

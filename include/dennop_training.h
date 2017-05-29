@@ -223,7 +223,7 @@ namespace tensorflow
 
                 // MSG_DEBUG("i_sub_gen mod validation_step" << i_sub_gen % validation_step)
                 //find best only at validation step
-                if (i_sub_gen % validation_step == 0)
+                if NOT(i_sub_gen % validation_step)
                 {
                     int     cur_best_id;
                     value_t cur_best_eval;

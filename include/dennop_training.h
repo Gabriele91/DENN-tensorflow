@@ -221,7 +221,7 @@ namespace tensorflow
                  , current_population_list
                 );
 
-                MSG_DEBUG(i_sub_gen % validation_step)
+                // MSG_DEBUG("i_sub_gen mod validation_step" << i_sub_gen % validation_step)
                 //find best only at validation step
                 if (i_sub_gen % validation_step == 0)
                 {

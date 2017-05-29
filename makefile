@@ -96,9 +96,9 @@ define delete_op
 	@rm -f "$(TOP)/$(MODULE_FOLDER)/obj/$(1).o"
 endef
 
-all: denn denn_traning denn_ada denn_ada_traning
+all: denn denn_training denn_ada denn_ada_training
 
-.PHONY: rebuild debug all denn denn_traning denn_ada denn_ada_traning directories ${O_DIR} clean
+.PHONY: rebuild debug all denn denn_training denn_ada denn_ada_training directories ${O_DIR} clean
 
 # Set rebuild option
 rebuild:
@@ -120,7 +120,7 @@ denn: directories
 	$(call colorecho,$(COLOR_GREEN),"[ Make $(OUT_FILE_NAME_DENNOP).so ]")
 	$(CC) $(C_FLAGS) $(CPP_FLAGS) $(MAKE_PARAMS) -shared -o $(TOP)/$(MODULE_FOLDER)/$(OUT_FILE_NAME_DENNOP).so $(SOURCE_OBJS) $(LIKNER_FLAGS)
 
-denn_traning: directories
+denn_training: directories
 	$(if $(REBUILD_OP),$(call delete_op,$(OUT_FILE_NAME_DENNOP_TRAINING)))
 	$(if $(USE_DEBUG),$(eval MAKE_PARAMS=-g -D_DEBUG),$(eval MAKE_PARAMS=-Ofast))
 	$(MAKE) $(SOURCE_TRAINING_OBJS) CC=$(CC) C_FLAGS="$(C_FLAGS)" CPP_FLAGS="$(CPP_FLAGS)" MAKE_PARAMS="$(MAKE_PARAMS)"
@@ -134,7 +134,7 @@ denn_ada: directories
 	$(call colorecho,$(COLOR_GREEN),"[ Make $(OUT_FILE_NAME_DENNOP_ADA).so ]")
 	$(CC) $(C_FLAGS) $(CPP_FLAGS) $(MAKE_PARAMS) -shared -o $(TOP)/$(MODULE_FOLDER)/$(OUT_FILE_NAME_DENNOP_ADA).so $(SOURCE_ADA_OBJS) $(LIKNER_FLAGS)
 
-denn_ada_traning: directories
+denn_ada_training: directories
 	$(if $(REBUILD_OP),$(call delete_op,$(OUT_FILE_NAME_DENNOP_ADA_TRAINING)))
 	$(if $(USE_DEBUG),$(eval MAKE_PARAMS=-g -D_DEBUG),$(eval MAKE_PARAMS=-Ofast))
 	$(MAKE) $(SOURCE_ADA_TRAINING_OBJS) CC=$(CC) C_FLAGS="$(C_FLAGS)" CPP_FLAGS="$(CPP_FLAGS)" MAKE_PARAMS="$(MAKE_PARAMS)"

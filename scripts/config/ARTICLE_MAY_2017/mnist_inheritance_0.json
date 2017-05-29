@@ -1,9 +1,10 @@
 {
-        "name": "MNIST_INHERIT_best",
+        "name": "MNIST_INHERIT_100k",
         "dataset_file": "../datasets/ARTICLE_mnist_minibatch_v004_576x100_1s.gz",
-        "TOT_GEN": 32000,
+        "TOT_GEN": 100000,
         "GEN_STEP": 1,
         "GEN_SAMPLES": 1,
+        "VALIDATION_STEP": 1000,
         "TYPE": "float",
         "F": 1.0,
         "CR": 0.9,
@@ -11,7 +12,7 @@
         "training": true,
         "inheritance": 0.5,
         "de_types": [
-            "best/1/bin"
+            "rand/1/bin"
         ],
         /*"reset_every": {
             "counter": 5

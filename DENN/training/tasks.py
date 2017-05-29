@@ -260,6 +260,7 @@ class DETask(object):
         self.dataset_file = cur_task.get("dataset_file")
         self.TOT_GEN = cur_task.get("TOT_GEN")
         self.GEN_STEP = cur_task.get("GEN_STEP")
+        self.VALIDATION_STEP = cur_task.get("VALIDATION_STEP", self.GEN_STEP)
         self.GEN_SAMPLES = cur_task.get("GEN_SAMPLES", 1)
         self.reinsert_best = cur_task.get("reinsert_best", False)
         ##
@@ -324,6 +325,7 @@ class DETask(object):
 + tot. gen.    -> {}
 + gen. step.   -> {}
 + gen. samples -> {}
++ validation step. -> {}
 + inheritance  -> {}
 + F  -> {}
 + NP -> {}
@@ -344,6 +346,7 @@ class DETask(object):
             self.TOT_GEN,
             self.GEN_STEP,
             self.GEN_SAMPLES,
+            self.VALIDATION_STEP,
             self.inheritance,
             self.F,
             self.NP,
@@ -811,6 +814,7 @@ class TaskEncoder(json.JSONEncoder):
                 ('TOT_GEN', obj.TOT_GEN),
                 ('GEN_STEP', obj.GEN_STEP),
                 ('GEN_SAMPLES', obj.GEN_SAMPLES),
+                ('VALIDATION_STEP', obj.VALIDATION_STEP),
                 ('inheritance', obj.inheritance),
                 ('F', obj.F),
                 ('NP', obj.NP),

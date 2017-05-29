@@ -198,7 +198,7 @@ class Operation(object):
             self.denn_op = self._module.denn_training(
                 # input params
                 # [num_gen, step_gen, eval_individual]
-                [self.job.TOT_GEN, self.job.GEN_STEP, False],
+                [self.job.TOT_GEN, self.job.GEN_STEP, self.job.VALIDATION_STEP, False],
                 # F and CR
                 self.net.F_placeholder,
                 self.net.CR_placeholder,

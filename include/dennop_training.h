@@ -67,8 +67,10 @@ namespace tensorflow
             const int tot_gen = t_metainfo_i.flat<int>()(0);
             //info 2: (STEP GEN)
             const int sub_gen = t_metainfo_i.flat<int>()(1);
-            //info 3; (COMPUTE FIRST VALUTATION OF POPULATION)
-            const int calc_first_eval = t_metainfo_i.flat<int>()(2);
+            //info 3: (VALIDATION STEP)
+            const int validation_step = t_metainfo_i.flat<int>()(2);
+            //info 4; (COMPUTE FIRST VALUTATION OF POPULATION)
+            const int calc_first_eval = t_metainfo_i.flat<int>()(3);
             //super gen
             const int n_sub_gen = tot_gen / sub_gen;
             ////////////////////////////////////////////////////////////////////////////
@@ -219,62 +221,65 @@ namespace tensorflow
                  , current_population_list
                 );
 
-                //find best
-                int     cur_best_id;
-                value_t cur_best_eval;
-                int     cur_worst_id;
-                value_t cur_worst_eval;
-                FindBestAndWorst
-                (
-                    context, 
-                    current_population_list,
-                    cur_best_id,
-                    cur_best_eval,
-                    cur_worst_id,
-                    cur_worst_eval
-                );
-
-                //test 
-                SetTestDataInCacheInputs();
-                cur_test_eval = ExecuteEvaluateTest(context, cur_best_id, current_population_list);
-
-                //update best 
-                if( best.TestBest(cur_best_eval, cur_best_id, current_population_F_CR, current_population_list) )
+                //find best only at validation step
+                if (i_sub_gen % validation_step == 0)
                 {
-                    best_test_eval = cur_test_eval;
-                    // save eval of best on train set 
-                    cache_best_train_eval = current_eval_result.flat<value_t>()(best.m_id);  
-                }
-                else if(m_reinsert_best)
-                {
-                    //replace wrost
-                    for(size_t layer_id=0; layer_id!=current_population_list.size(); ++layer_id)
-                    {
-                        current_population_list[layer_id][cur_worst_id] = best.m_individual[layer_id];
-                    }
-                    //replace F and CR 
-                    current_population_F_CR[0].flat<value_t>()(cur_worst_id) = best.m_F;
-                    current_population_F_CR[1].flat<value_t>()(cur_worst_id) = best.m_CR;
-                    //replace evaluation 
-                    current_eval_result.flat<value_t>()(cur_worst_id) = cache_best_train_eval;
-                }
-
-                //add into vector
-                list_eval_of_best.push_back(cur_test_eval);
-                list_eval_of_best_of_best.push_back(best_test_eval);
-                
-                //Execute reset 
-                if(CheckReset(context, best, current_population_F_CR, current_population_list))
-                {
-                    // force evaluation
-                    this->DoFirstEvaluationIfRequired
+                    int     cur_best_id;
+                    value_t cur_best_eval;
+                    int     cur_worst_id;
+                    value_t cur_worst_eval;
+                    FindBestAndWorst
                     (
-                          context
-                        , true
-                        , current_population_list
-                        , population_first_eval 
-                        , current_eval_result
+                        context, 
+                        current_population_list,
+                        cur_best_id,
+                        cur_best_eval,
+                        cur_worst_id,
+                        cur_worst_eval
                     );
+
+                    //test 
+                    SetTestDataInCacheInputs();
+                    cur_test_eval = ExecuteEvaluateTest(context, cur_best_id, current_population_list);
+
+                    //update best 
+                    if( best.TestBest(cur_best_eval, cur_best_id, current_population_F_CR, current_population_list) )
+                    {
+                        best_test_eval = cur_test_eval;
+                        // save eval of best on train set 
+                        cache_best_train_eval = current_eval_result.flat<value_t>()(best.m_id);  
+                    }
+                    else if(m_reinsert_best)
+                    {
+                        //replace wrost
+                        for(size_t layer_id=0; layer_id!=current_population_list.size(); ++layer_id)
+                        {
+                            current_population_list[layer_id][cur_worst_id] = best.m_individual[layer_id];
+                        }
+                        //replace F and CR 
+                        current_population_F_CR[0].flat<value_t>()(cur_worst_id) = best.m_F;
+                        current_population_F_CR[1].flat<value_t>()(cur_worst_id) = best.m_CR;
+                        //replace evaluation 
+                        current_eval_result.flat<value_t>()(cur_worst_id) = cache_best_train_eval;
+                    }
+
+                    //add into vector
+                    list_eval_of_best.push_back(cur_test_eval);
+                    list_eval_of_best_of_best.push_back(best_test_eval);
+                    
+                    //Execute reset 
+                    if(CheckReset(context, best, current_population_F_CR, current_population_list))
+                    {
+                        // force evaluation
+                        this->DoFirstEvaluationIfRequired
+                        (
+                            context
+                            , true
+                            , current_population_list
+                            , population_first_eval 
+                            , current_eval_result
+                        );
+                    }
                 }
             }
             ////////////////////////////////////////////////////////////////////////////

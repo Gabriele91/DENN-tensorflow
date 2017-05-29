@@ -282,14 +282,14 @@ def main(config_file):
 
         write_results_time = datetime.now(timezone('Europe/Rome'))
 
-        DENN.training.export_results(test_results, int(
-            job.GEN_STEP / job.GEN_SAMPLES),
+        DENN.training.export_results(test_results, 
+            int(job.VALIDATION_STEP),
             job.name, out_options,
             folderByTime=write_results_time
         )
 
         DENN.training.expand_results(
-            test_results, int(job.GEN_STEP / job.GEN_SAMPLES), job.de_types)
+            test_results, int(job.VALIDATION_STEP), job.de_types)
 
         DENN.training.write_all_results(
             job.name, test_results, description, out_options,

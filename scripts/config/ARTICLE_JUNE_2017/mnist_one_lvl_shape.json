@@ -1,0 +1,29 @@
+{
+    "shape": [[784,10], [10]],
+    "preferred_device": "CPU",
+    "fx": {
+        "name": "nn.softmax_cross_entropy_with_logits" 
+    },
+    "init": [
+        {
+            "fx": {
+                "name": "random_uniform",
+                "kwargs": {
+                    "seed": 1,
+                    "minval": -2.0, 
+                    "maxval": 2.0
+                }
+            }
+        },
+        {
+            "fx": {
+                "name": "random_uniform",
+                "kwargs": {
+                    "seed": 1,
+                    "minval": -2.0, 
+                    "maxval": 2.0
+                }
+            }
+        }
+    ]
+}

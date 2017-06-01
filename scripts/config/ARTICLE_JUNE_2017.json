@@ -1,0 +1,8 @@
+[
+    // INHERITANCE
+    @import(ARTICLE_JUNE_2017/mnist_inheritance_0.json)/*
+    "@ARTICLE_JUNE_2017/mnist_inheritance_1.json;",
+    "@ARTICLE_JUNE_2017/mnist_inheritance_2.json;",
+    "@ARTICLE_JUNE_2017/mnist_inheritance_3.json;",
+    "@ARTICLE_JUNE_2017/mnist_inheritance_4.json;"*/
+]

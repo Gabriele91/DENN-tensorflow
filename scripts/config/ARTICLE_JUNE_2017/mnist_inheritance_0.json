@@ -1,0 +1,40 @@
+{
+        "name": "MNIST_INHERIT_100k",
+        "dataset_file": "../datasets/ARTICLE_mnist_minibatch_v004_576x100_1s.gz",
+        "TOT_GEN": 20000,
+        "GEN_STEP": 20,
+        "GEN_SAMPLES": 1,
+        "VALIDATION_STEP": 1000,
+        "TYPE": "float",
+        "F": 1.0,
+        "CR": 0.9,
+        "NP": 96,
+        "training": true,
+        "JDE": 0.1,
+        "inheritance": {
+            "d": 0.7,
+            "when": "always"
+        },
+        "de_types": [
+            "rand/1/bin"
+        ],
+        "reset_every": {
+            "counter": 2
+        },
+        // "reinsert_best": true,
+        "clamp": {
+            "min": -5,
+            "max": 5
+        },
+        /*"AdaBoost": {
+            "alpha": 1.0,
+            "C": 1.0
+        },*/
+        /*"smoothing": [
+            [ 28, 28, 3]
+        ],
+        "smoothing_n_pass": 4,*/
+        "levels": [
+            @import(mnist_one_lvl_shape.json)
+        ]
+}

@@ -237,6 +237,7 @@ class AdaBoost(object):
             'reset_C_on_change_bacth': self.reset_C_on_change_bacth
         }
 
+
 class Inheritance(object):
 
     def __init__(self, inheritance):
@@ -255,7 +256,7 @@ class Inheritance(object):
             'type': self.when,
             'd': self.d
         }
-    
+
     def __repr__(self):
         return "Inheritance {}[{}]".format(self.d, self.when)
 
@@ -500,9 +501,9 @@ class DETask(object):
 
                     with tf.name_scope('Layer_{}'.format(num)):
                         print('++ Layer_{} -> [{}]'.format(
-                                num,
-                                self.get_device(cur_level.preferred_device)
-                            )
+                            num,
+                            self.get_device(cur_level.preferred_device)
+                        )
                         )
                         with tf.device(self.get_device(cur_level.preferred_device)):
 
@@ -897,7 +898,8 @@ class TaskDecoder(json.JSONDecoder):
             4 -> inline comment
             5 -> comment
             6 -> start end comment
-
+            7 -> start import json
+            8 -> get file name
         """
         self.__file_name = kwargs.get("file_name")
         del kwargs["file_name"]
@@ -918,7 +920,7 @@ class TaskDecoder(json.JSONDecoder):
                     list_[idx] = (key, res)
         return dict(list_)
 
-    def decode(self, json_string, sub_json=False):
+    def decode(self, json_string, sub_json=False, base_path=None):
         """Decode properly a DE task list.
 
         Params:
@@ -929,6 +931,7 @@ class TaskDecoder(json.JSONDecoder):
 
         final_string = ""
         line_num = 1
+        tmp_string_import = ""
 
         for idx, char in enumerate(json_string):
             if char == '\n':
@@ -945,6 +948,9 @@ class TaskDecoder(json.JSONDecoder):
                 # start C++ style comment
                 elif char == "/":
                     self.__state = 3
+                # import json
+                elif char == "@":
+                    self.__state = 7
                 else:
                     final_string += char
             # inside string
@@ -991,6 +997,45 @@ class TaskDecoder(json.JSONDecoder):
                 # Go to previous check
                 else:
                     self.__state = 5
+            # Check import
+            elif self.__state == 7:
+                if len(tmp_string_import) != 7:
+                    tmp_string_import += char
+                elif tmp_string_import == "import(":
+                    self.__state = 8
+                    # Check next char to init file name
+                    if char == ")":
+                        raise json.JSONDecodeError(
+                            "Empty import filename!", json_string, idx)
+                    else:
+                        tmp_string_import = char  # is the next char
+                else:
+                    raise json.JSONDecodeError(
+                        "Not valid import command!", json_string, idx)
+            # Import filename
+            elif self.__state == 8:
+                if char != ")":
+                    tmp_string_import += char
+                else:
+                    # Prepare params
+                    if base_path is None:
+                        file_path = path.join(
+                            self.__base_folder, 
+                            tmp_string_import
+                        )
+                    else:
+                        file_path = path.join(base_path, tmp_string_import)
+                    dir_path = path.dirname(path.abspath(file_path))
+                    # Reset state
+                    tmp_string_import = ""
+                    self.__state = 0
+                    # Add sub string importing file
+                    with open(file_path, "r") as imported_file:
+                        final_string += self.decode(
+                            imported_file.read(),
+                            sub_json=True, 
+                            base_path=dir_path
+                        )
 
         # Check ending state before
         # json deserialization
@@ -1001,20 +1046,9 @@ class TaskDecoder(json.JSONDecoder):
 
         # print(final_string)
 
-        decoded_string = super(TaskDecoder, self).decode(final_string)
-
-        for idx, obj in enumerate(decoded_string):
-            if type(obj) == str:
-                if obj[0] == "@" and obj[-1] == ";":
-                    file_to_import = obj[1:-1]
-                    file_path = path.join(self.__base_folder, file_to_import)
-                    with open(file_path, "r") as imported_file:
-                        res = self.decode(imported_file.read(), sub_json=True)
-                    decoded_string[idx] = res
-
-        # print(decoded_string)
-
         if not sub_json:
+            decoded_string = super(TaskDecoder, self).decode(final_string)
+            # print(json.dumps(decoded_string, indent=2))
             return DETaskList(decoded_string)
         else:
-            return decoded_string
+            return final_string

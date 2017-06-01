@@ -143,7 +143,8 @@ class Operation(object):
                 reset_cr=self.net.CR_init.name,
                 reset_rand_pop=[tfop.name for tfop in self.net.rand_pop],
                 reinsert_best=self.job.reinsert_best,
-                inheritance=self.job.inheritance
+                inheritance_d=self.job.inheritance.d,
+                inheritance_when=self.job.inheritance.when
             )
         elif job.ada_boost is not None:
             ###########################################
@@ -233,7 +234,8 @@ class Operation(object):
                 reset_f=self.net.F_init.name,
                 reset_cr=self.net.CR_init.name,
                 reinsert_best=self.job.reinsert_best,
-                inheritance=self.job.inheritance
+                inheritance_d=self.job.inheritance.d,
+                inheritance_when=self.job.inheritance.when
             )
         else:
             ###########################################

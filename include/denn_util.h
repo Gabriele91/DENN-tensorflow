@@ -31,17 +31,21 @@ namespace tensorflow
         // float params temp
         float
         f_JDE,
-        f_inheritance,
+        f_d_inheritance,
         f_f_min,
         f_f_max;
         // int params temp
-        int smoothing_n_pass;
+        int 
+        smoothing_n_pass,
+        when_inheritance;
         //shape param temp
         std::vector<TensorShapeProto> shapes_smoothing;
         // get JDE
         context->GetAttr("JDE", &f_JDE);
-        // inheritance of cross entropy
-        context->GetAttr("inheritance", &f_inheritance);
+        // inheritance d factor
+        context->GetAttr("inheritance_d", &f_d_inheritance);
+        // inheritance behavior
+        context->GetAttr("inheritance_when", &when_inheritance);
         // get f min
         context->GetAttr("f_min", &f_f_min);
         // get f max
@@ -52,10 +56,11 @@ namespace tensorflow
         context->GetAttr("smoothing", &shapes_smoothing);
         // params float to value_t
         MSG_DEBUG( "JDE" << f_JDE  << ", min:" << f_f_min << " max:" << f_f_max );
-        de_factors.m_JDE          = value_t(f_JDE);
-        de_factors.m_inheritance  = value_t(f_inheritance);
-        de_factors.m_f_min        = value_t(f_f_min);
-        de_factors.m_f_max        = value_t(f_f_max);
+        de_factors.m_JDE              = value_t(f_JDE);
+        de_factors.m_inheritance_d    = value_t(f_d_inheritance);
+        de_factors.m_inheritance_when = TypeOfInheritance(when_inheritance);
+        de_factors.m_f_min            = value_t(f_f_min);
+        de_factors.m_f_max            = value_t(f_f_max);
         //smoothing
         de_factors.m_smoothing_n_pass = smoothing_n_pass;
         de_factors.SetShapesSmoothing( shapes_smoothing );

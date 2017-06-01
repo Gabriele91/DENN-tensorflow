@@ -16,7 +16,15 @@ namespace tensorflow
         DIFF_ONE,
         DIFF_TWO
     };
-    
+
+    //type of inheritance
+    enum TypeOfInheritance
+    {
+        TOI_NEVER,
+        TOI_ALWAYS,
+        TOI_BATCH
+    };
+
     //type of generator a new population
     enum PerturbedVector
     {
@@ -57,7 +65,8 @@ namespace tensorflow
     struct DeFactors
     {
         //inheritance
-        value_t                     m_inheritance{ 1.0 };
+        value_t                     m_inheritance_d   { 1.0       };
+        TypeOfInheritance           m_inheritance_when{ TOI_NEVER };
         //clamp
         value_t                     m_f_min{ -1.0 };
         value_t                     m_f_max{  1.0 };

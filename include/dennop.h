@@ -222,9 +222,16 @@ public:
             {
                 value_t new_eval = ExecuteEvaluateTrain(context, index, new_population_list);
                 //Evaluation
-                if NOT(i)
+                switch(m_de_factors.m_inheritance_when)
                 {
-                   new_eval += (1.0-m_de_factors.m_inheritance)*ref_current_eval_result(index);
+                    case TOI_ALWAYS:                   
+                        new_eval += (1.0-m_de_factors.m_inheritance_d)*ref_current_eval_result(index);
+                    break;
+                    case TOI_BATCH:
+                        if NOT(i) new_eval += (1.0-m_de_factors.m_inheritance_d)*ref_current_eval_result(index);
+                    break;
+                    default: //NONE
+                    break;
                 }
                 //Choice
                 if(new_eval < ref_current_eval_result(index))

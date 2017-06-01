@@ -237,6 +237,28 @@ class AdaBoost(object):
             'reset_C_on_change_bacth': self.reset_C_on_change_bacth
         }
 
+class Inheritance(object):
+
+    def __init__(self, inheritance):
+        self.__types = ['never', 'always', 'batch']
+        if inheritance.when in self.__types:
+            self.when = self.__types.index(inheritance.when)
+        else:
+            raise Exception("Inheritance type '{}' is not valid, use one of: {}".format(
+                inheritance.when,
+                ', '.join(self.__types)
+            ))
+        self.d = inheritance.d
+
+    def to_dict(self):
+        return {
+            'type': self.when,
+            'd': self.d
+        }
+    
+    def __repr__(self):
+        return "Inheritance {}[{}]".format(self.d, self.when)
+
 
 class DETask(object):
 
@@ -272,7 +294,10 @@ class DETask(object):
         )
         self.TYPE = cur_task.get("TYPE")
         self.F = cur_task.get("F")
-        self.inheritance = cur_task.get("inheritance", 1.0)
+        self.inheritance = Inheritance(cur_task.get("inheritance", {
+            'd': 1.0,
+            'when': 'never'
+        }))
         self.CR = cur_task.get("CR")
         self.JDE = cur_task.get("JDE", 0.1)
         self.NP = cur_task.get("NP")
@@ -820,7 +845,7 @@ class TaskEncoder(json.JSONEncoder):
                 ('GEN_STEP', obj.GEN_STEP),
                 ('GEN_SAMPLES', obj.GEN_SAMPLES),
                 ('VALIDATION_STEP', obj.VALIDATION_STEP),
-                ('inheritance', obj.inheritance),
+                ('inheritance', obj.inheritance.to_dict()),
                 ('F', obj.F),
                 ('NP', obj.NP),
                 ('CR', obj.CR),

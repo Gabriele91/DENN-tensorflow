@@ -34,7 +34,8 @@ REGISTER_OP("DennAdaTraining")
 //insert best 
 .Attr("reinsert_best: bool = false")
 //inheritance of cross entropy
-.Attr("inheritance: float = 1.0")
+.Attr("inheritance_d: float = 1.0")
+.Attr("inheritance_when: int = 0")
 //clamp
 .Attr("f_min: float = -1.0")
 .Attr("f_max: float = +1.0")

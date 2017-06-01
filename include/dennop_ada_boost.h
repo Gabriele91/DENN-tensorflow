@@ -246,10 +246,17 @@ namespace tensorflow
                     }
                     //execute cross
                     value_t new_eval = ExecuteEvaluateAdaBoost(context, y, C);
-                    //inheritance
-                    if NOT(i)
+                    //Evaluation
+                    switch(m_de_factors.m_inheritance_when)
                     {
-                        new_eval += (1.0-m_de_factors.m_inheritance)*ref_current_eval_result(index);
+                        case TOI_ALWAYS:                   
+                            new_eval += (1.0-m_de_factors.m_inheritance_d)*ref_current_eval_result(index);
+                        break;
+                        case TOI_BATCH:
+                            if NOT(i) new_eval += (1.0-m_de_factors.m_inheritance_d)*ref_current_eval_result(index);
+                        break;
+                        default: //NONE 
+                        break;
                     }
                     //Choice
                     if(new_eval < ref_current_eval_result(index))

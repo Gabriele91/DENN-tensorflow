@@ -1,16 +1,19 @@
 {
         "name": "MNIST_INHERIT_100k",
         "dataset_file": "../datasets/ARTICLE_mnist_minibatch_v004_576x100_1s.gz",
-        "TOT_GEN": 100000,
+        "TOT_GEN": 1000,
         "GEN_STEP": 1,
         "GEN_SAMPLES": 1,
-        "VALIDATION_STEP": 1000,
+        "VALIDATION_STEP": 100,
         "TYPE": "float",
         "F": 1.0,
         "CR": 0.9,
         "NP": 96,
         "training": true,
-        "inheritance": 0.5,
+        "inheritance": {
+            "d": 0.5,
+            "when": "always"
+        },
         "de_types": [
             "rand/1/bin"
         ],

@@ -241,14 +241,14 @@ class Inheritance(object):
 
     def __init__(self, inheritance):
         self.__types = ['never', 'always', 'batch']
-        if inheritance.when in self.__types:
-            self.when = self.__types.index(inheritance.when)
+        if inheritance['when'] in self.__types:
+            self.when = self.__types.index(inheritance['when'])
         else:
             raise Exception("Inheritance type '{}' is not valid, use one of: {}".format(
-                inheritance.when,
+                inheritance['when'],
                 ', '.join(self.__types)
             ))
-        self.d = inheritance.d
+        self.d = inheritance['d']
 
     def to_dict(self):
         return {

@@ -1,6 +1,7 @@
 # Compiler flags
 # Needed if you are using gcc5, because tf <= 0.12 use gcc4 with old ABI
 USE_OLD_ABI ?= true
+USE_OPENMP  ?= false
 CC          ?= g++
 MKDIR_P     ?= mkdir -p
 MODULE_FOLDER ?= DENN
@@ -50,7 +51,7 @@ endef
 # LINUX FLAGS
 ifeq ($(shell uname -s),Linux)
 	#linux flags
-	C_FLAGS      += -pthread -D_FORCE_INLINES -fopenmp -DENABLE_PARALLEL_NEW_GEN
+	C_FLAGS      += -pthread -D_FORCE_INLINES
 	LIKNER_FLAGS += -lpthread -lm -lutil -ldl
 	LIKNER_FLAGS += -Wl,--whole-archive 
 	LIKNER_FLAGS += -L$(TOP)/tf_static/linux/ -lprotobuf.pic
@@ -73,6 +74,10 @@ endif
 # Old ABI
 ifeq ($(USE_OLD_ABI),true)
 	C_FLAGS += -D_GLIBCXX_USE_CXX11_ABI=0
+endif
+
+ifeq ($(USE_OPENMP),true)
+	C_FLAGS += -fopenmp -DENABLE_PARALLEL_NEW_GEN
 endif
 
 # C++ files

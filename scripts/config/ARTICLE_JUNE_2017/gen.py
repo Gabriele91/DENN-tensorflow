@@ -14,7 +14,7 @@ template_file = '''
         "training": true,
         "JDE": 0.1,
         "inheritance": {{
-            "d": {1},
+            "d": {3},
             "when": "{2}"
         }},
         "de_types": [
@@ -40,7 +40,7 @@ all_when = ['always', 'batch']
 for when in all_when:
     for gen_step in all_gen_step:
         for d in all_d:
-            file_ = template_name.format(gen_step, d, when)
+            file_ = template_name.format(gen_step, str(d).replace(".", ""), when)
             with open(file_, "w") as new_task:
-                new_task.write(template_file.format(gen_step, d, when))
+                new_task.write(template_file.format(gen_step, str(d).replace(".", ""), when, d))
             print("@import(ARTICLE_JUNE_2017/{}),".format(file_))

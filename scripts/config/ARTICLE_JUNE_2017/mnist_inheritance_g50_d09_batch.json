@@ -1,6 +1,6 @@
 
 {
-        "name": "MNIST_INHERIT_g50_d0.7_batch",
+        "name": "MNIST_INHERIT_g50_d09_batch",
         "dataset_file": "../datasets/ARTICLE_mnist_minibatch_v004_576x100_1s.gz",
         "TOT_GEN": 20000,
         "GEN_STEP": 50,
@@ -13,7 +13,7 @@
         "training": true,
         "JDE": 0.1,
         "inheritance": {
-            "d": 0.7,
+            "d": 0.9,
             "when": "batch"
         },
         "de_types": [

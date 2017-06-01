@@ -1,9 +1,9 @@
 
 {
-        "name": "MNIST_INHERIT_g50_d0.7_always",
+        "name": "MNIST_INHERIT_g100_d07_batch",
         "dataset_file": "../datasets/ARTICLE_mnist_minibatch_v004_576x100_1s.gz",
         "TOT_GEN": 20000,
-        "GEN_STEP": 50,
+        "GEN_STEP": 100,
         "GEN_SAMPLES": 1,
         "VALIDATION_STEP": 1000,
         "TYPE": "float",
@@ -14,7 +14,7 @@
         "JDE": 0.1,
         "inheritance": {
             "d": 0.7,
-            "when": "always"
+            "when": "batch"
         },
         "de_types": [
             "rand/1/bin"

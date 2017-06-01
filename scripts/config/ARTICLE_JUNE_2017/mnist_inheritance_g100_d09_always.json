@@ -1,6 +1,6 @@
 
 {
-        "name": "MNIST_INHERIT_g100_d0.9_always",
+        "name": "MNIST_INHERIT_g100_d09_always",
         "dataset_file": "../datasets/ARTICLE_mnist_minibatch_v004_576x100_1s.gz",
         "TOT_GEN": 20000,
         "GEN_STEP": 100,

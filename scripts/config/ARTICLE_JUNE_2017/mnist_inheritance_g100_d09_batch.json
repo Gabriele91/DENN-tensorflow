@@ -1,9 +1,9 @@
 
 {
-        "name": "MNIST_INHERIT_g20_d0.9_batch",
+        "name": "MNIST_INHERIT_g100_d09_batch",
         "dataset_file": "../datasets/ARTICLE_mnist_minibatch_v004_576x100_1s.gz",
         "TOT_GEN": 20000,
-        "GEN_STEP": 20,
+        "GEN_STEP": 100,
         "GEN_SAMPLES": 1,
         "VALIDATION_STEP": 1000,
         "TYPE": "float",

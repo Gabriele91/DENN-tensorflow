@@ -1,0 +1,32 @@
+
+{
+        "name": "MNIST_INHERIT_g100_d0.9_always",
+        "dataset_file": "../datasets/ARTICLE_mnist_minibatch_v004_576x100_1s.gz",
+        "TOT_GEN": 20000,
+        "GEN_STEP": 100,
+        "GEN_SAMPLES": 1,
+        "VALIDATION_STEP": 1000,
+        "TYPE": "float",
+        "F": 1.0,
+        "CR": 0.9,
+        "NP": 96,
+        "training": true,
+        "JDE": 0.1,
+        "inheritance": {
+            "d": 0.9,
+            "when": "always"
+        },
+        "de_types": [
+            "rand/1/bin"
+        ],
+        "reset_every": {
+            "counter": 2
+        },
+        "clamp": {
+            "min": -5,
+            "max": 5
+        },
+        "levels": [
+            @import(mnist_one_lvl_shape.json)
+        ]
+}

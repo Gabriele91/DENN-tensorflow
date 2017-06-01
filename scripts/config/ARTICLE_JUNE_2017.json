@@ -1,8 +1,21 @@
 [
     // INHERITANCE
-    @import(ARTICLE_JUNE_2017/mnist_inheritance_0.json)/*
-    "@ARTICLE_JUNE_2017/mnist_inheritance_1.json;",
-    "@ARTICLE_JUNE_2017/mnist_inheritance_2.json;",
-    "@ARTICLE_JUNE_2017/mnist_inheritance_3.json;",
-    "@ARTICLE_JUNE_2017/mnist_inheritance_4.json;"*/
+    @import(ARTICLE_JUNE_2017/mnist_inheritance_g20_d0.7_always.json),
+    @import(ARTICLE_JUNE_2017/mnist_inheritance_g20_d0.8_always.json),
+    @import(ARTICLE_JUNE_2017/mnist_inheritance_g20_d0.9_always.json),
+    @import(ARTICLE_JUNE_2017/mnist_inheritance_g50_d0.7_always.json),
+    @import(ARTICLE_JUNE_2017/mnist_inheritance_g50_d0.8_always.json),
+    @import(ARTICLE_JUNE_2017/mnist_inheritance_g50_d0.9_always.json),
+    @import(ARTICLE_JUNE_2017/mnist_inheritance_g100_d0.7_always.json),
+    @import(ARTICLE_JUNE_2017/mnist_inheritance_g100_d0.8_always.json),
+    @import(ARTICLE_JUNE_2017/mnist_inheritance_g100_d0.9_always.json),
+    @import(ARTICLE_JUNE_2017/mnist_inheritance_g20_d0.7_batch.json),
+    @import(ARTICLE_JUNE_2017/mnist_inheritance_g20_d0.8_batch.json),
+    @import(ARTICLE_JUNE_2017/mnist_inheritance_g20_d0.9_batch.json),
+    @import(ARTICLE_JUNE_2017/mnist_inheritance_g50_d0.7_batch.json),
+    @import(ARTICLE_JUNE_2017/mnist_inheritance_g50_d0.8_batch.json),
+    @import(ARTICLE_JUNE_2017/mnist_inheritance_g50_d0.9_batch.json),
+    @import(ARTICLE_JUNE_2017/mnist_inheritance_g100_d0.7_batch.json),
+    @import(ARTICLE_JUNE_2017/mnist_inheritance_g100_d0.8_batch.json),
+    @import(ARTICLE_JUNE_2017/mnist_inheritance_g100_d0.9_batch.json)
 ]

@@ -1047,6 +1047,7 @@ class TaskDecoder(json.JSONDecoder):
         # print(final_string)
 
         if not sub_json:
+            # print(final_string)
             decoded_string = super(TaskDecoder, self).decode(final_string)
             # print(json.dumps(decoded_string, indent=2))
             return DETaskList(decoded_string)

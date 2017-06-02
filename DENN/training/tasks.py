@@ -284,6 +284,7 @@ class DETask(object):
         self.TOT_GEN = cur_task.get("TOT_GEN")
         self.GEN_STEP = cur_task.get("GEN_STEP")
         self.VALIDATION_STEP = cur_task.get("VALIDATION_STEP", self.GEN_STEP)
+        assert self.VALIDATION_STEP % self.GEN_STEP == 0, "Validation step have to be a multiple of gen step!"
         self.GEN_SAMPLES = cur_task.get("GEN_SAMPLES", 1)
         self.reinsert_best = cur_task.get("reinsert_best", False)
         ##

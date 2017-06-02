@@ -237,7 +237,7 @@ namespace tensorflow
                  , ada_batch_values.m_C 
                 );
                 //find best only at validation step
-                if (NOT(i_sub_gen % validation_step) || i_sub_gen == (n_sub_gen-1) || NOT(de_loop))
+                if (NOT((i_sub_gen*sub_gen) % validation_step) || NOT(de_loop))
                 {
                     //find best
                     int     cur_best_id;

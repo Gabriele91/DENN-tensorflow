@@ -221,10 +221,11 @@ namespace tensorflow
                  , current_population_list
                 );
 
-                // MSG_DEBUG("i_sub_gen mod validation_step" << i_sub_gen % validation_step)
+                // MSG_DEBUG("- GEN STATUS " << i_sub_gen << " - " << sub_gen << " - " << validation_step);
                 //find best only at validation step
-                if (NOT(i_sub_gen % validation_step) || i_sub_gen == (n_sub_gen-1) || NOT(de_loop))
-                {
+                if (NOT((i_sub_gen*sub_gen) % validation_step) || NOT(de_loop))
+                {   
+                    // MSG_DEBUG("++ VALIDATION AT " << i_sub_gen*sub_gen)
                     int     cur_best_id;
                     value_t cur_best_eval;
                     int     cur_worst_id;

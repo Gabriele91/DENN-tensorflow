@@ -811,7 +811,6 @@ class TaskEncoder(json.JSONEncoder):
                 ('TOT_GEN', obj.TOT_GEN),
                 ('GEN_STEP', obj.GEN_STEP),
                 ('GEN_SAMPLES', obj.GEN_SAMPLES),
-                ('inheritance', obj.inheritance),
                 ('F', obj.F),
                 ('NP', obj.NP),
                 ('CR', obj.CR),

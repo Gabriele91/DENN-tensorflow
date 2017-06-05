@@ -245,8 +245,7 @@ namespace tensorflow
                         return false;
                     }
                     //execute cross
-                    value_t new_eval = (1.0-m_de_factors.m_inheritance)*ref_current_eval_result(index) 
-                                     + ExecuteEvaluateAdaBoost(context, y, C);
+                    value_t new_eval = ExecuteEvaluateAdaBoost(context, y, C);
                     //Choice
                     if(new_eval < ref_current_eval_result(index))
                     {

@@ -56,8 +56,6 @@ namespace tensorflow
     template < class value_t > 
     struct DeFactors
     {
-        //inheritance
-        value_t                     m_inheritance{ 1.0 };
         //clamp
         value_t                     m_f_min{ -1.0 };
         value_t                     m_f_max{  1.0 };

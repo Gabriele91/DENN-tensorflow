@@ -1,0 +1,142 @@
+[
+    {
+        "name": "GasSensorArrayDrift_mini_batch",
+        "dataset_file": "../datasets/GasSensorArrayDrift_46x240_1s.gz",
+        "TOT_GEN": 6000,
+        "GEN_STEP": 200,
+        "GEN_SAMPLES": 1,
+        "TYPE": "float",
+        "F": 0.5,
+        "CR": 0.9,
+        "NP": 100,
+        "training": true,
+        "reset_every": {
+            "counter": 10
+        },
+        // "reinsert_best": true,
+        "de_types": [
+            "rand/1/bin"//,
+            // "best/1/bin"
+        ],
+        "NUM_INTRA_THREADS": 2,
+        "NUM_INTER_THREADS": 2,
+        "clamp": {
+            "min": -5.0,
+            "max": 5.0
+        },
+        /*"AdaBoost": {
+            "alpha": 1.0,
+            "C": 1.0
+        },*/
+        "levels": [
+            {
+                "shape": [[128,6], [6]],
+                "init": [
+                    /*[
+                        [0.5, 0.5, 0.5],
+                        [0.5, 0.5, 0.5],
+                        [0.5, 0.5, 0.5],
+                        [0.5, 0.5, 0.5]
+                    ],*/
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -2.0, 
+                                "maxval": 2.0
+                            }
+                        }
+                    },
+                    //[0.5, 0.5, 0.5]
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -2.0, 
+                                "maxval": 2.0
+                            }
+                        }
+                    }
+                ],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits"//,
+                    //"args": []
+                    //"kwargs": {}
+                }
+            }
+        ]
+    },
+    {
+        "name": "GasSensorArrayDrift_big_batch",
+        "dataset_file": "../datasets/GasSensorArrayDrift_5x2000_1s.gz",
+        "TOT_GEN": 6000,
+        "GEN_STEP": 200,
+        "GEN_SAMPLES": 1,
+        "TYPE": "float",
+        "F": 0.5,
+        "CR": 0.9,
+        "NP": 100,
+        "training": true,
+        "reset_every": {
+            "counter": 10
+        },
+        // "reinsert_best": true,
+        "de_types": [
+            "rand/1/bin"//,
+            // "best/1/bin"
+        ],
+        "NUM_INTRA_THREADS": 2,
+        "NUM_INTER_THREADS": 2,
+        "clamp": {
+            "min": -5.0,
+            "max": 5.0
+        },
+        /*"AdaBoost": {
+            "alpha": 1.0,
+            "C": 1.0
+        },*/
+        "levels": [
+            {
+                "shape": [[128,6], [6]],
+                "init": [
+                    /*[
+                        [0.5, 0.5, 0.5],
+                        [0.5, 0.5, 0.5],
+                        [0.5, 0.5, 0.5],
+                        [0.5, 0.5, 0.5]
+                    ],*/
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -2.0, 
+                                "maxval": 2.0
+                            }
+                        }
+                    },
+                    //[0.5, 0.5, 0.5]
+                    {
+                        "fx": {
+                            "name": "random_uniform",
+                            "kwargs": {
+                                "seed": 1,
+                                "minval": -2.0, 
+                                "maxval": 2.0
+                            }
+                        }
+                    }
+                ],
+                "preferred_device": "CPU",
+                "fx": {
+                    "name": "nn.softmax_cross_entropy_with_logits"//,
+                    //"args": []
+                    //"kwargs": {}
+                }
+            }
+        ]
+    }
+]

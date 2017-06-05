@@ -105,7 +105,6 @@ class Operation(object):
                 # POPULATIONS and F and CR
                 self.net.F_placeholder,
                 self.net.CR_placeholder,
-
                 self.net.populations,
                 # attributes
                 graph=get_graph_proto(
@@ -142,8 +141,7 @@ class Operation(object):
                 reset_f=self.net.F_init.name,
                 reset_cr=self.net.CR_init.name,
                 reset_rand_pop=[tfop.name for tfop in self.net.rand_pop],
-                reinsert_best=self.job.reinsert_best,
-                inheritance=self.job.inheritance
+                reinsert_best=self.job.reinsert_best
             )
         elif job.ada_boost is not None:
             ###########################################
@@ -182,8 +180,7 @@ class Operation(object):
                 f_min=self.job.clamp.min,
                 f_max=self.job.clamp.max,
                 smoothing=self.job.smoothing,
-                smoothing_n_pass=self.job.smoothing_n_pass,
-                inheritance=self.job.inheritance
+                smoothing_n_pass=self.job.smoothing_n_pass
             )
         elif job.training:
             ###########################################
@@ -232,8 +229,7 @@ class Operation(object):
                 reset_rand_pop=[tfop.name for tfop in self.net.rand_pop],
                 reset_f=self.net.F_init.name,
                 reset_cr=self.net.CR_init.name,
-                reinsert_best=self.job.reinsert_best,
-                inheritance=self.job.inheritance
+                reinsert_best=self.job.reinsert_best
             )
         else:
             ###########################################
@@ -265,8 +261,7 @@ class Operation(object):
                 JDE=self.job.JDE,
                 DE=self.de_type,
                 smoothing=self.job.smoothing,
-                smoothing_n_pass=self.job.smoothing_n_pass,
-                inheritance=self.job.inheritance
+                smoothing_n_pass=self.job.smoothing_n_pass
             )
 
     def run(self):

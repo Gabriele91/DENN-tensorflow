@@ -33,9 +33,21 @@ template_file = '''
 }}
 '''
 
-all_d = [0.7, 0.8, 0.9]
+all_d = [0.5, 0.7, 0.8, 0.9, 0.95]
 all_gen_step = [20, 50, 100]
 all_when = ['always', 'batch']
+
+for when in all_when:
+    for gen_step in all_gen_step:
+        for d in all_d:
+            file_ = template_name.format(gen_step, str(d).replace(".", ""), when)
+            with open(file_, "w") as new_task:
+                new_task.write(template_file.format(gen_step, str(d).replace(".", ""), when, d))
+            print("@import(ARTICLE_JUNE_2017/{}),".format(file_))
+
+all_d = [1.0]
+all_gen_step = [20, 50, 100]
+all_when = ['never']
 
 for when in all_when:
     for gen_step in all_gen_step:

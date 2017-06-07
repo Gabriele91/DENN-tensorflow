@@ -3,18 +3,22 @@
         "name": "iris_dataset",
         "dataset_file": "../datasets/iris_105x6_5s.gz",
         "TOT_GEN": 1000,
-        "GEN_STEP": 1,
+        "GEN_STEP": 10,
         "GEN_SAMPLES": 1,
+        "VALIDATION_STEP": 100,
         "TYPE": "double",
         "F": 0.5,
         "CR": 0.9,
         "NP": 42,
-        "inheritance": 0.5,
-        "training": true,
-       /* "reset_every": {
-            "counter": 10
+        "inheritance": {
+            "d": 0.5,
+            "when": "always"
         },
-        "reinsert_best": true,*/
+        "training": true,
+        "reset_every": {
+            "counter": 2
+        },
+        // "reinsert_best": true,
         "de_types": [
             "rand/1/bin"//,
             // "best/1/bin"

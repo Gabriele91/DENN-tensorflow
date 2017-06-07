@@ -253,8 +253,8 @@ class Inheritance(object):
 
     def to_dict(self):
         return {
-            'type': self.when,
-            'd': self.__types[self.d]
+            'type': self.__types[self.when],
+            'd': self.d
         }
 
     def __repr__(self):

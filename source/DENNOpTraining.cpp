@@ -63,6 +63,7 @@ REGISTER_OP("DennTraining")
 .Output("final_f: T")
 .Output("final_cr: T")
 .Output("final_populations: space * T")
+.Output("final_reset_list: bool")
 ;
 
 REGISTER_KERNEL_BUILDER(Name("DennTraining").Device(DEVICE_CPU).TypeConstraint<float>("T"), DENNOpTraining<float>);

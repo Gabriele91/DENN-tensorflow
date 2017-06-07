@@ -73,7 +73,8 @@ REGISTER_OP("DennAdaTraining")
 
 .Output("final_f: T")
 .Output("final_cr: T")
-.Output("final_populations: space * T")
+.Output("final_populations: space * T"),
+.Output("final_reset_list: bool")
 ;
 
 REGISTER_KERNEL_BUILDER(Name("DennAdaTraining").Device(DEVICE_CPU).TypeConstraint<float>("T"), DENNOpAdaBoostTraining<float>);

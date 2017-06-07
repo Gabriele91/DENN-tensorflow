@@ -144,6 +144,7 @@ class Results(dict):
             'F': None,
             'CR': None
         }
+        self.reset_list = []
         self.F_population = None
         self.CR_population = None
         self.population_test = []

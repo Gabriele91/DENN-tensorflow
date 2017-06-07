@@ -152,6 +152,7 @@ namespace tensorflow
             CacheBest< value_t > best;
             std::vector< value_t > list_eval_of_best;
             std::vector< value_t > list_eval_of_best_of_best;
+            std::vector< bool > list_of_reset;
             value_t cur_test_eval = 0.0;
             value_t best_test_eval = 0.0;
 
@@ -279,7 +280,14 @@ namespace tensorflow
                     list_eval_of_best.push_back(cur_test_eval);
                     list_eval_of_best_of_best.push_back(best_test_eval);
                     //Execute reset 
-                    CheckReset(context, best, current_population_F_CR, current_population_list);
+                    if(CheckReset(context, best, current_population_F_CR, current_population_list))
+                    {
+                        list_of_reset.push_back(true);
+                    }
+                    else
+                    {
+                        list_of_reset.push_back(false);
+                    }
                 }
             }
             ////////////////////////////////////////////////////////////////////////////
@@ -322,6 +330,8 @@ namespace tensorflow
                 OP_REQUIRES_OK(context, context->allocate_output(output_id++, current_pop.shape(), &output_tensor));
                 (*output_tensor) = current_pop;
             }
+            // Output list of reset
+            OutputVector<bool>(context,output_id++,list_of_reset);
         }
 
         /**

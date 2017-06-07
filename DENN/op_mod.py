@@ -677,6 +677,7 @@ class Operation(object):
             test_results[self.de_type].population = op_result.final_populations
             test_results[self.de_type].F_population = op_result.final_f
             test_results[self.de_type].CR_population = op_result.final_cr
+            test_results[self.de_type].reset_list = op_result.final_reset_list
             ##
             # Extract best values
             test_results[self.de_type].best_of['F'] = op_result.final_best_f

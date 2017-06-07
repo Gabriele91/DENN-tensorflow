@@ -119,6 +119,7 @@ workon TensorFlow && """
                 "- tail log_name (tail on a log file)\n"
                 "- update (update all git repo and reset it)\n"
                 "- killall (kill all python processes)\n"
+                "- to csv (get results folder as CSV)\n"
             )
         elif msg.text == "status":
             cpu_usage = psutil.cpu_percent(interval=1, percpu=True)
@@ -130,6 +131,24 @@ workon TensorFlow && """
                 "\n+ Ram: {}".format(v_mem.percent) +
                 "\n+ Swap: {}".format(s_mem.percent)
             )
+        elif msg.text == "to csv":
+            try:
+                op_ret, res = self.__bash_call(
+                    msg,
+                    "cd ./scripts/benchmark_results && python to_csv.py",
+                    "+ Results converted to CSV!"
+                )
+                if op_ret:
+                    with open("../benchmark_results/results.csv", "rb") as csv_file:
+                        self.bot.sendDocument(
+                            msg.chat.id,
+                            csv_file
+                        )
+            except:
+                self.bot.sendMessage(
+                    msg.chat.id,
+                    "Can't convert to CSV all the results!"
+                )
         elif msg.text == "killall":
             for proc in psutil.process_iter():
                 try:

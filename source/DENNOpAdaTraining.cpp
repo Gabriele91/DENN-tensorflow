@@ -73,7 +73,7 @@ REGISTER_OP("DennAdaTraining")
 
 .Output("final_f: T")
 .Output("final_cr: T")
-.Output("final_populations: space * T"),
+.Output("final_populations: space * T")
 .Output("final_reset_list: bool")
 ;
 

@@ -109,6 +109,7 @@ workon TensorFlow && """
                 "- timeout n (set timeout for single operation)\n"
                 "- make clean (clean compiled lib)\n"
                 "- make (make libs)\n"
+                "- branch name (change to branch 'name')\n"
                 "- results (show results folder)\n"
                 "- configs (show config files)\n"
                 "- logs (show log files)\n"
@@ -293,6 +294,21 @@ workon TensorFlow && """
                 self.bot.sendMessage(
                     msg.chat.id,
                     "Can't run job!"
+                )
+        elif msg.text.find("branch") != -1:
+            try:
+                _, branchname = msg.text.split(" ")
+                op_ret, res = self.__bash_call(
+                    msg,
+                    "git checkout {}".format(
+                        shlex.quote(branchname)
+                    ),
+                    "+ Branch changed!"
+                )
+            except:
+                self.bot.sendMessage(
+                    msg.chat.id,
+                    "Can't change branch!"
                 )
         else:
             self.bot.sendMessage(

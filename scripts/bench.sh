@@ -47,43 +47,43 @@ python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_92x120_1s.gz --bat
 python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_92x120_1s.gz --batch_size=120 --features=128 --classes=6 --type=float --outfilename=JULY_GD_GASS_120_run4.json && 
 
 # GASS 30 h1
-python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_370x30_1s.gz --batch_size=30 --features=128 --classes=6 --type=float --hidden=1 --steps=2000 --outfilename=JULY_GD_GASS_30_h1_run0.json && 
-python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_370x30_1s.gz --batch_size=30 --features=128 --classes=6 --type=float --hidden=1 --steps=2000 --outfilename=JULY_GD_GASS_30_h1_run1.json && 
-python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_370x30_1s.gz --batch_size=30 --features=128 --classes=6 --type=float --hidden=1 --steps=2000 --outfilename=JULY_GD_GASS_30_h1_run2.json && 
-python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_370x30_1s.gz --batch_size=30 --features=128 --classes=6 --type=float --hidden=1 --steps=2000 --outfilename=JULY_GD_GASS_30_h1_run3.json && 
-python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_370x30_1s.gz --batch_size=30 --features=128 --classes=6 --type=float --hidden=1 --steps=2000 --outfilename=JULY_GD_GASS_30_h1_run4.json && 
+python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_370x30_1s.gz --batch_size=30 --features=128 --classes=6 --type=float --hidden=1 --steps=4000 --outfilename=JULY_GD_GASS_30_h1_run0.json && 
+python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_370x30_1s.gz --batch_size=30 --features=128 --classes=6 --type=float --hidden=1 --steps=4000 --outfilename=JULY_GD_GASS_30_h1_run1.json && 
+python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_370x30_1s.gz --batch_size=30 --features=128 --classes=6 --type=float --hidden=1 --steps=4000 --outfilename=JULY_GD_GASS_30_h1_run2.json && 
+python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_370x30_1s.gz --batch_size=30 --features=128 --classes=6 --type=float --hidden=1 --steps=4000 --outfilename=JULY_GD_GASS_30_h1_run3.json && 
+python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_370x30_1s.gz --batch_size=30 --features=128 --classes=6 --type=float --hidden=1 --steps=4000 --outfilename=JULY_GD_GASS_30_h1_run4.json && 
 
 # GASS 60 h1
-python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_185x60_1s.gz --batch_size=60 --features=128 --classes=6 --type=float --hidden=1 --steps=2000 --outfilename=JULY_GD_GASS_60_h1_run0.json && 
-python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_185x60_1s.gz --batch_size=60 --features=128 --classes=6 --type=float --hidden=1 --steps=2000 --outfilename=JULY_GD_GASS_60_h1_run1.json && 
-python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_185x60_1s.gz --batch_size=60 --features=128 --classes=6 --type=float --hidden=1 --steps=2000 --outfilename=JULY_GD_GASS_60_h1_run2.json && 
-python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_185x60_1s.gz --batch_size=60 --features=128 --classes=6 --type=float --hidden=1 --steps=2000 --outfilename=JULY_GD_GASS_60_h1_run3.json && 
-python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_185x60_1s.gz --batch_size=60 --features=128 --classes=6 --type=float --hidden=1 --steps=2000 --outfilename=JULY_GD_GASS_60_h1_run4.json && 
+python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_185x60_1s.gz --batch_size=60 --features=128 --classes=6 --type=float --hidden=1 --steps=4000 --outfilename=JULY_GD_GASS_60_h1_run0.json && 
+python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_185x60_1s.gz --batch_size=60 --features=128 --classes=6 --type=float --hidden=1 --steps=4000 --outfilename=JULY_GD_GASS_60_h1_run1.json && 
+python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_185x60_1s.gz --batch_size=60 --features=128 --classes=6 --type=float --hidden=1 --steps=4000 --outfilename=JULY_GD_GASS_60_h1_run2.json && 
+python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_185x60_1s.gz --batch_size=60 --features=128 --classes=6 --type=float --hidden=1 --steps=4000 --outfilename=JULY_GD_GASS_60_h1_run3.json && 
+python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_185x60_1s.gz --batch_size=60 --features=128 --classes=6 --type=float --hidden=1 --steps=4000 --outfilename=JULY_GD_GASS_60_h1_run4.json && 
 
 # GASS 120 h1
-python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_92x120_1s.gz --batch_size=120 --features=128 --classes=6 --type=float --hidden=1 --steps=2000 --outfilename=JULY_GD_GASS_120_h1_run0.json && 
-python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_92x120_1s.gz --batch_size=120 --features=128 --classes=6 --type=float --hidden=1 --steps=2000 --outfilename=JULY_GD_GASS_120_h1_run1.json && 
-python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_92x120_1s.gz --batch_size=120 --features=128 --classes=6 --type=float --hidden=1 --steps=2000 --outfilename=JULY_GD_GASS_120_h1_run2.json && 
-python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_92x120_1s.gz --batch_size=120 --features=128 --classes=6 --type=float --hidden=1 --steps=2000 --outfilename=JULY_GD_GASS_120_h1_run3.json &&
-python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_92x120_1s.gz --batch_size=120 --features=128 --classes=6 --type=float --hidden=1 --steps=2000 --outfilename=JULY_GD_GASS_120_h1_run4.json && 
+python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_92x120_1s.gz --batch_size=120 --features=128 --classes=6 --type=float --hidden=1 --steps=4000 --outfilename=JULY_GD_GASS_120_h1_run0.json && 
+python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_92x120_1s.gz --batch_size=120 --features=128 --classes=6 --type=float --hidden=1 --steps=4000 --outfilename=JULY_GD_GASS_120_h1_run1.json && 
+python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_92x120_1s.gz --batch_size=120 --features=128 --classes=6 --type=float --hidden=1 --steps=4000 --outfilename=JULY_GD_GASS_120_h1_run2.json && 
+python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_92x120_1s.gz --batch_size=120 --features=128 --classes=6 --type=float --hidden=1 --steps=4000 --outfilename=JULY_GD_GASS_120_h1_run3.json &&
+python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_92x120_1s.gz --batch_size=120 --features=128 --classes=6 --type=float --hidden=1 --steps=4000 --outfilename=JULY_GD_GASS_120_h1_run4.json && 
 
 # GASS 30 h2
-python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_370x30_1s.gz --batch_size=30 --features=128 --classes=6 --type=float --hidden=2 --steps=3000 --outfilename=JULY_GD_GASS_30_h2_run0.json && 
-python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_370x30_1s.gz --batch_size=30 --features=128 --classes=6 --type=float --hidden=2 --steps=3000 --outfilename=JULY_GD_GASS_30_h2_run1.json && 
-python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_370x30_1s.gz --batch_size=30 --features=128 --classes=6 --type=float --hidden=2 --steps=3000 --outfilename=JULY_GD_GASS_30_h2_run2.json && 
-python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_370x30_1s.gz --batch_size=30 --features=128 --classes=6 --type=float --hidden=2 --steps=3000 --outfilename=JULY_GD_GASS_30_h2_run3.json && 
-python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_370x30_1s.gz --batch_size=30 --features=128 --classes=6 --type=float --hidden=2 --steps=3000 --outfilename=JULY_GD_GASS_30_h2_run4.json &&
+python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_370x30_1s.gz --batch_size=30 --features=128 --classes=6 --type=float --hidden=2 --steps=8000 --outfilename=JULY_GD_GASS_30_h2_run0.json && 
+python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_370x30_1s.gz --batch_size=30 --features=128 --classes=6 --type=float --hidden=2 --steps=8000 --outfilename=JULY_GD_GASS_30_h2_run1.json && 
+python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_370x30_1s.gz --batch_size=30 --features=128 --classes=6 --type=float --hidden=2 --steps=8000 --outfilename=JULY_GD_GASS_30_h2_run2.json && 
+python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_370x30_1s.gz --batch_size=30 --features=128 --classes=6 --type=float --hidden=2 --steps=8000 --outfilename=JULY_GD_GASS_30_h2_run3.json && 
+python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_370x30_1s.gz --batch_size=30 --features=128 --classes=6 --type=float --hidden=2 --steps=8000 --outfilename=JULY_GD_GASS_30_h2_run4.json &&
 
 # GASS 60 h2
-python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_185x60_1s.gz --batch_size=60 --features=128 --classes=6 --type=float --hidden=2 --steps=3000 --outfilename=JULY_GD_GASS_60_h2_run0.json && 
-python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_185x60_1s.gz --batch_size=60 --features=128 --classes=6 --type=float --hidden=2 --steps=3000 --outfilename=JULY_GD_GASS_60_h2_run1.json && 
-python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_185x60_1s.gz --batch_size=60 --features=128 --classes=6 --type=float --hidden=2 --steps=3000 --outfilename=JULY_GD_GASS_60_h2_run2.json && 
-python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_185x60_1s.gz --batch_size=60 --features=128 --classes=6 --type=float --hidden=2 --steps=3000 --outfilename=JULY_GD_GASS_60_h2_run3.json && 
-python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_185x60_1s.gz --batch_size=60 --features=128 --classes=6 --type=float --hidden=2 --steps=3000 --outfilename=JULY_GD_GASS_60_h2_run4.json &&
+python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_185x60_1s.gz --batch_size=60 --features=128 --classes=6 --type=float --hidden=2 --steps=8000 --outfilename=JULY_GD_GASS_60_h2_run0.json && 
+python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_185x60_1s.gz --batch_size=60 --features=128 --classes=6 --type=float --hidden=2 --steps=8000 --outfilename=JULY_GD_GASS_60_h2_run1.json && 
+python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_185x60_1s.gz --batch_size=60 --features=128 --classes=6 --type=float --hidden=2 --steps=8000 --outfilename=JULY_GD_GASS_60_h2_run2.json && 
+python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_185x60_1s.gz --batch_size=60 --features=128 --classes=6 --type=float --hidden=2 --steps=8000 --outfilename=JULY_GD_GASS_60_h2_run3.json && 
+python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_185x60_1s.gz --batch_size=60 --features=128 --classes=6 --type=float --hidden=2 --steps=8000 --outfilename=JULY_GD_GASS_60_h2_run4.json &&
 
 # GASS 120 h2
-python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_92x120_1s.gz --batch_size=120 --features=128 --classes=6 --type=float --hidden=2 --steps=3000 --outfilename=JULY_GD_GASS_120_h2_run0.json && 
-python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_92x120_1s.gz --batch_size=120 --features=128 --classes=6 --type=float --hidden=2 --steps=3000 --outfilename=JULY_GD_GASS_120_h2_run1.json && 
-python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_92x120_1s.gz --batch_size=120 --features=128 --classes=6 --type=float --hidden=2 --steps=3000 --outfilename=JULY_GD_GASS_120_h2_run2.json && 
-python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_92x120_1s.gz --batch_size=120 --features=128 --classes=6 --type=float --hidden=2 --steps=3000 --outfilename=JULY_GD_GASS_120_h2_run3.json && 
-python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_92x120_1s.gz --batch_size=120 --features=128 --classes=6 --type=float --hidden=2 --steps=3000 --outfilename=JULY_GD_GASS_120_h2_run4.json
+python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_92x120_1s.gz --batch_size=120 --features=128 --classes=6 --type=float --hidden=2 --steps=8000 --outfilename=JULY_GD_GASS_120_h2_run0.json && 
+python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_92x120_1s.gz --batch_size=120 --features=128 --classes=6 --type=float --hidden=2 --steps=8000 --outfilename=JULY_GD_GASS_120_h2_run1.json && 
+python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_92x120_1s.gz --batch_size=120 --features=128 --classes=6 --type=float --hidden=2 --steps=8000 --outfilename=JULY_GD_GASS_120_h2_run2.json && 
+python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_92x120_1s.gz --batch_size=120 --features=128 --classes=6 --type=float --hidden=2 --steps=8000 --outfilename=JULY_GD_GASS_120_h2_run3.json && 
+python gd.py --dataset=../datasets/JULY_GasSensorArrayDrift_1_92x120_1s.gz --batch_size=120 --features=128 --classes=6 --type=float --hidden=2 --steps=8000 --outfilename=JULY_GD_GASS_120_h2_run4.json

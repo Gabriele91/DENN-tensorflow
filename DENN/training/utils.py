@@ -284,7 +284,7 @@ class Header(object):
                 cur_data = "| "
 
             cur_data += "{} ".format("".join([chr(data[idx + cur_i])
-                                            for cur_i in range(4)]))
+                                              for cur_i in range(4)]))
             counter += 2
 
         string += "+".ljust(self.__out_size, "-") + '+\n'
@@ -340,6 +340,12 @@ class Dataset(object):
         self.__elm_size = 8 if self.stats.type == 2 else 4
         self.__size_elm_data = self.stats.n_features * self.__elm_size
         self.__size_elm_label = self.stats.n_classes * self.__elm_size
+
+        # Get Item
+        self.__last_gi_idx = 0
+        self.__last_gi_batch = None
+        self.__gi_desc = None
+        self.__new_descriptor()
 
     def __read_from(self, offset, type_):
         """Read data from offset.
@@ -408,44 +414,65 @@ class Dataset(object):
 
                 yield Batch(data, labels)
 
+    def __del__(self):
+        self.__gi_desc.close()
+
+    def __new_descriptor(self):
+        # Close previous if exists
+        if self.__gi_desc is not None:
+            self.__last_gi_idx = 0
+            self.__gi_desc.close()
+        # Go to train data
+        self.__gi_desc = gzip.GzipFile(self.__file_name, mode='rb')
+        self.__gi_desc.seek(self.stats.train_offset)
+
+    def __descriptor_forward(self, num):
+        for _ in range(num):
+            print("Advance")
+            num_batch = struct.unpack("<I", self.__gi_desc.read(4))[0]
+            num_elms = struct.unpack("<I", self.__gi_desc.read(4))[0]
+            self.__gi_desc.seek(
+                num_elms * self.__size_elm_data +
+                num_elms * self.__size_elm_label, SEEK_CUR)
+        
+        # New batch data
+        num_batch = struct.unpack("<I", self.__gi_desc.read(4))[0]
+        num_elms = struct.unpack("<I", self.__gi_desc.read(4))[0]
+        
+        return num_batch, num_elms
+
     def __getitem__(self, index):
         if index > self.num_batches - 1:
             index %= self.num_batches
 
-        with gzip.GzipFile(self.__file_name, mode='rb') as gz_file:
-            gz_file.seek(self.stats.train_offset)
+        if index < self.__last_gi_idx:
+            self.__new_descriptor()
+        elif index == self.__last_gi_batch:
+            return self.__last_gi_batch
 
-            for idx in range(self.num_batches):
-                num_batch = struct.unpack("<I", gz_file.read(4))[0]
-                num_elms = struct.unpack("<I", gz_file.read(4))[0]
+        # print(index, self.__last_gi_idx, index - self.__last_gi_idx)
+        _, num_elms = self.__descriptor_forward((index - self.__last_gi_idx) - 1)
 
-                # print('Read item ->', num_batch, num_elms)
+        # print('Read item ->', num_elms, self.__size_elm_data)
+        data = np.frombuffer(
+            self.__gi_desc.read(num_elms * self.__size_elm_data),
+            dtype=self.__dtype
+        )
+        # print('Read item ->', data.shape)
+        data = data.reshape([num_elms, self.stats.n_features])
+        # print('Read item ->', data.shape)
 
-                if num_batch == index:
-                    break
-                else:
-                    gz_file.seek(
-                        num_elms * self.__size_elm_data +
-                        num_elms * self.__size_elm_label, SEEK_CUR)
+        labels = np.frombuffer(
+            self.__gi_desc.read(num_elms * self.__size_elm_label),
+            dtype=self.__dtype
+        )
+        # print('Read item ->', labels.shape)
+        labels = labels.reshape([num_elms, self.stats.n_classes])
+        # print('Read item ->', labels.shape)
 
-            # print('Read item ->', num_elms, self.__size_elm_data)
-            data = np.frombuffer(
-                gz_file.read(num_elms * self.__size_elm_data),
-                dtype=self.__dtype
-            )
-            # print('Read item ->', data.shape)
-            data = data.reshape([num_elms, self.stats.n_features])
-            # print('Read item ->', data.shape)
+        # print(data[0])
+        # print(labels[0])
+        self.__last_gi_batch = Batch(data, labels)
+        self.__last_gi_idx = index
 
-            labels = np.frombuffer(
-                gz_file.read(num_elms * self.__size_elm_label),
-                dtype=self.__dtype
-            )
-            # print('Read item ->', labels.shape)
-            labels = labels.reshape([num_elms, self.stats.n_classes])
-            # print('Read item ->', labels.shape)
-
-            # print(data[0])
-            # print(labels[0])
-
-        return Batch(data, labels)
+        return self.__last_gi_batch

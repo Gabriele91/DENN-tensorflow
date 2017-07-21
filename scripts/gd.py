@@ -81,10 +81,10 @@ def main(input_args):
         _Ws.append(tf.Variable(tf.zeros([FLAGS.features*2, FLAGS.classes], dtype=data_type), dtype=data_type, name="output_W"))
         _bs.append(tf.Variable(tf.zeros([FLAGS.classes], dtype=data_type), dtype=data_type, name="output_b"))
 
-        print("Num layers: ", len(_Ws))
+        # print("Num layers: ", len(_Ws))
         for lvl in range(len(_Ws)):
-            print("-[{}] ".format(lvl), _Ws[lvl])
-            print("-[{}] ".format(lvl), _bs[lvl])
+            # print("-[{}] ".format(lvl), _Ws[lvl])
+            # print("-[{}] ".format(lvl), _bs[lvl])
             if lvl == 0:
                 y = tf.nn.sigmoid(tf.matmul(x, _Ws[lvl]) + _bs[lvl])
             elif lvl < len(_Ws) - 1:
@@ -98,7 +98,7 @@ def main(input_args):
 
     # from_file = False
 
-    print(y)
+    # print(y)
 
     # if from_file:
     #     with open("test_results_with_smooth.json", "r") as input_file:
@@ -132,17 +132,24 @@ def main(input_args):
     # Test trained model
     correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
     accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+    step_accuracies = []
 
     # if from_file:
     #     sess.run([new_W, new_b])
     # Train
     if FLAGS.dataset == 'mnist':
-        for _ in tqdm(range(FLAGS.steps), desc="Training official mnist"):
+        for step in tqdm(range(FLAGS.steps), desc="Training official mnist"):
             batch_xs, batch_ys = dataset.train.next_batch(FLAGS.batch_size)
             sess.run(train_step, feed_dict={
                 x: batch_xs,
                 y_: batch_ys
             })
+            if step % FLAGS.batch_size == 0:
+                cur_accuracy = sess.run(accuracy, feed_dict={
+                    x: dataset.test.images,
+                    y_: dataset.test.labels
+                })
+                step_accuracies.append([num, cur_accuracy])
             # cur_accuracy = sess.run(accuracy, feed_dict={
             #                         x: dataset.test.images, y_: dataset.test.labels})
             # print(cur_accuracy)
@@ -158,12 +165,19 @@ def main(input_args):
         confusion_matrix = calc_confusin_M(dataset.test.labels, cur_y)
         print("Confusion Matrix:\n", confusion_matrix)
     else:
+        batch_size = len(dataset[0].data)
         for num in tqdm(range(FLAGS.steps), desc="Training {}".format(dataset_name)):
             cur_batch = dataset[num]
             sess.run(train_step, feed_dict={
                 x: cur_batch.data,
                 y_: cur_batch.labels
             })
+            if num % batch_size == 0:
+                cur_accuracy = sess.run(accuracy, feed_dict={
+                    x: dataset.test_data,
+                    y_: dataset.test_labels
+                })
+                step_accuracies.append([num, float(cur_accuracy)])
             # cur_accuracy=sess.run(accuracy, feed_dict={
             #                         x: dataset.test_data, y_: dataset.test_labels})
             # print(cur_accuracy)
@@ -202,7 +216,8 @@ def main(input_args):
         "b": all_b[0] if len(all_b) == 1 else all_b,
         "accuracy": float(cur_accuracy),
         "confusionM": confusion_matrix.tolist(),
-        "stats": stats
+        "stats": stats,
+        "steps": step_accuracies
     }
     with open(path.join(OUT_FOLDER, FLAGS.outfilename), "w") as result_file:
         json.dump(res, result_file, indent=2)

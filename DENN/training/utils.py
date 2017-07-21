@@ -342,7 +342,7 @@ class Dataset(object):
         self.__size_elm_label = self.stats.n_classes * self.__elm_size
 
         # Get Item
-        self.__last_gi_idx = 0
+        self.__last_gi_idx = -1
         self.__last_gi_batch = None
         self.__gi_desc = None
         self.__new_descriptor()
@@ -420,7 +420,7 @@ class Dataset(object):
     def __new_descriptor(self):
         # Close previous if exists
         if self.__gi_desc is not None:
-            self.__last_gi_idx = 0
+            self.__last_gi_idx = -1
             self.__gi_desc.close()
         # Go to train data
         self.__gi_desc = gzip.GzipFile(self.__file_name, mode='rb')
@@ -447,7 +447,7 @@ class Dataset(object):
 
         if index < self.__last_gi_idx:
             self.__new_descriptor()
-        elif index == self.__last_gi_batch:
+        elif index == self.__last_gi_idx:
             return self.__last_gi_batch
 
         # print(index, self.__last_gi_idx, index - self.__last_gi_idx)

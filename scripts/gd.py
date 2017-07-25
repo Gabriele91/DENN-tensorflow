@@ -56,7 +56,7 @@ def main(input_args):
     else:
         dataset = DENN.training.Dataset(FLAGS.dataset)
         _, dataset_name = path.split(FLAGS.dataset)
-    
+
     if FLAGS.type == 'float':
         data_type = tf.float32
     elif FLAGS.type == 'double':
@@ -71,15 +71,21 @@ def main(input_args):
     y = None
 
     if FLAGS.hidden > 0:
-        _Ws.append(tf.Variable(tf.zeros([FLAGS.features, FLAGS.features*2], dtype=data_type), dtype=data_type, name="input_W"))
-        _bs.append(tf.Variable(tf.zeros([FLAGS.features*2], dtype=data_type), dtype=data_type, name="input_b"))
+        _Ws.append(tf.Variable(tf.zeros(
+            [FLAGS.features, FLAGS.features * 2], dtype=data_type), dtype=data_type, name="input_W"))
+        _bs.append(tf.Variable(tf.zeros(
+            [FLAGS.features * 2], dtype=data_type), dtype=data_type, name="input_b"))
 
         for lvl in range(FLAGS.hidden - 1):
-            _Ws.append(tf.Variable(tf.zeros([FLAGS.features*2, FLAGS.features*2], dtype=data_type), dtype=data_type, name="hidden_{}".format(lvl+1)))
-            _bs.append(tf.Variable(tf.zeros([FLAGS.features*2], dtype=data_type), dtype=data_type, name="hidden_{}".format(lvl)))
+            _Ws.append(tf.Variable(tf.zeros([FLAGS.features * 2, FLAGS.features * 2],
+                                            dtype=data_type), dtype=data_type, name="hidden_{}".format(lvl + 1)))
+            _bs.append(tf.Variable(tf.zeros(
+                [FLAGS.features * 2], dtype=data_type), dtype=data_type, name="hidden_{}".format(lvl)))
 
-        _Ws.append(tf.Variable(tf.zeros([FLAGS.features*2, FLAGS.classes], dtype=data_type), dtype=data_type, name="output_W"))
-        _bs.append(tf.Variable(tf.zeros([FLAGS.classes], dtype=data_type), dtype=data_type, name="output_b"))
+        _Ws.append(tf.Variable(tf.zeros(
+            [FLAGS.features * 2, FLAGS.classes], dtype=data_type), dtype=data_type, name="output_W"))
+        _bs.append(tf.Variable(
+            tf.zeros([FLAGS.classes], dtype=data_type), dtype=data_type, name="output_b"))
 
         # print("Num layers: ", len(_Ws))
         for lvl in range(len(_Ws)):
@@ -92,8 +98,10 @@ def main(input_args):
             else:
                 y = tf.matmul(y, _Ws[lvl]) + _bs[lvl]
     else:
-        _Ws.append(tf.Variable(tf.zeros([FLAGS.features, FLAGS.classes], dtype=data_type), dtype=data_type))
-        _bs.append(tf.Variable(tf.zeros([FLAGS.classes], dtype=data_type), dtype=data_type))
+        _Ws.append(tf.Variable(
+            tf.zeros([FLAGS.features, FLAGS.classes], dtype=data_type), dtype=data_type))
+        _bs.append(tf.Variable(
+            tf.zeros([FLAGS.classes], dtype=data_type), dtype=data_type))
         y = tf.matmul(x, _Ws[0]) + _bs[0]
 
     # from_file = False
@@ -166,8 +174,9 @@ def main(input_args):
         print("Confusion Matrix:\n", confusion_matrix)
     else:
         batch_size = len(dataset[0].data)
+        batch_index = 0
         for num in tqdm(range(FLAGS.steps), desc="Training {}".format(dataset_name)):
-            cur_batch = dataset[num]
+            cur_batch = dataset[batch_index]
             sess.run(train_step, feed_dict={
                 x: cur_batch.data,
                 y_: cur_batch.labels
@@ -178,6 +187,10 @@ def main(input_args):
                     y_: dataset.test_labels
                 })
                 step_accuracies.append([num, float(cur_accuracy)])
+            if FLAGS.change_batch_each_step:
+                batch_index += 1
+            elif num % batch_size == 0 and num > 0:
+                batch_index += 1
             # cur_accuracy=sess.run(accuracy, feed_dict={
             #                         x: dataset.test_data, y_: dataset.test_labels})
             # print(cur_accuracy)
@@ -227,6 +240,9 @@ if __name__ == '__main__':
     parser.add_argument('--init-NN', type=str, help='Initial NN values')
     parser.add_argument('--steps', type=int,
                         help='Number of steps', default=1000)
+    parser.add_argument('--change-batch-each-step', type=lambda x: x == "true" or x == "True",
+                        help='Tell if the the batch have to be changed each step', default=True,
+                        dest="change_batch_each_step")
     parser.add_argument('--batch_size', type=int,
                         help='Batch size', default=100)
     parser.add_argument('--features', type=int,

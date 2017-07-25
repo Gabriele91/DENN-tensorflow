@@ -11,7 +11,8 @@
                 "databaseFilename": "",
                 "path": [
                     "/usr/include",
-                    "$(python -c \"import tensorflow as tf; tf.sysconfig.get_include();\")"
+                    "$(python -c \"import tensorflow as tf; tf.sysconfig.get_include();\")",
+                    "${workspaceRoot}"
                 ]
             },
             "intelliSenseMode": "clang-x64"
@@ -27,7 +28,8 @@
                 "databaseFilename": "",
                 "path": [
                     "/usr/include",
-                    "$(python -c \"import tensorflow as tf; tf.sysconfig.get_include();\")"
+                    "$(python -c \"import tensorflow as tf; tf.sysconfig.get_include();\")",
+                    "${workspaceRoot}"
                 ]
             },
             "intelliSenseMode": "clang-x64"
@@ -41,10 +43,12 @@
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": "",
                 "path": [
-                    "c:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/include"
+                    "c:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/include",
+                    "${workspaceRoot}"
                 ]
             },
             "intelliSenseMode": "msvc-x64"
         }
-    ]
+    ],
+    "version": 2
 }

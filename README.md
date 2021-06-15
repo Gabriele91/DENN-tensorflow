@@ -1,3 +1,5 @@
+### ⚠️  This is an old and unsupported implementation of DENN. New version is available at [DENN](https://github.com/Gabriele91/DENN)  ⚠️
+
 ## Install
 
 ```bash

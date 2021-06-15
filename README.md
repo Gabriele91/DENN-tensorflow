@@ -1,4 +1,4 @@
-### ⚠️  This is an old and unsupported implementation. New version is available at [DENN](https://github.com/Gabriele91/DENN)  ⚠️
+### ⚠️  This is an unsupported implementation. New version is available at [DENN](https://github.com/Gabriele91/DENN)  ⚠️
 
 ## Install
 
